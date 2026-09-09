@@ -1,0 +1,116 @@
+{
+  "exchanges": [
+    {
+      "name": "Binance",
+      "jurisdiction": "Global / VASP",
+      "compliance_email": "compliance@binance.com",
+      "fiu_registered": true,
+      "hot_wallets": [
+        "0x28c6c06298d514db089934071355e5743bf21d60",
+        "0x21a31ee1afc51d94c2efccaa2092ad1028285549",
+        "0xdfd5293d8e347dfee59e53b210928e3ee0a149b8",
+        "0x56eddb7aa87536c09ccc2793473599fd21a8b17f",
+        "0x9696e59e3d07ee947badb9d8ca41334c4f039a04"
+      ]
+    },
+    {
+      "name": "CoinDCX",
+      "jurisdiction": "India (FIU-IND Registered)",
+      "compliance_email": "legal@coindcx.com",
+      "fiu_registered": true,
+      "hot_wallets": [
+        "0x4a4754593444053896fa231b1e93c1ef7e068777",
+        "0x18e8a71c8288597bf68e4bf79efc7ce9fb7b6592"
+      ]
+    },
+    {
+      "name": "WazirX",
+      "jurisdiction": "India (FIU-IND Registered)",
+      "compliance_email": "nodal@wazirx.com",
+      "fiu_registered": true,
+      "hot_wallets": [
+        "0x5bdf85216ec1e38d6458c870992a69e38e03f7ef",
+        "0x1150e4177d0a29486c4293f0b2ceb286c4767115"
+      ]
+    },
+    {
+      "name": "OKX",
+      "jurisdiction": "Global / Seychelles",
+      "compliance_email": "compliance@okx.com",
+      "fiu_registered": false,
+      "hot_wallets": [
+        "0x6cc5f688a315f3dc28a7781717a9a798a59fda7b",
+        "0xa7efae728d2936e78bda97dc267687568dd593f3"
+      ]
+    },
+    {
+      "name": "KuCoin",
+      "jurisdiction": "Global / Seychelles",
+      "compliance_email": "compliance@kucoin.com",
+      "fiu_registered": true,
+      "hot_wallets": [
+        "0xd6216fc19db775df9774a6e33526131da7d19a2c",
+        "0x168a4918e7e1f486d38e2114631627c51ebcb08e"
+      ]
+    },
+    {
+      "name": "Bybit",
+      "jurisdiction": "Global / Dubai",
+      "compliance_email": "compliance@bybit.com",
+      "fiu_registered": false,
+      "hot_wallets": [
+        "0xf89d7b9c864f589bbf53a82105107622b35eaa40"
+      ]
+    }
+  ],
+  "dex_routers": [
+    {
+      "name": "Uniswap V2: Router",
+      "address": "0x7a250d5630b4cf539739df2c5dacb4c659f2488d"
+    },
+    {
+      "name": "Uniswap V3: SwapRouter",
+      "address": "0xe592427a0aece92de3edee1f18e0157c05861564"
+    },
+    {
+      "name": "1inch V5: Aggregator",
+      "address": "0x1111111254eeb25477b68fb85ed929f73a960582"
+    },
+    {
+      "name": "PancakeSwap: Router V2",
+      "address": "0x10ed43c718714eb63d5aa57b78b54704e256024e"
+    }
+  ],
+  "mixers": [
+    {
+      "name": "Tornado.Cash: 0.1 ETH Pool",
+      "address": "0x12d66f87a04a9e220743712ce6d9bb1b5616b8fc"
+    },
+    {
+      "name": "Tornado.Cash: 1 ETH Pool",
+      "address": "0x47ce0c6ed5b0ce3d3a51fdb1c52dc66a7c3c2936"
+    },
+    {
+      "name": "Tornado.Cash: 10 ETH Pool",
+      "address": "0x910cbd523d972eb0a6f4cae4618ad62622b39dbf"
+    },
+    {
+      "name": "Tornado.Cash: 100 ETH Pool",
+      "address": "0xa160cdab224e496019ea6975a782dec4548130eb"
+    },
+    {
+      "name": "Tornado.Cash: 1000 USDT Pool",
+      "address": "0x169ad27a470d064dae568514244ec236e746451b"
+    }
+  ],
+  "bridges": [
+    {
+      "name": "Across Protocol V2: SpokePool",
+      "address": "0x4d9079bb4165aeb4084c526a32695dcfd2f77381"
+    },
+    {
+      "name": "Hop Protocol: Bridge",
+      "address": "0x3666f603cc164936c1b87e207f36beba4ac5f18a"
+    }
+  ]
+}
