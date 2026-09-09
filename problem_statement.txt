@@ -1,0 +1,57 @@
+================================================================================
+SIH PROBLEM STATEMENT: PS 26183 — Crypto Wallet Fraud Tracing (MHA)
+================================================================================
+
+ORGANIZATION / MINISTRY: 
+Ministry of Home Affairs (MHA), Government of India / Cybercrime Investigation
+
+SUMMARY:
+"When someone reports a scam wallet, follow the stolen money and find where it gets cashed out."
+
+WHAT YOU'RE ACTUALLY BUILDING:
+A tool that takes a crypto wallet address (reported by a scam victim), looks up its 
+transaction history, follows the money as it hops through other wallets, and flags 
+the point where it likely reaches a real exchange (where it could be frozen).
+
+ABSOLUTE BASICS:
+- Blockchain: Public ledger of every transaction ever made, viewable by anyone, forever.
+- Wallet Address: Account identifier (e.g., 0x7a3b...).
+- Transaction: Money moving from one address to another (with amount, timestamp, gas/fee, token/ETH).
+
+CORE SYLLABUS / BUILDING BLOCKS:
+1. Reading blockchain data via APIs (Etherscan, Blockchair, Blockchain.info, RPC nodes).
+2. Graph theory basics: Wallets as "nodes", transactions as directed "edges", graph traversal (BFS/DFS).
+3. Address clustering heuristics: Techniques to identify addresses belonging to the same entity/scammer.
+4. Risk-scoring logic: Hop distance to known exchanges, velocity of money, split ratios, time decay.
+5. Known exchange address attribution: Matching destination addresses against verified exchange clusters (Binance, WazirX, Coinbase, etc.).
+6. Graph visualization: Visualizing the money trail (vis.js, D3.js, Cytoscape, Neo4j Bloom).
+7. Plain-language investigator summary: Forensic summary for LEAs (Law Enforcement Agencies) highlighting actionable off-ramps/exchanges to issue freeze notices.
+
+--------------------------------------------------------------------------------
+THE REAL-WORLD INVESTIGATION FLOW & CHALLENGE:
+--------------------------------------------------------------------------------
+1. Victim reports a scam transaction (e.g., sent Rs 50,000 / crypto to Wallet S).
+2. Police only have: Scammer's address (Wallet S).
+3. Scammer splits and hops funds:
+   Wallet S -> Wallet B (Rs 20k) & Wallet C (Rs 30k)
+   Wallet B -> Wallet D -> Wallet G (Binance deposit address -> actionable!)
+   Wallet C -> Wallet E & F -> Wallet H & I (open branches, peeling chains, mixing).
+
+--------------------------------------------------------------------------------
+THE RESEARCH CORE (OUR TARGET RESEARCH PROBLEM):
+--------------------------------------------------------------------------------
+"Notice in my example, the tree only had 6-7 wallets and I could draw the whole thing by hand.
+In reality, scammers often deliberately split funds across hundreds or thousands of wallets 
+specifically to make tracing exhausting (mixing, peel chains, chain hopping, smurfing).
+
+At that scale:
+1. Combinatorial Explosion / Path Pruning: You cannot print every path — there are too many.
+2. Probabilistic Flow Attribution / Taint Analysis: Decide which paths are 'worth following' 
+   vs background noise (e.g., calculating probability/taint proportion of stolen funds vs 
+   unrelated concurrent volume at intermediate nodes).
+3. Latency & Performance: Must compute and traverse efficiently even across graphs of tens 
+   of thousands of nodes and edges."
+
+This research frontier is the differentiator that elevates this project from a trivial API viewer 
+into an algorithmic, defensible forensic intelligence engine.
+================================================================================

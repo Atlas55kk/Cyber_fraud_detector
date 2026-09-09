@@ -1,0 +1,122 @@
+[
+  {
+    "title": "TRacer: Scalable Graph-based Transaction Tracing for Account-based Blockchain Trading Systems",
+    "id": "2201.05757",
+    "type": "arxiv",
+    "status": "VERIFIED_GENUINE",
+    "http_status": 200,
+    "landing_url": "https://arxiv.org/abs/2201.05757",
+    "pdf_url": "https://arxiv.org/pdf/2201.05757.pdf",
+    "authors": "Zhiying Wu, Jieli Liu, Jiajing Wu, Zibin Zheng"
+  },
+  {
+    "title": "How to Peel a Million: Validating and Expanding Bitcoin Clusters",
+    "id": "2205.13882",
+    "type": "arxiv",
+    "status": "VERIFIED_GENUINE",
+    "http_status": 200,
+    "landing_url": "https://arxiv.org/abs/2205.13882",
+    "pdf_url": "https://arxiv.org/pdf/2205.13882.pdf",
+    "authors": "George Kappos, Haaroon Yousaf, Rainer St\u00fctz, Sofia Rollet, Bernhard Haslhofer, Sarah Meiklejohn"
+  },
+  {
+    "title": "The Shape of Money Laundering: Subgraph Representation Learning on the Blockchain with the Elliptic2 Dataset",
+    "id": "2404.19109",
+    "type": "arxiv",
+    "status": "VERIFIED_GENUINE",
+    "http_status": 200,
+    "landing_url": "https://arxiv.org/abs/2404.19109",
+    "pdf_url": "https://arxiv.org/pdf/2404.19109.pdf",
+    "authors": "Claudio Bellei, Muhua Xu, Ross Phillips, Tom Robinson, Mark Weber, Tim Kaler, Charles E. Leiserson, Arvind, Jie Chen"
+  },
+  {
+    "title": "Identifying Money Laundering Subgraphs on the Blockchain",
+    "id": "2410.08394",
+    "type": "arxiv",
+    "status": "VERIFIED_GENUINE",
+    "http_status": 200,
+    "landing_url": "https://arxiv.org/abs/2410.08394",
+    "pdf_url": "https://arxiv.org/pdf/2410.08394.pdf",
+    "authors": "Kiwhan Song, Mohamed Ali Dhraief, Muhua Xu, Locke Cai, Xuhao Chen, Arvind, Jie Chen"
+  },
+  {
+    "title": "Clustering Deposit and Withdrawal Activity in Tornado Cash: A Cross-Chain Analysis",
+    "id": "2510.09433",
+    "type": "arxiv",
+    "status": "VERIFIED_GENUINE",
+    "http_status": 200,
+    "landing_url": "https://arxiv.org/abs/2510.09433",
+    "pdf_url": "https://arxiv.org/pdf/2510.09433.pdf",
+    "authors": "Raffaele Cristodaro, Benjamin Kraner, Claudio J. Tessone"
+  },
+  {
+    "title": "Tutela: An Open-Source Tool for Assessing User-Privacy on Ethereum and Tornado Cash",
+    "id": "2201.06811",
+    "type": "arxiv",
+    "status": "VERIFIED_GENUINE",
+    "http_status": 200,
+    "landing_url": "https://arxiv.org/abs/2201.06811",
+    "pdf_url": "https://arxiv.org/pdf/2201.06811.pdf",
+    "authors": "Mike Wu, Will McTighe, Kaili Wang, Istvan A. Seres, Nick Bax, et al."
+  },
+  {
+    "title": "Does Money Laundering on Ethereum Have Traditional Traits?",
+    "id": "2303.15841",
+    "type": "arxiv",
+    "status": "VERIFIED_GENUINE",
+    "http_status": 200,
+    "landing_url": "https://arxiv.org/abs/2303.15841",
+    "pdf_url": "https://arxiv.org/pdf/2303.15841.pdf",
+    "authors": "Qishuang Fu, Dan Lin, Yiyue Cao, Jiajing Wu"
+  },
+  {
+    "title": "A Fistful of Bitcoins: Characterizing Payments Among Men with No Names",
+    "id": "10.1145/2504730.2504747",
+    "type": "doi",
+    "status": "VERIFIED_GENUINE",
+    "http_status": 200,
+    "landing_url": "https://doi.org/10.1145/2504730.2504747",
+    "pdf_url": "https://doi.org/10.1145/2504730.2504747",
+    "authors": "Sarah Meiklejohn, Marjori Pomarole, Grant Jordan, Kirill Levchenko, Damon McCoy, Geoffrey M. Voelker, Stefan Savage"
+  },
+  {
+    "title": "Address Clustering Heuristics for Ethereum",
+    "id": "10.1007/978-3-030-51280-4_33",
+    "type": "doi",
+    "status": "VERIFIED_GENUINE",
+    "http_status": 200,
+    "landing_url": "https://doi.org/10.1007/978-3-030-51280-4_33",
+    "pdf_url": "https://doi.org/10.1007/978-3-030-51280-4_33",
+    "authors": "Friedhelm Victor (Financial Cryptography 2020)"
+  },
+  {
+    "title": "Quantitative Analysis of the Full Bitcoin Transaction Graph",
+    "id": "10.1007/978-3-642-39884-1_2",
+    "type": "doi",
+    "status": "VERIFIED_GENUINE",
+    "http_status": 200,
+    "landing_url": "https://doi.org/10.1007/978-3-642-39884-1_2",
+    "pdf_url": "https://doi.org/10.1007/978-3-642-39884-1_2",
+    "authors": "Dorit Ron, Adi Shamir (Financial Cryptography 2013)"
+  },
+  {
+    "title": "An Inquiry into Money Laundering Tools in the Bitcoin Ecosystem",
+    "id": "10.1109/ecrs.2013.6805780",
+    "type": "doi",
+    "status": "VERIFIED_GENUINE",
+    "http_status": 200,
+    "landing_url": "https://doi.org/10.1109/ecrs.2013.6805780",
+    "pdf_url": "https://doi.org/10.1109/ecrs.2013.6805780",
+    "authors": "Malte M\u00f6ser, Rainer B\u00f6hme, Dominic Breuker (IEEE eCrime 2013)"
+  },
+  {
+    "title": "Virtual Assets Red Flag Indicators of Money Laundering and Terrorist Financing",
+    "id": "FATF-2020-VA-Red-Flags",
+    "type": "regulatory_standard",
+    "status": "VERIFIED_GENUINE",
+    "http_status": 200,
+    "landing_url": "https://www.fatf-gafi.org/media/fatf/documents/recommendations/Virtual-Assets-Red-Flag-Indicators.pdf",
+    "pdf_url": "https://www.fatf-gafi.org/media/fatf/documents/recommendations/Virtual-Assets-Red-Flag-Indicators.pdf",
+    "authors": "Financial Action Task Force (FATF Secretariat, Paris)"
+  }
+]
