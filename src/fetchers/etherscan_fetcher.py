@@ -23,21 +23,21 @@ class EtherscanFetcher:
 
     def __init__(
         self,
-        api_key: str = "YourApiKeyToken",
-        base_url: str = "https://api.etherscan.io/api",
+        api_key: Optional[str] = None,
+        base_url: str = "https://eth.blockscout.com/api",
         cache_dir: Optional[str] = None
     ):
-        self.api_key = api_key
+        self.api_key = api_key or os.getenv("ETHERSCAN_API_KEY", "")
         self.base_url = base_url
         
         if cache_dir is None:
             base_project_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-            cache_dir = os.path.join(base_project_dir, "data", "cache")
+            cache_dir = os.path.join(base_project_dir, "data", "cache", "evm")
         
         self.cache_dir = cache_dir
         os.makedirs(self.cache_dir, exist_ok=True)
         self.last_call_time = 0.0
-        self.min_delay_seconds = 0.25 # Max 4 calls/sec (safe under 5 req/sec limit)
+        self.min_delay_seconds = 0.25 # Safe throttling under API limits
 
     def _get_cache_path(self, address: str, action: str) -> str:
         clean = address.lower()

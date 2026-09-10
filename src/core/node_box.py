@@ -62,7 +62,8 @@ class ForensicNodeBox:
         entity_tag: Optional[str] = None,
         cluster_id: Optional[str] = None
     ):
-        self.address: str = address.lower()
+        clean_addr = address.strip()
+        self.address: str = clean_addr.lower() if clean_addr.lower().startswith("0x") else clean_addr
         self.role: NodeRole = role
         self.current_balance: float = float(current_balance)
         self.stolen_taint_ratio: float = float(stolen_taint_ratio)  # 0.0 to 1.0

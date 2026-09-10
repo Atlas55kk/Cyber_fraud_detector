@@ -45,3 +45,6 @@ venv.bak/
 Thumbs.db
 Desktop.ini
 .DS_Store
+
+# Blockchain Cache
+data/cache/

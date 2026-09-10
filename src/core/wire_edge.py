@@ -60,9 +60,11 @@ class ForensicWire:
         is_contract_call: bool = False,
         method_signature: Optional[str] = None
     ):
+        clean_from = from_address.strip()
+        clean_to = to_address.strip()
         self.tx_hash: str = tx_hash.lower()
-        self.from_address: str = from_address.lower()
-        self.to_address: str = to_address.lower()
+        self.from_address: str = clean_from.lower() if clean_from.lower().startswith("0x") else clean_from
+        self.to_address: str = clean_to.lower() if clean_to.lower().startswith("0x") else clean_to
         self.value: float = float(value)
         self.token_symbol: str = token_symbol.upper()
         self.token_type: TokenType = token_type

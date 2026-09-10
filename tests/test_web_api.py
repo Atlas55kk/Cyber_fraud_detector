@@ -37,6 +37,8 @@ class TestWebAPI(unittest.TestCase):
         data = response.json()
         self.assertTrue(data["success"])
         self.assertEqual(data["chain"], "EVM")
+        self.assertIn("is_live", data)
+        self.assertIn("data_source", data)
         self.assertGreater(len(data["elements"]), 0)
         self.assertGreater(len(data["actionable_cex"]), 0)
         self.assertEqual(data["stats"]["total_funds_at_exchanges"], 35000.0)
@@ -53,6 +55,8 @@ class TestWebAPI(unittest.TestCase):
         data = response.json()
         self.assertTrue(data["success"])
         self.assertEqual(data["chain"], "TRON")
+        self.assertIn("is_live", data)
+        self.assertIn("data_source", data)
         self.assertGreater(len(data["elements"]), 0)
         self.assertGreater(len(data["actionable_cex"]), 0)
 

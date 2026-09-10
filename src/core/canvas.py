@@ -34,11 +34,23 @@ class WhiteboardCanvas:
         self.incident_timestamp: Optional[int] = None
         self.initial_stolen_amount: float = 0.0
 
+    @staticmethod
+    def normalize_address(address: str) -> str:
+        """
+        Normalizes addresses:
+        - EVM hex (0x...) is case-insensitive, normalized to lowercase.
+        - TRON (T...) and custom network labels preserve exact casing.
+        """
+        clean = address.strip()
+        if clean.lower().startswith("0x"):
+            return clean.lower()
+        return clean
+
     def set_incident_root(self, address: str, stolen_amount: float, timestamp: int) -> ForensicNodeBox:
         """
         Initializes the starting crime root wallet on the canvas.
         """
-        addr_clean = address.lower()
+        addr_clean = self.normalize_address(address)
         self.incident_root_address = addr_clean
         self.incident_timestamp = timestamp
         self.initial_stolen_amount = float(stolen_amount)
@@ -65,7 +77,7 @@ class WhiteboardCanvas:
         """
         Retrieves an existing node or creates a fresh ForensicNodeBox.
         """
-        addr = address.lower()
+        addr = self.normalize_address(address)
         if addr not in self.nodes:
             node = ForensicNodeBox(
                 address=addr,
@@ -98,8 +110,8 @@ class WhiteboardCanvas:
         Adds a directed transaction wire between two nodes on the canvas.
         """
         h = tx_hash.lower()
-        u = from_address.lower()
-        v = to_address.lower()
+        u = self.normalize_address(from_address)
+        v = self.normalize_address(to_address)
 
         # Ensure endpoints exist
         self.get_or_create_node(u)

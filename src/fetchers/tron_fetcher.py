@@ -60,6 +60,12 @@ class TronFetcher:
             time.sleep(self.min_delay_seconds - elapsed)
         self.last_call_time = time.time()
 
+    def fetch_outgoing_transactions(self, address: str) -> List[ForensicWire]:
+        """
+        Unified interface matching EtherscanFetcher for seamless engine integration.
+        """
+        return self.fetch_outgoing_trc20_transfers(address)
+
     def fetch_outgoing_trc20_transfers(
         self,
         address: str,
@@ -72,25 +78,24 @@ class TronFetcher:
         raw_transfers = self._fetch_tronscan_transfers(address, token_contract)
 
         for item in raw_transfers:
-            # Tronscan token_trc20/transfers schema
-            from_addr = item.get("from_address", "")
-            to_addr = item.get("to_address", "")
+            # Tronscan transfer/trc20 schema
+            from_addr = item.get("from", "") or item.get("from_address", "")
+            to_addr = item.get("to", "") or item.get("to_address", "")
             
             # We are tracing forward outgoing flow
-            if from_addr == address:
-                raw_amount = float(item.get("quant", 0) or item.get("amount", 0))
-                # USDT on TRON has 6 decimals
-                decimals = int(item.get("tokenInfo", {}).get("tokenDecimal", 6) or 6)
+            if from_addr.strip() == address.strip():
+                raw_amount = float(item.get("amount", 0) or item.get("quant", 0))
+                decimals = int(item.get("decimals", 6) or 6)
                 value_usdt = raw_amount / (10 ** decimals)
                 
-                tx_hash = item.get("transaction_id", "") or item.get("hash", "")
-                ts_ms = int(item.get("block_ts", 0) or item.get("timestamp", 0))
+                tx_hash = item.get("hash", "") or item.get("transaction_id", "")
+                ts_ms = int(item.get("block_timestamp", 0) or item.get("block_ts", 0))
                 timestamp_s = ts_ms // 1000 if ts_ms > 1e11 else ts_ms
                 block_num = int(item.get("block", 0))
                 
-                # Approximate TRON bandwidth / energy fee in USD equivalent
+                # Default TRON energy fee ~13.5 TRX equivalent or from fee
                 fee_sun = float(item.get("fee", 0) or 0)
-                fee_trx = fee_sun / 1e6
+                fee_trx = (fee_sun / 1e6) if fee_sun > 0 else 13.5
 
                 if value_usdt > 0 and tx_hash:
                     wire = ForensicWire(
@@ -121,18 +126,18 @@ class TronFetcher:
         # Throttle live network request
         self._rate_limit_throttle()
 
-        # Tronscan TRC-20 endpoint
+        # Tronscan TRC-20 verified endpoint
         params = {
-            "relatedAddress": address,
+            "address": address,
             "trc20Id": contract,
             "limit": 50,
             "start": 0,
-            "direction": "1" # Outgoing
+            "direction": "1"  # Outgoing
         }
-        url = f"{self.base_url}/token_trc20/transfers?{urllib.parse.urlencode(params)}"
+        url = f"{self.base_url}/transfer/trc20?{urllib.parse.urlencode(params)}"
 
         headers = {
-            "User-Agent": "MHA-CyberCrime-Forensics/1.0",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) MHA-Forensics/1.0",
             "Accept": "application/json"
         }
         if self.api_key:
@@ -142,8 +147,8 @@ class TronFetcher:
             req = urllib.request.Request(url, headers=headers)
             with urllib.request.urlopen(req, timeout=12) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
-                # Tronscan returns list under 'token_transfers' or 'data'
-                result = data.get("token_transfers", []) or data.get("data", [])
+                # Tronscan returns list under 'data' or 'token_transfers'
+                result = data.get("data", []) or data.get("token_transfers", [])
                 if isinstance(result, list):
                     with open(cache_file, "w", encoding="utf-8") as f:
                         json.dump(result, f, indent=2)
@@ -153,3 +158,4 @@ class TronFetcher:
             pass
 
         return []
+

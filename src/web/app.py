@@ -33,8 +33,10 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Shared In-Memory Entities
+# Shared In-Memory Entities and Live Blockchain Fetchers
 entity_resolver = EntityResolver()
+etherscan_fetcher = EtherscanFetcher()
+tron_fetcher = TronFetcher()
 
 # Request Models
 class TraceRequest(BaseModel):
@@ -42,6 +44,7 @@ class TraceRequest(BaseModel):
     chain: str = "evm" # "evm" or "tron"
     stolen_amount: float = 50000.0
     token_symbol: str = "USDT"
+    mode: str = "auto" # "auto", "live", "benchmark"
 
 class NoticeRequest(BaseModel):
     ack_number: str = "NCRP/2026/881230"
@@ -72,6 +75,7 @@ async def health_check():
         "status": "HEALTHY",
         "engine": "H-BFSTP Forensic Graph Engine",
         "jurisdiction": "Ministry of Home Affairs (MHA) / I4C",
+        "live_connectors": ["Blockscout/Etherscan EVM", "Tronscan TRC-20"],
         "timestamp": int(time.time())
     }
 
@@ -80,48 +84,87 @@ async def health_check():
 async def execute_trace(req: TraceRequest):
     """
     Executes real-time priority graph traversal and returns Cytoscape elements and metrics.
+    Supports both live on-chain mainnet traversal and deterministic offline forensic benchmarks.
     """
     clean_addr = req.wallet_address.strip()
     if not clean_addr:
         raise HTTPException(status_code=400, detail="Wallet address cannot be empty.")
 
     canvas = WhiteboardCanvas(canvas_id=f"Case_{clean_addr[:8]}")
-    taint_engine = TaintEngine(model=TaintModel.HAIRCUT, min_taint_threshold=0.02)
-    search_engine = PrioritySearchEngine(canvas, taint_engine, entity_resolver)
+    taint_engine = TaintEngine(model=TaintModel.HAIRCUT, min_taint_threshold=0.01)
+    
+    # Configure search engine budget
+    search_cfg = SearchConfig(max_hops=4, max_nodes_budget=35, min_taint_ratio=0.01)
+    search_engine = PrioritySearchEngine(canvas, taint_engine, entity_resolver, config=search_cfg)
 
     canvas.set_incident_root(clean_addr, req.stolen_amount, int(time.time()) - 3600)
+    
+    # Determine network and format
+    is_tron = req.chain.lower() == "tron" or clean_addr.startswith("T")
+    chain_name = "TRON" if is_tron else "EVM"
+    
     logs: List[str] = [
-        f"Ingested reported scam wallet: {clean_addr}",
-        f"Chain selected: {req.chain.upper()} | Stolen principal: {req.stolen_amount:,.2f} {req.token_symbol}"
+        f"Ingested reported wallet: {clean_addr}",
+        f"Selected Network: {chain_name} | Reported Loss: {req.stolen_amount:,.2f} {req.token_symbol}"
     ]
 
-    # Graph Ingestion:
-    # If using test/demo addresses, load realistic topological scenarios
-    if req.chain.lower() == "tron" or clean_addr.startswith("T"):
-        binance_tron = "TPY9W8PnmgCJnUqUrYJ7p4G93F6r8eH1e6"
-        coindcx_tron = "TYDzsYUEpvnYmQk4zGP9sWWcTEd2MiAtW6"
-        mule1 = "TMuleTransit_Beta_481029"
-        mule2 = "TMuleTransit_Gamma_771928"
+    # Evaluate whether to trigger live on-chain ingestion
+    is_real_candidate = False
+    if is_tron and len(clean_addr) == 34 and clean_addr.startswith("T"):
+        is_real_candidate = True
+    elif (not is_tron) and len(clean_addr) == 42 and clean_addr.lower().startswith("0x"):
+        is_real_candidate = True
 
-        tron_mock_db = {
-            clean_addr.lower(): [
-                ForensicWire("0xtx_trc_1", clean_addr, mule1, req.stolen_amount * 0.6, token_symbol="USDT", token_type=TokenType.TRC20, gas_fee=13.5, timestamp=int(time.time()) - 3000),
-                ForensicWire("0xtx_trc_2", clean_addr, mule2, req.stolen_amount * 0.4, token_symbol="USDT", token_type=TokenType.TRC20, gas_fee=13.5, timestamp=int(time.time()) - 2800),
-            ],
-            mule1.lower(): [
-                ForensicWire("0xtx_trc_3", mule1, binance_tron, req.stolen_amount * 0.6, token_symbol="USDT", token_type=TokenType.TRC20, gas_fee=13.5, timestamp=int(time.time()) - 1500)
-            ],
-            mule2.lower(): [
-                ForensicWire("0xtx_trc_4", mule2, coindcx_tron, req.stolen_amount * 0.4, token_symbol="USDT", token_type=TokenType.TRC20, gas_fee=13.5, timestamp=int(time.time()) - 1200)
-            ]
-        }
-        fetcher = lambda a: tron_mock_db.get(a.lower(), [])
-        logs.append("Ingested TRON (TRC-20 USDT) multi-mule transit graph.")
-    else:
-        # EVM Multi-Hop Problem Statement Flow
-        mock_evm = MockFraudScenarioGenerator.generate_problem_statement_case()
-        fetcher = lambda a: mock_evm.get(a.lower(), [])
-        logs.append("Ingested EVM multi-hop structuring & peel-chain graph.")
+    should_try_live = (req.mode.lower() == "live") or (
+        req.mode.lower() == "auto" and is_real_candidate and not clean_addr.lower().startswith("0xscam")
+    )
+
+    is_live_traced = False
+    source_label = "Forensic Benchmark"
+
+    if should_try_live:
+        live_fetcher = tron_fetcher if is_tron else etherscan_fetcher
+        explorer_name = "Tronscan Mainnet" if is_tron else "Blockscout / EVM Explorer"
+        logs.append(f"[LIVE CONNECTOR] Interfacing with {explorer_name} RPC nodes...")
+
+        try:
+            raw_wires = live_fetcher.fetch_outgoing_transactions(clean_addr)
+            if raw_wires:
+                is_live_traced = True
+                source_label = f"Live Mainnet ({explorer_name})"
+                logs.append(f"[LIVE ON-CHAIN] Verified {len(raw_wires)} genuine outgoing transactions for root account.")
+                fetcher = lambda a: live_fetcher.fetch_outgoing_transactions(a)
+            else:
+                logs.append(f"[LIVE EXPLORER] Address has 0 outgoing transactions on record. Activating high-fidelity benchmark.")
+        except Exception as ex:
+            logs.append(f"[LIVE FAILOVER] Explorer communication error ({str(ex)}). Activating high-fidelity benchmark.")
+
+    if not is_live_traced:
+        # Load high-fidelity realistic benchmark scenario
+        if is_tron:
+            binance_tron = "TPY9W8PnmgCJnUqUrYJ7p4G93F6r8eH1e6"
+            coindcx_tron = "TYDzsYUEpvnYmQk4zGP9sWWcTEd2MiAtW6"
+            mule1 = "TMuleTransit_Beta_481029"
+            mule2 = "TMuleTransit_Gamma_771928"
+
+            tron_mock_db = {
+                clean_addr: [
+                    ForensicWire("0xtx_trc_1", clean_addr, mule1, req.stolen_amount * 0.6, token_symbol="USDT", token_type=TokenType.TRC20, gas_fee=13.5, timestamp=int(time.time()) - 3000),
+                    ForensicWire("0xtx_trc_2", clean_addr, mule2, req.stolen_amount * 0.4, token_symbol="USDT", token_type=TokenType.TRC20, gas_fee=13.5, timestamp=int(time.time()) - 2800),
+                ],
+                mule1: [
+                    ForensicWire("0xtx_trc_3", mule1, binance_tron, req.stolen_amount * 0.6, token_symbol="USDT", token_type=TokenType.TRC20, gas_fee=13.5, timestamp=int(time.time()) - 1500)
+                ],
+                mule2: [
+                    ForensicWire("0xtx_trc_4", mule2, coindcx_tron, req.stolen_amount * 0.4, token_symbol="USDT", token_type=TokenType.TRC20, gas_fee=13.5, timestamp=int(time.time()) - 1200)
+                ]
+            }
+            fetcher = lambda a: tron_mock_db.get(a if a.startswith("T") else a.lower(), [])
+            logs.append("Ingested TRON (TRC-20 USDT) multi-mule transit benchmark.")
+        else:
+            mock_evm = MockFraudScenarioGenerator.generate_problem_statement_case()
+            fetcher = lambda a: mock_evm.get(a.lower(), [])
+            logs.append("Ingested EVM multi-hop structuring & peel-chain benchmark.")
 
     # Execute Priority Best-First Search
     actionable_cex_nodes = search_engine.run_trace(fetcher)
@@ -159,7 +202,9 @@ async def execute_trace(req: TraceRequest):
 
     return {
         "success": True,
-        "chain": req.chain.upper(),
+        "chain": chain_name,
+        "is_live": is_live_traced,
+        "data_source": source_label,
         "stats": stats,
         "elements": elements,
         "actionable_cex": actionable_data,

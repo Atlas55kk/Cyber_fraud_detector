@@ -77,8 +77,8 @@ class TestTronForensics(unittest.TestCase):
         self.assertEqual(w.value, 25000.0)
         self.assertEqual(w.token_symbol, "USDT")
         self.assertEqual(w.token_type, TokenType.TRC20)
-        self.assertEqual(w.from_address, test_addr.lower())
-        self.assertEqual(w.to_address, "TMuleHop1_91823948120398410293847192".lower())
+        self.assertEqual(w.from_address, test_addr)
+        self.assertEqual(w.to_address, "TMuleHop1_91823948120398410293847192")
         self.assertEqual(w.gas_fee, 13.5)
 
     def test_end_to_end_tron_usdt_tracing(self):
@@ -109,7 +109,7 @@ class TestTronForensics(unittest.TestCase):
         actionable_cex_nodes = search_engine.run_trace(mock_fetcher)
 
         self.assertEqual(len(actionable_cex_nodes), 1)
-        self.assertEqual(actionable_cex_nodes[0].address, binance_tron.lower())
+        self.assertEqual(actionable_cex_nodes[0].address, binance_tron)
         self.assertIn("Binance", actionable_cex_nodes[0].entity_tag)
         self.assertEqual(actionable_cex_nodes[0].stolen_amount_held, 50000.0)
         self.assertEqual(actionable_cex_nodes[0].stolen_taint_ratio, 1.0)
