@@ -19,6 +19,7 @@ from src.core.wire_edge import ForensicWire
 from src.core.canvas import WhiteboardCanvas
 from src.core.taint_engine import TaintEngine
 from src.attribution.entity_resolver import EntityResolver
+from src.attribution.deposit_sweeper import DepositSweeper
 
 
 class SearchConfig:
@@ -65,6 +66,7 @@ class PrioritySearchEngine:
         self.taint_engine: TaintEngine = taint_engine
         self.entity_resolver: EntityResolver = entity_resolver
         self.config: SearchConfig = config or SearchConfig()
+        self.deposit_sweeper: DepositSweeper = DepositSweeper(self.entity_resolver)
 
     def compute_edge_priority(
         self,
@@ -195,6 +197,12 @@ class PrioritySearchEngine:
 
             # Fetch outgoing wires for current node
             outgoing_wires = fetch_outgoing_wires_func(current_addr)
+            
+            # Check for Exchange Deposit Sweeping Heuristic (Victor 2020)
+            sweep_result = self.deposit_sweeper.evaluate_node_for_sweep(curr_node, outgoing_wires)
+            if sweep_result and curr_node not in actionable_cex_found and curr_node.stolen_amount_held > 0:
+                actionable_cex_found.append(curr_node)
+
             for w in outgoing_wires:
                 if w.tx_hash in visited_wires:
                     continue
