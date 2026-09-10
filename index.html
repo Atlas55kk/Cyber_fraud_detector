@@ -215,28 +215,49 @@
 
     <!-- Control Bar -->
     <div class="control-bar">
-        <div class="input-group" style="flex:1;">
-            <label>Reported Scam Wallet Address</label>
-            <input type="text" id="wallet-input" class="input-box" value="0xwallet_s" placeholder="Enter 0x... (EVM) or T... (TRON) wallet address">
-        </div>
-        <div class="input-group" style="width:160px;">
-            <label>Network</label>
-            <select id="chain-select" class="input-box">
-                <option value="evm">Ethereum / EVM (USDT)</option>
-                <option value="tron">TRON (TRC-20 USDT)</option>
+        <div class="input-group" style="width:280px;">
+            <label>Case Study / Real Incident</label>
+            <select id="case-select" class="input-box" onchange="onCaseSelect(this.value)">
+                <option value="evm_ps_bench" selected>🎯 MHA PS 26183 Multi-Hop Structuring (Benchmark)</option>
+                <option value="tron_1930_bench">🚨 1930 NCRP TRON Syndicate (Benchmark)</option>
+                <option value="wazirx_live">🔥 WazirX $235M Hack (Ethereum Mainnet - Live)</option>
+                <option value="tron_active_live">⚡ TRON TRC-20 Active Flow (TRON Mainnet - Live)</option>
+                <option value="vitalik_live">🌐 Vitalik Buterin Wallet (Ethereum Mainnet - Live)</option>
+                <option value="custom">✏️ Custom Real Wallet Entry</option>
             </select>
         </div>
+        <div class="input-group" style="width:130px;">
+            <label>Ingestion Mode</label>
+            <select id="mode-select" class="input-box">
+                <option value="auto" selected>Auto-Detect</option>
+                <option value="live">Live Mainnet</option>
+                <option value="benchmark">Benchmark</option>
+            </select>
+        </div>
+        <div class="input-group" style="flex:1;">
+            <label>Target Wallet Address</label>
+            <input type="text" id="wallet-input" class="input-box" value="0xwallet_s" placeholder="Enter 0x... (EVM) or T... (TRON) wallet address">
+        </div>
         <div class="input-group" style="width:140px;">
-            <label>Stolen Amount ($)</label>
+            <label>Network</label>
+            <select id="chain-select" class="input-box">
+                <option value="evm" selected>Ethereum / EVM</option>
+                <option value="tron">TRON (TRC-20)</option>
+            </select>
+        </div>
+        <div class="input-group" style="width:120px;">
+            <label>Stolen Amount</label>
             <input type="number" id="amount-input" class="input-box" value="50000">
         </div>
-        <button class="btn-trace" onclick="triggerTrace()">⚡ Initiate Forensic Trace</button>
-        <button class="btn-preset" onclick="loadPreset('evm')">Load EVM Problem Case</button>
-        <button class="btn-preset" onclick="loadPreset('tron')">Load TRON 1930 Case</button>
+        <button class="btn-trace" onclick="triggerTrace()">⚡ Trace Funds</button>
     </div>
 
     <!-- KPI Dashboard Ribbon -->
     <div class="kpi-bar">
+        <div class="kpi-item">
+            <span class="kpi-val" id="kpi-source" style="font-size:13px; color:var(--accent-blue)">Ready</span>
+            <span class="kpi-lbl">Ingestion Pipeline</span>
+        </div>
         <div class="kpi-item">
             <span class="kpi-val" id="kpi-accounts">0</span>
             <span class="kpi-lbl">Tracked Accounts</span>
@@ -327,16 +348,53 @@
             drawer.scrollTop = drawer.scrollHeight;
         }
 
-        function loadPreset(chain) {
-            if (chain === 'evm') {
-                document.getElementById('wallet-input').value = '0xwallet_s';
-                document.getElementById('chain-select').value = 'evm';
-                document.getElementById('amount-input').value = '50000';
-            } else {
-                document.getElementById('wallet-input').value = 'TScamSyndicate_Alpha_910283';
-                document.getElementById('chain-select').value = 'tron';
-                document.getElementById('amount-input').value = '50000';
-            }
+        const PRESET_CASES = {
+            evm_ps_bench: {
+                wallet: '0xwallet_s',
+                chain: 'evm',
+                amount: 50000,
+                token: 'USDT',
+                mode: 'benchmark'
+            },
+            tron_1930_bench: {
+                wallet: 'TScamSyndicate_Alpha_910283',
+                chain: 'tron',
+                amount: 50000,
+                token: 'USDT',
+                mode: 'benchmark'
+            },
+            wazirx_live: {
+                wallet: '0x04b21735E93Fa3f8df70e2Da89e6922616891a88',
+                chain: 'evm',
+                amount: 5000,
+                token: 'ETH',
+                mode: 'live'
+            },
+            tron_active_live: {
+                wallet: 'TPzGi4Mp4u2jesy3LpHqEk396gjMmX5SvZ',
+                chain: 'tron',
+                amount: 50000,
+                token: 'USDT',
+                mode: 'live'
+            },
+            vitalik_live: {
+                wallet: '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
+                chain: 'evm',
+                amount: 1000,
+                token: 'ETH',
+                mode: 'live'
+            },
+            custom: null
+        };
+
+        function onCaseSelect(caseKey) {
+            const config = PRESET_CASES[caseKey];
+            if (!config) return; // Custom manual entry
+
+            document.getElementById('wallet-input').value = config.wallet;
+            document.getElementById('chain-select').value = config.chain;
+            document.getElementById('amount-input').value = config.amount;
+            document.getElementById('mode-select').value = config.mode;
             triggerTrace();
         }
 
@@ -344,13 +402,15 @@
             const wallet = document.getElementById('wallet-input').value.trim();
             const chain = document.getElementById('chain-select').value;
             const amount = parseFloat(document.getElementById('amount-input').value) || 50000.0;
+            const mode = document.getElementById('mode-select').value;
+            const tokenSymbol = (chain === 'evm' && wallet.startsWith('0x04b2')) ? 'ETH' : (chain === 'evm' && wallet.startsWith('0xd8da') ? 'ETH' : 'USDT');
 
             if (!wallet) {
                 alert("Please enter a wallet address.");
                 return;
             }
 
-            log(`Initiating priority graph search for ${wallet} on ${chain.toUpperCase()}...`);
+            log(`Initiating priority graph search for ${wallet} on ${chain.toUpperCase()} [Mode: ${mode.toUpperCase()}]...`);
 
             try {
                 const resp = await fetch('/api/trace', {
@@ -360,18 +420,27 @@
                         wallet_address: wallet,
                         chain: chain,
                         stolen_amount: amount,
-                        token_symbol: 'USDT'
+                        token_symbol: tokenSymbol,
+                        mode: mode
                     })
                 });
 
                 const data = await resp.json();
                 if (!data.success) {
-                    alert("Error: " + data.detail);
+                    alert("Error: " + (data.detail || "Trace execution failed"));
                     return;
                 }
 
                 lastTraceData = data;
                 data.logs.forEach(l => log(l));
+
+                // Update Ingestion Pipeline Badge
+                const srcEl = document.getElementById('kpi-source');
+                if (data.is_live) {
+                    srcEl.innerHTML = `<span style="color:#2ea043; font-weight:bold;">🟢 ${data.data_source}</span>`;
+                } else {
+                    srcEl.innerHTML = `<span style="color:#bc8cff; font-weight:bold;">🟣 ${data.data_source}</span>`;
+                }
 
                 // Update KPIs
                 document.getElementById('kpi-accounts').innerText = data.stats.total_accounts_tracked;
