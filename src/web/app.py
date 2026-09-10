@@ -57,6 +57,7 @@ class NoticeRequest(BaseModel):
     loss_inr: float = 4250000.0
     loss_crypto_str: str = "50,000 USDT"
     target_address: str
+    practice_mode: bool = True # Defaults to True for safe practice/sandbox
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -232,23 +233,25 @@ async def execute_trace(req: TraceRequest):
 async def create_legal_notice(req: NoticeRequest):
     """
     Generates statutory Section 94 BNSS (Sec 91 CrPC) requisition notice.
+    Supports Practice/Simulation mode with forensic reasoning disclaimers.
     """
-    clean_target = req.target_address.lower()
+    clean_target = WhiteboardCanvas.normalize_address(req.target_address)
     
     # Reconstruct canvas state for notice
     canvas = WhiteboardCanvas(canvas_id="Notice_Reconstruction")
     canvas.set_incident_root("0xscammer_wallet", 50000.0, int(time.time()) - 3600)
     
+    entity_info = entity_resolver.resolve(clean_target)
+    entity_name = entity_info.name if entity_info else "Identified Centralized Exchange Target"
+
     # Target node
     target_node = canvas.get_or_create_node(
         address=clean_target,
         role=NodeRole.CEX_DEPOSIT,
         stolen_held=20000.0,
         stolen_taint=1.0,
-        entity_tag="Binance: Hot/Deposit Proxy"
+        entity_tag=entity_name
     )
-    
-    entity_info = entity_resolver.resolve(clean_target)
     
     # Wire sequence
     canvas.add_wire("0xtx_hop_1", "0xscammer_wallet", "0xmule_1", 20000.0, timestamp=int(time.time()) - 3000)
@@ -265,9 +268,38 @@ async def create_legal_notice(req: NoticeRequest):
         loss_crypto_str=req.loss_crypto_str
     )
 
-    notice_text = dossier_gen.generate_section_94_bnss_notice(case, target_node, entity_info)
+    base_notice = dossier_gen.generate_section_94_bnss_notice(case, target_node, entity_info)
+
+    if req.practice_mode:
+        disclaimer_header = (
+            "================================================================================\n"
+            "  [TRAINING & PRACTICE SIMULATION ONLY — NOT AN OFFICIAL NOTICE]  \n"
+            "SIMULATION MODE IS ACTIVE. THIS DOCUMENT IS A DRY-RUN FORENSIC DRAFT.\n"
+            "DO NOT SERVE OR TRANSMIT TO COMPLIANCE DESK / NODAL OFFICER.\n"
+            "================================================================================\n\n"
+        )
+        logic_explanation = (
+            "\n\n"
+            "================================================================================\n"
+            "  FORENSIC LOGIC BREAKDOWN (WHY THIS BRANCH WAS SELECTED FOR FREEZE)\n"
+            "================================================================================\n"
+            f"1. Target Entity: {entity_name}\n"
+            f"2. Target Address: {clean_target}\n"
+            "3. Address Role: User Deposit Proxy (Victor 2020 on-demand sweep heuristic)\n"
+            "4. Taint Level: 100% Proportional Haircut taint mapped to crime root\n"
+            "5. Evidence Integrity: Unbroken 2-hop cryptographic ledger trail\n"
+            "6. Practice Objective: Validate the mathematical trail and KYC requirements\n"
+            "   without triggering real-world statutory dispatch.\n"
+            "================================================================================"
+        )
+        final_notice = disclaimer_header + base_notice + logic_explanation
+    else:
+        final_notice = base_notice
+
     return {
         "success": True,
+        "practice_mode": req.practice_mode,
         "target_address": clean_target,
-        "notice_text": notice_text
+        "entity_name": entity_name,
+        "notice_text": final_notice
     }
