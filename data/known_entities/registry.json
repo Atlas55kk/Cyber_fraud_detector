@@ -10,7 +10,10 @@
         "0x21a31ee1afc51d94c2efccaa2092ad1028285549",
         "0xdfd5293d8e347dfee59e53b210928e3ee0a149b8",
         "0x56eddb7aa87536c09ccc2793473599fd21a8b17f",
-        "0x9696e59e3d07ee947badb9d8ca41334c4f039a04"
+        "0x9696e59e3d07ee947badb9d8ca41334c4f039a04",
+        "TPY9W8PnmgCJnUqUrYJ7p4G93F6r8eH1e6",
+        "TJDnQoxM2w8BsukZuv41RLNttb4kYtqJ8n",
+        "TAUN6FwrnwwmaEqYcckffC7wYdwm45a5Jg"
       ]
     },
     {
@@ -20,7 +23,8 @@
       "fiu_registered": true,
       "hot_wallets": [
         "0x4a4754593444053896fa231b1e93c1ef7e068777",
-        "0x18e8a71c8288597bf68e4bf79efc7ce9fb7b6592"
+        "0x18e8a71c8288597bf68e4bf79efc7ce9fb7b6592",
+        "TYDzsYUEpvnYmQk4zGP9sWWcTEd2MiAtW6"
       ]
     },
     {
@@ -30,7 +34,8 @@
       "fiu_registered": true,
       "hot_wallets": [
         "0x5bdf85216ec1e38d6458c870992a69e38e03f7ef",
-        "0x1150e4177d0a29486c4293f0b2ceb286c4767115"
+        "0x1150e4177d0a29486c4293f0b2ceb286c4767115",
+        "TLyBzAU5kZ7XnZ98M1v3E6VwB8kL5yA4z1"
       ]
     },
     {
@@ -40,7 +45,8 @@
       "fiu_registered": false,
       "hot_wallets": [
         "0x6cc5f688a315f3dc28a7781717a9a798a59fda7b",
-        "0xa7efae728d2936e78bda97dc267687568dd593f3"
+        "0xa7efae728d2936e78bda97dc267687568dd593f3",
+        "TFFv9F6m4vY891jF1N5vX8L1zK9J2b7Ye4"
       ]
     },
     {
@@ -79,6 +85,10 @@
     {
       "name": "PancakeSwap: Router V2",
       "address": "0x10ed43c718714eb63d5aa57b78b54704e256024e"
+    },
+    {
+      "name": "SunSwap: V2 Router (TRON)",
+      "address": "TKzxdSv2FZKQrEqkKVgp5DcwEXBEKMg2Ax"
     }
   ],
   "mixers": [

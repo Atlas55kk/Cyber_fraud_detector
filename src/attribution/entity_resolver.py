@@ -101,43 +101,53 @@ class EntityResolver:
                     is_actionable_freeze_target=True
                 )
                 self.address_map[clean_hw] = info
+                self.address_map[hw] = info
                 self.exchange_hot_wallets[clean_hw] = name
 
         # 2. DEX Routers
         for dex in data.get("dex_routers", []):
-            clean_addr = dex["address"].lower()
-            self.address_map[clean_addr] = EntityInfo(
+            addr = dex["address"]
+            clean_addr = addr.lower()
+            info = EntityInfo(
                 name=dex["name"],
                 category="DEX_ROUTER",
                 node_role=NodeRole.DEX_ROUTER,
                 is_actionable_freeze_target=False
             )
+            self.address_map[clean_addr] = info
+            self.address_map[addr] = info
 
         # 3. Mixers
         for mix in data.get("mixers", []):
-            clean_addr = mix["address"].lower()
-            self.address_map[clean_addr] = EntityInfo(
+            addr = mix["address"]
+            clean_addr = addr.lower()
+            info = EntityInfo(
                 name=mix["name"],
                 category="PRIVACY_MIXER",
                 node_role=NodeRole.MIXER_POOL,
                 is_actionable_freeze_target=False
             )
+            self.address_map[clean_addr] = info
+            self.address_map[addr] = info
 
         # 4. Bridges
         for br in data.get("bridges", []):
-            clean_addr = br["address"].lower()
-            self.address_map[clean_addr] = EntityInfo(
+            addr = br["address"]
+            clean_addr = addr.lower()
+            info = EntityInfo(
                 name=br["name"],
                 category="CROSS_CHAIN_BRIDGE",
                 node_role=NodeRole.BRIDGE_CONTRACT,
                 is_actionable_freeze_target=False
             )
+            self.address_map[clean_addr] = info
+            self.address_map[addr] = info
 
     def resolve(self, address: str) -> Optional[EntityInfo]:
         """
-        Looks up an address in the verified registry.
+        Looks up an address in the verified registry (checking both exact and lowercase).
         """
-        return self.address_map.get(address.lower())
+        return self.address_map.get(address) or self.address_map.get(address.lower())
 
     def register_custom_deposit(
         self,

@@ -1,0 +1,78 @@
+================================================================================
+OFFICE OF THE INVESTIGATING OFFICER, CYBER CRIME POLICE
+GOVERNMENT OF INDIA / STATE POLICE
+================================================================================
+
+LEGAL REQUISITION NOTICE UNDER SECTION 94 OF BHARATIYA NAGARIK SURAKSHA SANHITA (BNSS), 2023
+(FORMERLY SECTION 91 OF CODE OF CRIMINAL PROCEDURE, 1973 - CrPC)
+
+To:
+The Nodal Officer / Compliance Desk
+Binance: Hot Wallet
+Email: compliance@binance.com
+
+Date & Time of Requisition: 10-September-2026 16:39:48 IST
+Subject: IMMEDIATE FREEZE ORDER & INFORMATION REQUISITION REGARDING ILLICIT CRYPTOCURRENCY ASSETS
+
+Reference:
+- National Cyber Crime Reporting Portal (NCRP) Ack No: NCRP/2026/881230
+- Police Station Case / FIR No: FIR 109/2026 (Cyber Crime PS)
+- Police Station: Cyber Crime Police Station, Central District
+- Investigating Officer: Inspector R. K. Sharma
+
+--------------------------------------------------------------------------------
+1. STATUTORY NOTICE & OPERATIVE INSTRUCTION
+--------------------------------------------------------------------------------
+WHEREAS, the undersigned Investigating Officer is inquiring into a cognizable offense 
+involving online financial fraud under the Bharatiya Nyaya Sanhita (BNS) and Information 
+Technology Act, 2000, wherein stolen funds amounting to INR 4,250,000.00 (50,000 USDT (EVM)) 
+were siphoned from the victim (Shri Rajesh Kumar).
+
+NOW THEREFORE, in exercise of powers conferred under Section 94 of BNSS, 2023 (Section 91 CrPC), 
+YOU ARE HEREBY DIRECTED TO:
+
+1. IMMEDIATELY FREEZE / PLACE A RESTRICTIVE LIEN on the below-identified deposit account/wallet 
+   and all associated fiat/crypto balances:
+   TARGET DEPOSIT ADDRESS: `0x28c6c06298d514db089934071355e5743bf21d60`
+   IDENTIFIED STOLEN VALUE HELD: 20,000.00 USDT
+   CALCULATED TAINT PROPORTION: 100.0%
+
+2. PREVENT ANY WITHDRAWAL, P2P TRADING, OR INTERNAL TRANSFER from the user account 
+   associated with this deposit address with immediate effect.
+
+3. FURNISH THE COMPLETE KYC DOSSIER of the account holder within 24 hours:
+   a) Full Legal Name, Registered Mobile Number, and Email Address.
+   b) Government ID Document copies (Passport, Aadhaar, PAN, or National ID).
+   c) Associated Bank Account details used for P2P/fiat deposits or withdrawals.
+   d) Complete IP login logs (with timestamps and port numbers).
+
+--------------------------------------------------------------------------------
+2. DETERMINISTIC CHAIN OF CUSTODY (BLOCKCHAIN EVIDENCE TRAIL)
+--------------------------------------------------------------------------------
+The flow of stolen assets from the crime origin to your exchange deposit endpoint 
+was deterministically reconstructed and verified via conservation-of-mass taint analysis:
+
+- Crime Origin Wallet: `0xwallet_s`
+- Total Stolen Ingress: 50,000.00 USDT
+- Total Hops to Cash-Out: 3
+
+| Step | Sender Address | Receiver Address | Value | Transaction Hash | Timestamp |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| Hop 1 | `0xwallet_s...` | `0xwallet_b...` | 20000.00 USDT | `0xtx_s_b` | 1789035048 |
+| Hop 2 | `0xwallet_b...` | `0xwallet_d...` | 20000.00 USDT | `0xtx_b_d` | 1789035288 |
+| Hop 3 | `0xwallet_d...` | `0x28c6c062...` | 20000.00 USDT | `0xtx_d_binance` | 1789035588 |
+
+--------------------------------------------------------------------------------
+3. LEGAL PENALTY CLAUSE
+--------------------------------------------------------------------------------
+Failure to comply with this statutory requisition or any willful dissipation of the 
+subject assets after receipt of this notice shall attract penal action under Section 
+223 (Disobedience to order duly promulgated by public servant) and Section 249 of the 
+Bharatiya Nyaya Sanhita, 2023.
+
+Issued under my Hand and Seal of the Cyber Crime Police Station.
+
+(Investigating Officer)
+Inspector R. K. Sharma
+Cyber Crime Police Station, Central District
+================================================================================
