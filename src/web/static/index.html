@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Fraud Tracing Engine | Ministry of Home Affairs (MHA / I4C)</title>
+    <!-- Cytoscape for Graph Visualization -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dagre/0.8.5/dagre.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/cytoscape-dagre@2.5.0/cytoscape-dagre.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #090d13;
+            --panel-bg: #121820;
+            --card-bg: #1a222d;
+            --border: #263242;
+            --text-main: #e6edf3;
+            --text-muted: #8b949e;
+            --accent-blue: #58a6ff;
+            --accent-green: #2ea043;
+            --accent-red: #f85149;
+            --accent-orange: #d29922;
+            --accent-purple: #bc8cff;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace; }
+        body { background: var(--bg-dark); color: var(--text-main); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+        /* Top Header */
+        header {
+            background: var(--panel-bg);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .brand { display: flex; align-items: center; gap: 14px; }
+        .badge-gov { background: #1f6feb; color: white; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; letter-spacing: 0.5px; }
+        .badge-sih { background: #238636; color: white; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+        
+        /* Control Bar */
+        .control-bar {
+            background: #0f141c;
+            border-bottom: 1px solid var(--border);
+            padding: 12px 24px;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .input-group { display: flex; flex-direction: column; gap: 4px; }
+        .input-group label { font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
+        .input-box {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            outline: none;
+        }
+        .input-box:focus { border-color: var(--accent-blue); }
+        .btn-trace {
+            background: #238636;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            height: 38px;
+            margin-top: 18px;
+            transition: background 0.2s;
+        }
+        .btn-trace:hover { background: #2ea043; }
+        .btn-preset {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            margin-top: 18px;
+        }
+        .btn-preset:hover { color: var(--text-main); border-color: var(--accent-blue); }
+
+        /* KPI Dashboard Bar */
+        .kpi-bar {
+            background: var(--panel-bg);
+            border-bottom: 1px solid var(--border);
+            padding: 8px 24px;
+            display: flex;
+            gap: 30px;
+        }
+        .kpi-item { display: flex; flex-direction: column; }
+        .kpi-val { font-size: 16px; font-weight: bold; color: var(--accent-blue); }
+        .kpi-lbl { font-size: 11px; color: var(--text-muted); }
+
+        /* Main Viewport Layout */
+        #main-viewport { display: flex; flex: 1; position: relative; overflow: hidden; }
+        #cy { flex: 1; height: 100%; background: #090d13; }
+
+        /* Sidebar Panel */
+        #sidebar {
+            width: 380px;
+            background: var(--panel-bg);
+            border-left: 1px solid var(--border);
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            overflow-y: auto;
+        }
+        .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 14px; }
+        .card h3 { font-size: 13px; color: var(--accent-blue); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .field { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 12px; }
+        .field-lbl { color: var(--text-muted); }
+        .field-val { font-weight: 600; text-align: right; word-break: break-all; max-width: 220px; }
+        
+        .btn-notice {
+            background: #1f6feb;
+            color: white;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 12px;
+            width: 100%;
+            text-align: center;
+            margin-top: 8px;
+        }
+        .btn-notice:hover { background: #388bfd; }
+
+        /* Bottom Console Log */
+        #log-drawer {
+            height: 120px;
+            background: #0d1117;
+            border-top: 1px solid var(--border);
+            padding: 8px 16px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 11px;
+            color: #7ee787;
+        }
+        .log-entry { margin-bottom: 4px; }
+        .log-time { color: var(--text-muted); margin-right: 8px; }
+
+        /* Modal for Notice */
+        #notice-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.75);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            width: 750px;
+            max-height: 85vh;
+            border-radius: 8px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .modal-body {
+            background: var(--card-bg);
+            padding: 16px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 11px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            color: var(--text-main);
+            flex: 1;
+            max-height: 55vh;
+        }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
+        .btn-close { background: #30363d; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; }
+        .btn-copy { background: #238636; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; }
+
+        /* Legend */
+        .legend-bar { display: flex; gap: 16px; font-size: 11px; margin-top: 4px; }
+        .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+    </style>
+</head>
+<body>
+    <!-- Top Header -->
+    <header>
+        <div class="brand">
+            <span class="badge-gov">GOVT OF INDIA</span>
+            <span class="badge-sih">SIH PS 26183</span>
+            <h2 style="font-size:16px;">Crypto Fraud Tracing Engine (I4C / MHA)</h2>
+            <div class="legend-bar">
+                <span><span class="dot" style="background:var(--accent-red)"></span> Crime Root</span>
+                <span><span class="dot" style="background:var(--accent-orange)"></span> Mule Transit</span>
+                <span><span class="dot" style="background:var(--accent-green)"></span> Actionable CEX Off-Ramp</span>
+            </div>
+        </div>
+        <div style="font-size:12px; color:var(--text-muted);">
+            Active Standard: <strong style="color:var(--text-main);">Section 94 BNSS / 91 CrPC</strong>
+        </div>
+    </header>
+
+    <!-- Control Bar -->
+    <div class="control-bar">
+        <div class="input-group" style="flex:1;">
+            <label>Reported Scam Wallet Address</label>
+            <input type="text" id="wallet-input" class="input-box" value="0xwallet_s" placeholder="Enter 0x... (EVM) or T... (TRON) wallet address">
+        </div>
+        <div class="input-group" style="width:160px;">
+            <label>Network</label>
+            <select id="chain-select" class="input-box">
+                <option value="evm">Ethereum / EVM (USDT)</option>
+                <option value="tron">TRON (TRC-20 USDT)</option>
+            </select>
+        </div>
+        <div class="input-group" style="width:140px;">
+            <label>Stolen Amount ($)</label>
+            <input type="number" id="amount-input" class="input-box" value="50000">
+        </div>
+        <button class="btn-trace" onclick="triggerTrace()">⚡ Initiate Forensic Trace</button>
+        <button class="btn-preset" onclick="loadPreset('evm')">Load EVM Problem Case</button>
+        <button class="btn-preset" onclick="loadPreset('tron')">Load TRON 1930 Case</button>
+    </div>
+
+    <!-- KPI Dashboard Ribbon -->
+    <div class="kpi-bar">
+        <div class="kpi-item">
+            <span class="kpi-val" id="kpi-accounts">0</span>
+            <span class="kpi-lbl">Tracked Accounts</span>
+        </div>
+        <div class="kpi-item">
+            <span class="kpi-val" id="kpi-wires">0</span>
+            <span class="kpi-lbl">Transaction Wires</span>
+        </div>
+        <div class="kpi-item">
+            <span class="kpi-val" id="kpi-located" style="color:var(--accent-green)">$0.00</span>
+            <span class="kpi-lbl">Located at CEXs</span>
+        </div>
+        <div class="kpi-item">
+            <span class="kpi-val" id="kpi-recovery" style="color:var(--accent-blue)">0%</span>
+            <span class="kpi-lbl">Recovery Potential</span>
+        </div>
+        <div class="kpi-item">
+            <span class="kpi-val" id="kpi-sinks" style="color:var(--accent-orange)">0</span>
+            <span class="kpi-lbl">Actionable Freeze Targets</span>
+        </div>
+    </div>
+
+    <!-- Main Viewport -->
+    <div id="main-viewport">
+        <div id="cy"></div>
+
+        <!-- Sidebar -->
+        <div id="sidebar">
+            <div class="card">
+                <h3>Selected Forensic Node</h3>
+                <p id="no-select-hint" style="font-size:12px; color:var(--text-muted);">Click on any wallet box or wire on the canvas to inspect evidence.</p>
+                <div id="node-details" style="display:none;">
+                    <div class="field"><span class="field-lbl">Address:</span><span class="field-val" id="side-addr"></span></div>
+                    <div class="field"><span class="field-lbl">Role:</span><span class="field-val" id="side-role"></span></div>
+                    <div class="field"><span class="field-lbl">Entity:</span><span class="field-val" id="side-entity"></span></div>
+                    <div class="field"><span class="field-lbl">Stolen Taint:</span><span class="field-val" id="side-taint"></span></div>
+                    <div class="field"><span class="field-lbl">Held Value:</span><span class="field-val" id="side-held"></span></div>
+                    <div class="field"><span class="field-lbl">Gas Burned:</span><span class="field-val" id="side-gas"></span></div>
+                </div>
+            </div>
+
+            <div class="card" id="actionable-card">
+                <h3>Actionable Freeze Off-Ramps</h3>
+                <div id="actionable-list" style="display:flex; flex-direction:column; gap:8px;">
+                    <span style="font-size:12px; color:var(--text-muted);">Run trace to locate exchange targets.</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Statutory Notice Dispatch</h3>
+                <p style="font-size:11px; color:var(--text-muted); margin-bottom:8px;">Generate pre-formatted legal requisition under Section 94 BNSS ready for Binance, CoinDCX, or WazirX compliance desks.</p>
+                <button class="btn-notice" onclick="generateNoticeModal()">📄 Generate Section 94 BNSS Notice</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Log Drawer -->
+    <div id="log-drawer">
+        <div class="log-entry"><span class="log-time">[SYSTEM]</span> Engine ready. Enter reported scam wallet and click "Initiate Forensic Trace".</div>
+    </div>
+
+    <!-- Notice Modal -->
+    <div id="notice-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 style="font-size:14px; color:var(--accent-blue);">LEGAL REQUISITION NOTICE (SECTION 94 BNSS / 91 CrPC)</h3>
+                <span style="font-size:18px; cursor:pointer;" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body" id="notice-body">Generating notice...</div>
+            <div class="modal-actions">
+                <button class="btn-close" onclick="closeModal()">Close</button>
+                <button class="btn-copy" onclick="copyNotice()">📋 Copy Notice</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let cyInstance = null;
+        let lastTraceData = null;
+
+        function log(msg) {
+            const drawer = document.getElementById('log-drawer');
+            const time = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<span class="log-time">[${time}]</span> ${msg}`;
+            drawer.appendChild(entry);
+            drawer.scrollTop = drawer.scrollHeight;
+        }
+
+        function loadPreset(chain) {
+            if (chain === 'evm') {
+                document.getElementById('wallet-input').value = '0xwallet_s';
+                document.getElementById('chain-select').value = 'evm';
+                document.getElementById('amount-input').value = '50000';
+            } else {
+                document.getElementById('wallet-input').value = 'TScamSyndicate_Alpha_910283';
+                document.getElementById('chain-select').value = 'tron';
+                document.getElementById('amount-input').value = '50000';
+            }
+            triggerTrace();
+        }
+
+        async function triggerTrace() {
+            const wallet = document.getElementById('wallet-input').value.trim();
+            const chain = document.getElementById('chain-select').value;
+            const amount = parseFloat(document.getElementById('amount-input').value) || 50000.0;
+
+            if (!wallet) {
+                alert("Please enter a wallet address.");
+                return;
+            }
+
+            log(`Initiating priority graph search for ${wallet} on ${chain.toUpperCase()}...`);
+
+            try {
+                const resp = await fetch('/api/trace', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        wallet_address: wallet,
+                        chain: chain,
+                        stolen_amount: amount,
+                        token_symbol: 'USDT'
+                    })
+                });
+
+                const data = await resp.json();
+                if (!data.success) {
+                    alert("Error: " + data.detail);
+                    return;
+                }
+
+                lastTraceData = data;
+                data.logs.forEach(l => log(l));
+
+                // Update KPIs
+                document.getElementById('kpi-accounts').innerText = data.stats.total_accounts_tracked;
+                document.getElementById('kpi-wires').innerText = data.stats.total_transactions_tracked;
+                document.getElementById('kpi-located').innerText = '$' + Number(data.stats.total_funds_at_exchanges).toLocaleString();
+                document.getElementById('kpi-recovery').innerText = data.stats.recovery_potential_pct + '%';
+                document.getElementById('kpi-sinks').innerText = data.actionable_cex.length;
+
+                // Update Actionable Off-Ramps list
+                const list = document.getElementById('actionable-list');
+                list.innerHTML = '';
+                if (data.actionable_cex.length === 0) {
+                    list.innerHTML = '<span style="font-size:12px; color:var(--text-muted);">No exchange endpoints located yet.</span>';
+                } else {
+                    data.actionable_cex.forEach((node, idx) => {
+                        const item = document.createElement('div');
+                        item.style = 'background:#161c24; padding:8px; border-radius:4px; border-left:3px solid var(--accent-green);';
+                        item.innerHTML = `
+                            <div style="font-weight:bold; font-size:12px; color:var(--accent-green);">${node.entity_tag}</div>
+                            <div style="font-size:11px; color:var(--text-muted);">${node.address.substring(0, 16)}...</div>
+                            <div style="font-size:11px; margin-top:2px;">Stolen Held: <strong>$${Number(node.stolen_held).toLocaleString()}</strong> (${node.taint_pct}% taint)</div>
+                        `;
+                        list.appendChild(item);
+                    });
+                }
+
+                // Render Cytoscape Canvas
+                renderGraph(data.elements);
+
+            } catch (err) {
+                log(`Error executing trace: ${err.message}`);
+            }
+        }
+
+        function renderGraph(elements) {
+            cyInstance = cytoscape({
+                container: document.getElementById('cy'),
+                elements: elements,
+                style: [
+                    {
+                        selector: 'node',
+                        style: {
+                            'background-color': function(ele) {
+                                const role = ele.data('role');
+                                if (role === 'SCAMMER' || role === 'VICTIM') return '#f85149';
+                                if (role === 'CEX_DEPOSIT') return '#2ea043';
+                                if (role === 'MIXER_POOL') return '#bc8cff';
+                                return '#d29922';
+                            },
+                            'label': 'data(label)',
+                            'color': '#ffffff',
+                            'font-size': '11px',
+                            'text-valign': 'bottom',
+                            'text-margin-y': 6,
+                            'width': 40,
+                            'height': 40,
+                            'border-width': 2,
+                            'border-color': '#ffffff'
+                        }
+                    },
+                    {
+                        selector: 'edge',
+                        style: {
+                            'width': 2,
+                            'line-color': '#58a6ff',
+                            'target-arrow-color': '#58a6ff',
+                            'target-arrow-shape': 'triangle',
+                            'curve-style': 'bezier',
+                            'label': 'data(label)',
+                            'font-size': '9px',
+                            'color': '#8b949e',
+                            'text-rotation': 'autorotate'
+                        }
+                    }
+                ],
+                layout: {
+                    name: 'breadthfirst',
+                    directed: true,
+                    padding: 40,
+                    spacingFactor: 1.5
+                }
+            });
+
+            cyInstance.on('tap', 'node', function(evt) {
+                const node = evt.target;
+                document.getElementById('no-select-hint').style.display = 'none';
+                document.getElementById('node-details').style.display = 'block';
+
+                document.getElementById('side-addr').innerText = node.data('address');
+                document.getElementById('side-role').innerText = node.data('role');
+                document.getElementById('side-entity').innerText = node.data('label');
+                document.getElementById('side-taint').innerText = node.data('taint_pct') + '%';
+                document.getElementById('side-held').innerText = '$' + Number(node.data('held_amount')).toLocaleString();
+                document.getElementById('side-gas').innerText = node.data('gas_burned') + ' Gas';
+            });
+        }
+
+        async function generateNoticeModal() {
+            if (!lastTraceData || lastTraceData.actionable_cex.length === 0) {
+                alert("Please run a trace that locates an exchange off-ramp first!");
+                return;
+            }
+
+            const targetAddr = lastTraceData.actionable_cex[0].address;
+            const modal = document.getElementById('notice-modal');
+            modal.style.display = 'flex';
+            document.getElementById('notice-body').innerText = 'Drafting statutory Section 94 BNSS requisition...';
+
+            try {
+                const resp = await fetch('/api/generate_notice', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        target_address: targetAddr
+                    })
+                });
+                const data = await resp.json();
+                document.getElementById('notice-body').innerText = data.notice_text;
+            } catch (err) {
+                document.getElementById('notice-body').innerText = 'Error generating notice: ' + err.message;
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('notice-modal').style.display = 'none';
+        }
+
+        function copyNotice() {
+            const text = document.getElementById('notice-body').innerText;
+            navigator.clipboard.writeText(text);
+            alert("Section 94 BNSS Requisition copied to clipboard!");
+        }
+
+        // Auto-run default EVM trace on load
+        window.onload = function() {
+            triggerTrace();
+        };
+    </script>
+</body>
+</html>

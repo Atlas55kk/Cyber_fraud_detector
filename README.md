@@ -79,27 +79,32 @@ This engine implements a **5-Layer Forensic Graph Architecture**:
 ```bash
 git clone https://github.com/Atlas55kk/Cyber_fraud_detector.git
 cd Cyber_fraud_detector
-pip install numpy
+pip install numpy fastapi uvicorn
 ```
 
-### Run the Forensic Tracing Demo
+### Launch the Live Interactive Web Portal
 ```bash
-python main.py
+python server.py
 ```
-**Output:**
-- Executes heuristic trace on the SIH Problem Statement money flow.
-- Identifies Binance & CoinDCX deposit off-ramps ($35,000 USDT recovered, 70% recovery rate).
-- Generates `reports/SECTION_94_BNSS_FREEZE_NOTICE_BINANCE.txt`.
-- Generates `whiteboard.html` (interactive forensic canvas).
+Open **`http://localhost:8000`** in any web browser to access the live forensic command center with interactive graph visualization, live typewriter logs, and one-click Section 94 BNSS notice export.
 
-### Open the Interactive Whiteboard
-Double-click `whiteboard.html` or open it in any web browser to explore the node cards, wire connections, taint percentages, and gas fees.
+### Run the Multi-Chain Forensic CLI Demo
+```bash
+# Trace both EVM and TRON incidents simultaneously
+python main.py --chain both
 
-### Run the Unit & Integration Test Suite
+# Trace only TRON (TRC-20 USDT) incidents (Primary Indian Cybercrime Vector)
+python main.py --chain tron
+
+# Trace only Ethereum / EVM incidents
+python main.py --chain evm
+```
+
+### Run the Complete Test Suite
 ```bash
 python -m unittest discover tests
 ```
-*All 12 unit and integration tests execute in <0.01 seconds.*
+*All 26 unit and integration tests execute in <0.05 seconds.*
 
 ---
 
