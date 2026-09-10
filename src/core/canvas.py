@@ -158,19 +158,22 @@ class WhiteboardCanvas:
             if node.role == NodeRole.CEX_DEPOSIT and node.stolen_amount_held > 0
         ]
 
-    def trace_paths_to_address(self, target_address: str) -> List[List[str]]:
+    def trace_paths_to_address(self, target_address: str, max_depth: int = 12, max_paths: int = 50) -> List[List[str]]:
         """
         Returns all transaction paths (sequences of tx_hashes) leading from the
-        incident root to the target address.
+        incident root to the target address with depth and combinatorial guards.
         """
         if not self.incident_root_address:
             return []
 
-        target = target_address.lower()
+        target = self.normalize_address(target_address)
         root = self.incident_root_address
         all_paths: List[List[str]] = []
 
         def dfs(current_addr: str, current_path: List[str], visited: Set[str]):
+            if len(all_paths) >= max_paths or len(current_path) > max_depth:
+                return
+
             if current_addr == target and current_path:
                 all_paths.append(list(current_path))
                 return

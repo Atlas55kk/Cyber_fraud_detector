@@ -7,6 +7,8 @@ statutory notice generation, and interactive frontend serving.
 
 import os
 import time
+import math
+import re
 from typing import Dict, Any, List, Optional
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -89,6 +91,20 @@ async def execute_trace(req: TraceRequest):
     clean_addr = req.wallet_address.strip()
     if not clean_addr:
         raise HTTPException(status_code=400, detail="Wallet address cannot be empty.")
+
+    # Security Guard: Prevent string bombs, XSS, and command injection
+    if len(clean_addr) > 128 or not re.match(r"^[a-zA-Z0-9_]{1,128}$", clean_addr):
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid wallet address format. Must be alphanumeric or standard identifier up to 128 characters."
+        )
+
+    # Numeric Boundary Guard: Positive finite amount
+    if not math.isfinite(req.stolen_amount) or req.stolen_amount <= 0 or req.stolen_amount > 1e12:
+        raise HTTPException(
+            status_code=400,
+            detail="Stolen amount must be a positive finite numeric value."
+        )
 
     canvas = WhiteboardCanvas(canvas_id=f"Case_{clean_addr[:8]}")
     taint_engine = TaintEngine(model=TaintModel.HAIRCUT, min_taint_threshold=0.01)

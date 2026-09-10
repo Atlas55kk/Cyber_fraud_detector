@@ -40,8 +40,9 @@ class EtherscanFetcher:
         self.min_delay_seconds = 0.25 # Safe throttling under API limits
 
     def _get_cache_path(self, address: str, action: str) -> str:
-        clean = address.lower()
-        return os.path.join(self.cache_dir, f"{clean}_{action}.json")
+        safe_addr = "".join(c for c in address if c.isalnum())[:66]
+        safe_action = "".join(c for c in action if c.isalnum())[:20]
+        return os.path.join(self.cache_dir, f"{safe_addr}_{safe_action}.json")
 
     def _rate_limit_throttle(self) -> None:
         elapsed = time.time() - self.last_call_time
