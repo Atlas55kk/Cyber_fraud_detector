@@ -1,5 +1,5 @@
 /* ==============================================================================
-   LAYOUT.CSS - Forensic Dashboard Viewport, Grid, and Panel Architecture
+   LAYOUT.CSS - Full-Bleed Canvas & Sleek Enterprise Workspace Architecture
    ============================================================================== */
 
 * {
@@ -19,40 +19,214 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
-/* 1. Command Header Bar */
-header.app-header {
+/* 1. Unified Command Bar (52px) */
+.command-header {
+    height: 52px;
     background: var(--bg-surface);
     border-bottom: 1px solid var(--border-subtle);
-    padding: 8px 20px;
+    padding: 0 16px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    height: 52px;
-    z-index: 20;
+    gap: 16px;
+    z-index: 30;
+    flex-shrink: 0;
 }
 
-.brand-section {
+.brand-block {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.brand-icon {
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(135deg, #1e40af, #0284c7);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    box-shadow: 0 0 10px rgba(2, 132, 199, 0.35);
+}
+
+.brand-text {
+    display: flex;
+    flex-direction: column;
 }
 
 .brand-title {
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 700;
     letter-spacing: -0.2px;
     color: var(--text-primary);
 }
 
-.legend-bar {
+.brand-subtitle {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-muted);
+    letter-spacing: 0.3px;
+}
+
+/* Center Search & Case Command Hub */
+.command-hub {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg-base);
+    border: 1px solid var(--border-medium);
+    border-radius: var(--radius-md);
+    padding: 3px 6px;
+    max-width: 720px;
+    flex: 1;
+}
+
+.hub-select {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 8px;
+    outline: none;
+    cursor: pointer;
+    max-width: 200px;
+}
+.hub-select:focus { color: var(--text-primary); }
+
+.hub-divider {
+    width: 1px;
+    height: 18px;
+    background: var(--border-subtle);
+}
+
+.hub-input {
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 4px 8px;
+    outline: none;
+    flex: 1;
+}
+
+.hub-chain-btn {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    padding: 3px 8px;
+    border-radius: var(--radius-xs);
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* Right Navigation & Mode Toggle */
+.command-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+/* 2. Main Viewport (Full Bleed) */
+#main-viewport {
+    flex: 1;
+    display: flex;
+    position: relative;
+    overflow: hidden;
+}
+
+#cy-container {
+    flex: 1;
+    height: 100%;
+    position: relative;
+    background-color: var(--bg-base);
+    background-image: radial-gradient(circle, #182338 1px, transparent 1px);
+    background-size: 28px 28px;
+}
+
+#cy {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+/* Floating HUD Metrics Ribbon */
+.hud-metrics-ribbon {
+    position: absolute;
+    top: 14px;
+    left: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 10;
+    pointer-events: auto;
+}
+
+.hud-pill {
+    background: var(--bg-glass-card);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-full);
+    padding: 5px 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition-fast);
+}
+.hud-pill:hover { border-color: var(--border-medium); }
+
+.hud-pill-val {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+/* Floating Bottom Left Canvas Toolbar */
+.canvas-toolbar {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    background: var(--bg-glass-card);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    box-shadow: var(--shadow-md);
+    z-index: 10;
+}
+
+/* Floating Bottom Center Minimalist Legend */
+.canvas-legend {
+    position: absolute;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-glass-card);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-full);
+    padding: 5px 16px;
     display: flex;
     align-items: center;
     gap: 16px;
     font-size: 11px;
     color: var(--text-secondary);
-    margin-left: 20px;
-    padding-left: 20px;
-    border-left: 1px solid var(--border-subtle);
+    box-shadow: var(--shadow-sm);
+    z-index: 10;
 }
 
 .legend-item {
@@ -67,103 +241,39 @@ header.app-header {
     border-radius: var(--radius-full);
 }
 
-/* 2. Primary Control Bar */
-.control-bar {
-    background: var(--bg-elevated);
-    border-bottom: 1px solid var(--border-subtle);
-    padding: 10px 20px;
-    display: flex;
-    gap: 12px;
-    align-items: flex-end;
-    flex-wrap: wrap;
-    z-index: 15;
-}
-
-/* 3. Case Intake Wizard Panel */
-.intake-panel {
-    background: var(--bg-surface);
-    border-bottom: 1px solid var(--border-subtle);
-    padding: 8px 20px;
-    display: flex;
-    gap: 14px;
-    align-items: center;
-    flex-wrap: wrap;
-    font-size: 12px;
-    transition: var(--transition-normal);
-}
-
-/* 4. KPI Telemetry Ribbon */
-.kpi-ribbon {
-    background: #090e16;
-    border-bottom: 1px solid var(--border-subtle);
-    padding: 6px 20px;
-    display: flex;
-    gap: 28px;
-    align-items: center;
-    z-index: 10;
-}
-
-.kpi-item {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.kpi-lbl {
-    font-size: 10px;
-    color: var(--text-muted);
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.kpi-val {
-    font-size: 14px;
-    font-weight: 700;
-    font-family: var(--font-mono);
-    color: var(--text-primary);
-}
-
-/* 5. Main Viewport & Cytoscape Canvas */
-#main-viewport {
-    flex: 1;
-    display: flex;
-    position: relative;
-    overflow: hidden;
-}
-
-#cy-container {
-    flex: 1;
-    height: 100%;
-    position: relative;
-    background: radial-gradient(circle, rgba(20, 29, 44, 0.4) 1px, transparent 1px);
-    background-size: 24px 24px;
-}
-
-#cy {
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
-}
-
-/* 6. Dockable Forensic Inspector Sidebar */
-#sidebar {
-    width: 380px;
+/* 3. Sleek Slide-Out Inspector Drawer */
+#inspector-drawer {
+    width: 390px;
     background: var(--bg-surface);
     border-left: 1px solid var(--border-subtle);
     display: flex;
     flex-direction: column;
     height: 100%;
-    overflow-y: auto;
-    z-index: 12;
+    z-index: 20;
+    flex-shrink: 0;
+    box-shadow: var(--shadow-lg);
+    transition: transform var(--transition-normal);
 }
 
-.sidebar-tabs {
+#inspector-drawer.collapsed {
+    transform: translateX(100%);
+    position: absolute;
+    right: 0;
+}
+
+.inspector-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-subtle);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-surface);
+}
+
+.inspector-tabs {
     display: flex;
     border-bottom: 1px solid var(--border-subtle);
-    background: var(--bg-elevated);
+    background: var(--bg-card);
 }
 
 .tab-btn {
@@ -179,51 +289,64 @@ header.app-header {
     transition: var(--transition-fast);
     border-bottom: 2px solid transparent;
 }
-
-.tab-btn:hover {
-    color: var(--text-primary);
-}
-
+.tab-btn:hover { color: var(--text-primary); }
 .tab-btn.active {
-    color: var(--cyan-tactical);
-    border-bottom-color: var(--cyan-tactical);
-    background: rgba(6, 182, 212, 0.05);
+    color: var(--accent-cyan);
+    border-bottom-color: var(--accent-cyan);
+    background: rgba(6, 182, 212, 0.06);
 }
 
 .tab-content {
+    flex: 1;
     padding: 16px;
     display: none;
     flex-direction: column;
     gap: 14px;
+    overflow-y: auto;
 }
+.tab-content.active { display: flex; }
 
-.tab-content.active {
+/* 4. Minimalist Bottom Telemetry Status Bar */
+.status-bar {
+    height: 28px;
+    background: var(--bg-surface);
+    border-top: 1px solid var(--border-subtle);
+    padding: 0 16px;
     display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+    z-index: 25;
+    cursor: pointer;
+    user-select: none;
 }
+.status-bar:hover { background: var(--bg-elevated); color: var(--text-secondary); }
 
-/* 7. Bottom Terminal Log Drawer */
 #log-drawer {
-    height: 120px;
-    background: #04070a;
+    height: 0px;
+    background: #030712;
     border-top: 1px solid var(--border-subtle);
     overflow-y: auto;
-    padding: 8px 16px;
     font-family: var(--font-mono);
     font-size: 11px;
     line-height: 1.5;
-    z-index: 10;
+    transition: height var(--transition-normal);
+    z-index: 24;
+}
+
+#log-drawer.expanded {
+    height: 130px;
+    padding: 8px 16px;
 }
 
 .log-entry {
     color: var(--text-secondary);
-    margin-bottom: 2px;
+    margin-bottom: 3px;
 }
-
-.log-time {
-    color: var(--text-muted);
-    margin-right: 6px;
-}
-
+.log-time { color: var(--text-muted); margin-right: 6px; }
 .log-success { color: var(--accent-cex); }
-.log-alert { color: var(--accent-crime); font-weight: bold; }
-.log-info { color: var(--cyan-tactical); }
+.log-alert { color: var(--accent-crime); font-weight: 600; }
+.log-info { color: var(--accent-cyan); }
