@@ -234,16 +234,27 @@ class ForensicGraphController {
 
     addNodeProgressive(nodeElement) {
         if (!this.cy) this.init();
-        const data = this.formatNodeData(nodeElement.data);
+        const rawData = (nodeElement && nodeElement.data) ? nodeElement.data : (nodeElement || {});
+        const data = this.formatNodeData(rawData);
+        if (!data || !data.id) return null;
         const existing = this.cy.getElementById(data.id);
         let node;
         if (existing.length > 0) {
             existing.data(data);
             node = existing;
         } else {
+            const count = this.cy.nodes().length;
+            const angle = count * 0.8;
+            const radius = 60 + (count * 25);
+            const cx = (this.cy.width && this.cy.width() > 0) ? this.cy.width() / 2 : 450;
+            const cy = (this.cy.height && this.cy.height() > 0) ? this.cy.height() / 2 : 300;
             node = this.cy.add({
                 group: 'nodes',
-                data: data
+                data: data,
+                position: {
+                    x: cx + Math.cos(angle) * radius,
+                    y: cy + Math.sin(angle) * radius
+                }
             });
         }
 
@@ -251,11 +262,12 @@ class ForensicGraphController {
         if (this.pendingWires && this.pendingWires.length > 0) {
             const remaining = [];
             for (const wireEl of this.pendingWires) {
-                const wd = wireEl.data;
+                const wd = (wireEl && wireEl.data) ? wireEl.data : (wireEl || {});
                 const s = this.cy.getElementById(wd.source);
                 const t = this.cy.getElementById(wd.target);
                 if (s.length > 0 && t.length > 0) {
-                    const wid = wd.id || wd.tx_hash;
+                    const wid = wd.id || wd.tx_hash || (`edge_${wd.source}_${wd.target}`);
+                    wd.id = wid;
                     if (this.cy.getElementById(wid).length === 0) {
                         this.cy.add({ group: 'edges', data: wd });
                     }
@@ -272,14 +284,16 @@ class ForensicGraphController {
 
     addWireProgressive(wireElement) {
         if (!this.cy) this.init();
-        const d = wireElement.data;
+        const d = (wireElement && wireElement.data) ? wireElement.data : (wireElement || {});
+        if (!d) return null;
         if (d.source && typeof d.source === 'string' && d.source.startsWith('0x')) {
             d.source = d.source.toLowerCase();
         }
         if (d.target && typeof d.target === 'string' && d.target.startsWith('0x')) {
             d.target = d.target.toLowerCase();
         }
-        const wid = d.id || d.tx_hash;
+        const wid = d.id || d.tx_hash || (`edge_${d.source}_${d.target}`);
+        d.id = wid;
         const existing = this.cy.getElementById(wid);
         if (existing.length > 0) {
             existing.data(d);
@@ -290,7 +304,7 @@ class ForensicGraphController {
         const tgt = this.cy.getElementById(d.target);
         if (src.length === 0 || tgt.length === 0) {
             if (!this.pendingWires) this.pendingWires = [];
-            this.pendingWires.push(wireElement);
+            this.pendingWires.push({ group: 'edges', data: d });
             return null;
         }
 
@@ -315,15 +329,16 @@ class ForensicGraphController {
         let layoutOptions = {
             name: this.currentLayout || 'dagre',
             animate: true,
-            animationDuration: 280,
+            animationDuration: 200,
             fit: fitOnComplete,
-            padding: 60
+            padding: 100
         };
 
         if (layoutOptions.name === 'dagre') {
             layoutOptions.rankDir = 'LR';
-            layoutOptions.nodeSep = 60;
-            layoutOptions.rankSep = 140;
+            layoutOptions.nodeSep = 90;
+            layoutOptions.rankSep = 200;
+            layoutOptions.spacingFactor = 1.25;
         } else if (layoutOptions.name === 'breadthfirst') {
             layoutOptions.directed = true;
             layoutOptions.spacingFactor = 1.75;
@@ -333,6 +348,22 @@ class ForensicGraphController {
             this.activeLayout.stop();
         }
         this.activeLayout = this.cy.layout(layoutOptions);
+        if (fitOnComplete) {
+            this.activeLayout.one('layoutstop', () => {
+                if (this.cy) {
+                    this.cy.resize();
+                    this.cy.fit(null, 100);
+                    this.cy.center();
+                }
+            });
+            setTimeout(() => {
+                if (this.cy) {
+                    this.cy.resize();
+                    this.cy.fit(null, 100);
+                    this.cy.center();
+                }
+            }, 250);
+        }
         this.activeLayout.run();
     }
 
@@ -354,7 +385,7 @@ class ForensicGraphController {
         setTimeout(() => {
             if (this.cy) {
                 this.cy.resize();
-                this.cy.fit(null, 60);
+                this.cy.fit(null, 100);
                 this.cy.center();
             }
         }, 120);
@@ -367,13 +398,14 @@ class ForensicGraphController {
             name: layoutName,
             animate: false,
             fit: true,
-            padding: 60
+            padding: 80
         };
 
         if (layoutName === 'dagre') {
             layoutOptions.rankDir = 'LR';
-            layoutOptions.nodeSep = 60;
-            layoutOptions.rankSep = 140;
+            layoutOptions.nodeSep = 80;
+            layoutOptions.rankSep = 160;
+            layoutOptions.nodeDimensionsIncludeLabels = true;
         } else if (layoutName === 'breadthfirst') {
             layoutOptions.directed = true;
             layoutOptions.spacingFactor = 1.75;
@@ -385,7 +417,8 @@ class ForensicGraphController {
 
         const l = this.cy.layout(layoutOptions);
         l.run();
-        this.cy.fit(null, 60);
+        this.cy.resize();
+        this.cy.fit(null, 80);
         this.cy.center();
     }
 
