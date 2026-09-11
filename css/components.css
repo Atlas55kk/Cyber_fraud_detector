@@ -382,20 +382,123 @@ select option:hover, select option:focus, select option:checked,
     to { transform: rotate(360deg); }
 }
 
-.execution-progress-track {
+/* Floating Execution Status & Stepped Activity Widget (Under Forensic Benchmark) */
+.execution-widget {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background: transparent;
-    z-index: 40;
-    pointer-events: none;
+    top: 50px;
+    left: 16px;
+    z-index: 12;
+    width: 330px;
+    background: rgba(15, 23, 42, 0.94);
+    backdrop-filter: blur(14px);
+    border: 1px solid var(--border-medium);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    transition: border-color var(--transition-fast);
 }
 
-.execution-progress-bar {
+.execution-widget:hover {
+    border-color: var(--border-accent);
+}
+
+.execution-widget-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px 10px;
+    cursor: pointer;
+    user-select: none;
+    gap: 8px;
+    background: var(--bg-surface);
+}
+
+.btn-widget-toggle {
+    background: var(--bg-card);
+    border: 1px solid var(--border-medium);
+    color: var(--accent-cyan);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: var(--radius-xs);
+    width: 17px;
+    height: 17px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform var(--transition-fast);
+    flex-shrink: 0;
+}
+
+.btn-widget-toggle.expanded {
+    transform: rotate(90deg);
+}
+
+.widget-status-text {
+    font-size: 11px;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 500;
+}
+
+.widget-percent {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent-cyan);
+    font-family: var(--font-mono);
+    flex-shrink: 0;
+}
+
+.widget-progress-track {
+    height: 2px;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.06);
+    position: relative;
+}
+
+.widget-progress-bar {
     height: 100%;
     width: 0%;
     background: linear-gradient(90deg, #2563eb, #0ea5e9, #10b981);
-    transition: width 0.2s ease-out;
+    transition: width 0.25s ease-out;
+}
+
+.widget-dropdown {
+    max-height: 0px;
+    overflow-y: auto;
+    transition: max-height 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    background: #030712;
+    border-top: 1px solid transparent;
+}
+
+.widget-dropdown.expanded {
+    max-height: 125px;
+    border-top-color: var(--border-subtle);
+    padding: 6px 10px;
+}
+
+.widget-log-list {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.widget-log-item {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    word-break: break-all;
+}
+
+.widget-log-item.active {
+    color: var(--accent-cyan);
+    font-weight: 600;
+}
+
+.widget-log-item.success {
+    color: var(--accent-cex);
 }

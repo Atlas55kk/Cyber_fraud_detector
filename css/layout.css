@@ -75,7 +75,7 @@ body {
     border: 1px solid var(--border-medium);
     border-radius: var(--radius-md);
     padding: 2px 6px;
-    max-width: 560px;
+    max-width: 590px;
     flex: 1;
     min-width: 260px;
     transition: border-color var(--transition-fast);
@@ -95,7 +95,7 @@ body {
     padding: 4px 6px;
     outline: none;
     cursor: pointer;
-    max-width: 190px;
+    max-width: 175px;
 }
 .hub-select:focus { color: var(--text-primary); }
 
@@ -114,7 +114,7 @@ body {
     padding: 4px 6px;
     outline: none;
     flex: 1;
-    min-width: 140px;
+    min-width: 90px;
 }
 
 .hub-chain-btn {
@@ -126,6 +126,12 @@ body {
     font-size: 11px;
     font-weight: 600;
     cursor: pointer;
+    flex-shrink: 0;
+}
+
+#btn-trace {
+    flex-shrink: 0;
+    white-space: nowrap;
 }
 
 /* Right Navigation & Mode Toggle */
