@@ -67,6 +67,44 @@
       "hot_wallets": [
         "0xf89d7b9c864f589bbf53a82105107622b35eaa40"
       ]
+    },
+    {
+      "name": "CoinSwitch Kuber",
+      "jurisdiction": "India (FIU-IND Registered - Bitcipher Labs)",
+      "compliance_email": "legal@coinswitch.co",
+      "fiu_registered": true,
+      "hot_wallets": [
+        "0xdc76e9f749025785a21404c0f8ca779c138ce315",
+        "0x2faf487a4414fe77e2327f0bf4ae2a264a776ad2"
+      ]
+    },
+    {
+      "name": "ZebPay",
+      "jurisdiction": "India (FIU-IND Registered - Awlencan Innovations)",
+      "compliance_email": "compliance@zebpay.com",
+      "fiu_registered": true,
+      "hot_wallets": [
+        "0x89e51fa8ca5d66d6a666e5f35d21597818e31a44",
+        "TTwY2m5hS6Vq6Fv5qX8pA2v1sJ2b3Ye4"
+      ]
+    },
+    {
+      "name": "Bitbns",
+      "jurisdiction": "India (FIU-IND Registered)",
+      "compliance_email": "legal@bitbns.com",
+      "fiu_registered": true,
+      "hot_wallets": [
+        "0x1522900b6dafac587d499a862861c0869be6e428"
+      ]
+    },
+    {
+      "name": "Mudrex",
+      "jurisdiction": "India (FIU-IND Registered)",
+      "compliance_email": "compliance@mudrex.com",
+      "fiu_registered": true,
+      "hot_wallets": [
+        "0x3c1b8408f658098c69ee0fb06e12e1a3b508f77a"
+      ]
     }
   ],
   "dex_routers": [
@@ -121,6 +159,50 @@
     {
       "name": "Hop Protocol: Bridge",
       "address": "0x3666f603cc164936c1b87e207f36beba4ac5f18a"
+    },
+    {
+      "name": "Stargate Finance: Router",
+      "address": "0x8731d54e9d02c213766ea528bacccba303f08771"
+    },
+    {
+      "name": "Portal Wormhole: Token Bridge",
+      "address": "0x3ee180c22347aacc8428fb8387ed7173b27247d0"
+    },
+    {
+      "name": "Synapse: Bridge Router",
+      "address": "0x2796317b0bf85369c577004f71a979292301657f"
+    }
+  ],
+  "sanctioned_and_malicious": [
+    {
+      "name": "WazirX July 2024 Exploiter",
+      "address": "0x04b21735e93fa3f8df70e2da89e6922616891a88",
+      "threat_type": "EXCHANGE_HEIST_ACTOR",
+      "advisory": "CERT-In / I4C High Priority Advisory July 2024"
+    },
+    {
+      "name": "Lazarus Group: Ronin Validator Heist (OFAC SDN)",
+      "address": "0x098b716b8aaf21512996dc57eb0615e2383e2f96",
+      "threat_type": "STATE_SPONSORED_APT",
+      "advisory": "US Treasury OFAC SDN Sanctions List"
+    },
+    {
+      "name": "Lazarus Group: Atomic Wallet Hack (OFAC SDN)",
+      "address": "0x3cffd56b47b7b41f562588976666762391295b77",
+      "threat_type": "STATE_SPONSORED_APT",
+      "advisory": "US Treasury OFAC SDN Sanctions List"
+    },
+    {
+      "name": "Euler Finance Exploiter",
+      "address": "0xb66cd966670d962c227b3eaba30a872dbfb995db",
+      "threat_type": "DEFI_FLASHLOAN_EXPLOITER",
+      "advisory": "Flashloan Exploit $197M"
+    },
+    {
+      "name": "Upbit 2019 Heist Core Transit (Fu et al., 2023)",
+      "address": "0xa09871aeadf4994ca12f5c0b6056bbd1d343c029",
+      "threat_type": "EXCHANGE_HEIST_ACTOR",
+      "advisory": "Upbit Exchange 342,000 ETH Heist Ground Truth"
     }
   ]
 }

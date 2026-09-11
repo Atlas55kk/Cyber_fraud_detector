@@ -143,6 +143,21 @@ class EntityResolver:
             self.address_map[clean_addr] = info
             self.address_map[addr] = info
 
+        # 5. Sanctioned and Malicious Threat Actors (OFAC SDN & Exchange Exploiters)
+        for mal in data.get("sanctioned_and_malicious", []):
+            addr = mal["address"]
+            clean_addr = addr.lower()
+            info = EntityInfo(
+                name=f"🚨 {mal['name']}",
+                category="SANCTIONED_CYBERCRIME_CLUSTER",
+                node_role=NodeRole.SCAMMER,
+                jurisdiction=mal.get("threat_type", "CYBERCRIME"),
+                compliance_email=mal.get("advisory"),
+                is_actionable_freeze_target=False
+            )
+            self.address_map[clean_addr] = info
+            self.address_map[addr] = info
+
     def resolve(self, address: str) -> Optional[EntityInfo]:
         """
         Looks up an address in the verified registry (checking both exact and lowercase).

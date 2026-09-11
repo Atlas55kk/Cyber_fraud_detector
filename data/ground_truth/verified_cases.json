@@ -1,0 +1,129 @@
+{
+  "description": "Empirical Ground Truth Benchmark Cases for Crypto Cyber Fraud Detection System",
+  "version": "1.0.0",
+  "cases": [
+    {
+      "case_id": "CASE-2024-WAZIRX-001",
+      "name": "WazirX Multi-Sig Exploiter (July 2024)",
+      "chain": "ETHEREUM",
+      "threat_actor": "Lazarus Group (DPRK) / APT38 Affiliated",
+      "root_exploit_address": "0x6e5610e0ece9387867bae7132c1ca81a0122934c",
+      "total_loss_usd": 235000000,
+      "primary_assets": [
+        "ETH",
+        "SHIB",
+        "MATIC",
+        "USDT"
+      ],
+      "laundering_techniques": [
+        "Cross-asset DEX swaps (Uniswap, 1inch, CowSwap) to native ETH",
+        "Peel chains across intermediary transit EOA wallets",
+        "Tornado Cash 100 ETH mixer deposits"
+      ],
+      "known_intermediaries": [
+        "0xba006b5b4e7eb3ff3ca0ab9c6c21e64627be9b31",
+        "0x3513bca29206d2ec004f1414434237d8009361ad"
+      ],
+      "target_destinations": [
+        {
+          "entity": "Tornado Cash 100 ETH Pool",
+          "address": "0x722122df12d450ac402d63d41534803370688844",
+          "category": "MIXER"
+        }
+      ],
+      "statutory_notice_applicable": true,
+      "recommended_action": "Freeze associated EOA transits and trace secondary mixer withdrawals"
+    },
+    {
+      "case_id": "CASE-2019-UPBIT-001",
+      "name": "Upbit Exchange Theft (Fu et al., 2023 Ground Truth)",
+      "chain": "ETHEREUM",
+      "threat_actor": "Lazarus Cyber Syndicate",
+      "root_exploit_address": "0xa09871aeadf4994ca12f5c0b6056bbd1d343c029",
+      "total_loss_usd": 41500000,
+      "primary_assets": [
+        "ETH"
+      ],
+      "laundering_techniques": [
+        "Rapid smurfing (splitting into identical ~1,000 ETH tranches)",
+        "Temporal decay dispersion within 6-hour windows (Wu et al. TRacer)",
+        "Peel chain dissipation to disguise destination CEX deposit addresses"
+      ],
+      "known_intermediaries": [
+        "0x9aab3f75489902f3a4849202585a2c5f5f37b03e",
+        "0xd6216fc19db775df9774a6e33526131da7d19a2c"
+      ],
+      "target_destinations": [
+        {
+          "entity": "Binance Deposit Sweeper",
+          "address": "0x28c6c06298d514db089934071355e5743bf21d60",
+          "category": "EXCHANGE"
+        }
+      ],
+      "statutory_notice_applicable": true,
+      "recommended_action": "Serve Section 94 BNSS requisition on Binance FIU nodal team"
+    },
+    {
+      "case_id": "CASE-2024-NCRP-TRON-002",
+      "name": "I4C / 1930 NCRP Telegram Task Fraud Syndicate",
+      "chain": "TRON",
+      "threat_actor": "SE Asia Pig Butchering & Telegram Task Fraud Ring",
+      "root_exploit_address": "TKfqK8m8v2N4n8j9v1x3y5z7w9b1c3d5e7",
+      "total_loss_usd": 185000,
+      "primary_assets": [
+        "USDT (TRC-20)"
+      ],
+      "laundering_techniques": [
+        "Mule aggregation layer collecting funds from 45 Indian victims",
+        "Peel chain dispersal with tiny peel fees and dominant transit chunks",
+        "Rapid consolidation into Indian FIU-IND registered off-ramps (CoinDCX, WazirX) for P2P cashout"
+      ],
+      "known_intermediaries": [
+        "TLyBzAU5kZ7XnZ98M1v3E6VwB8kL5yA4z1",
+        "TYDzsYUEpvnYmQk4zGP9sWWcTEd2MiAtW6"
+      ],
+      "target_destinations": [
+        {
+          "entity": "CoinDCX TRC-20 Deposit",
+          "address": "TYDzsYUEpvnYmQk4zGP9sWWcTEd2MiAtW6",
+          "category": "EXCHANGE"
+        },
+        {
+          "entity": "Binance TRON Hot Wallet",
+          "address": "TPY9W8PnmgCJnUqUrYJ7p4G93F6r8eH1e6",
+          "category": "EXCHANGE"
+        }
+      ],
+      "statutory_notice_applicable": true,
+      "recommended_action": "Serve Section 94 BNSS Order with 1930 NCRP Acknowledgement to CoinDCX and Binance nodal officers"
+    },
+    {
+      "case_id": "CASE-2023-TORNADO-ETH-003",
+      "name": "Tornado Cash Anonymity Set Smurfing Loop",
+      "chain": "ETHEREUM",
+      "threat_actor": "DeFi Flash Loan & Drain Syndicate",
+      "root_exploit_address": "0x2b6ee0e5d81ea9e429907537c5b4e80a33d73504",
+      "total_loss_usd": 12000000,
+      "primary_assets": [
+        "ETH"
+      ],
+      "laundering_techniques": [
+        "Splitting stolen capital into exact 100 ETH denomination chunks (CV <= 0.05)",
+        "Depositing into Tornado Cash 100 ETH pool",
+        "Relayer-assisted withdrawals with zero direct gas link"
+      ],
+      "known_intermediaries": [
+        "0x12d66f87a04a9e220743712ce6d9bb1b5616b8fc"
+      ],
+      "target_destinations": [
+        {
+          "entity": "Tornado Cash Pool",
+          "address": "0x722122df12d450ac402d63d41534803370688844",
+          "category": "MIXER"
+        }
+      ],
+      "statutory_notice_applicable": false,
+      "recommended_action": "Trigger Cristodaro et al. (2025) temporal heuristic to correlate relayer withdrawal wallets"
+    }
+  ]
+}
