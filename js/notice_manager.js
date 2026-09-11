@@ -26,24 +26,21 @@ class StatutoryNoticeManager {
         const desc = document.getElementById('notice-card-desc');
 
         if (isOfficial) {
-            badge.innerHTML = '🚨 OFFICIAL DISPATCH MODE';
-            badge.style.color = '#38bdf8';
+            badge.innerHTML = '<span style="color:#38bdf8;">● OFFICIAL DISPATCH</span>';
             title.innerText = 'Statutory Notice Dispatch';
             title.style.color = '#38bdf8';
-            desc.innerText = 'Official mode active. Generates Section 94 BNSS requisition for submission to exchange nodal officers.';
-            btn.innerText = '📄 Draft Official Section 94 Notice';
-            btn.className = 'btn btn-action';
-            window.logAlert('[MODE] Official Dispatch Mode activated. Notice unlocked for formal service.');
+            desc.innerText = 'Official mode active. Generates Section 94 BNSS requisition for formal submission to exchange nodal officers.';
+            btn.innerText = 'Draft Statutory Section 94 Notice';
+            btn.className = 'btn btn-blue';
+            window.logAlert('Official Dispatch Mode active. Notice prepared for formal service.');
         } else {
-            badge.innerHTML = '🧪 PRACTICE MODE (Sandbox)';
-            badge.style.color = '#e3b341';
-            title.innerText = '🧪 Practice Mode: Forensic Reasoning';
-            title.style.color = '#e3b341';
-            desc.innerText = 'Practice sandbox active. Notice compiles mathematical reasoning and dry-run drafts without live statutory dispatch.';
-            btn.innerText = '🧪 Preview Simulated Notice (Practice)';
-            btn.className = 'btn btn-subtle';
-            btn.style.color = '#e3b341';
-            window.logInfo('[MODE] Practice Sandbox active. Safe simulation enabled — no real service.');
+            badge.innerHTML = '<span style="color:#f59e0b;">● PRACTICE MODE (Sandbox)</span>';
+            title.innerText = 'Practice Sandbox: Legal Rationale';
+            title.style.color = '#f59e0b';
+            desc.innerText = 'Practice sandbox active. Generates mathematical chain-of-custody rationale and simulated drafts without formal dispatch.';
+            btn.innerText = 'Preview Simulated Notice (Practice)';
+            btn.className = 'btn btn-secondary';
+            window.logInfo('Practice Sandbox active. Safe simulated legal generation enabled.');
         }
     }
 

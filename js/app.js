@@ -4,23 +4,23 @@
  * ==============================================================================
  */
 
-// Global Logging Engine
-window.logInfo = function(msg) {
-    appendLog(msg, 'log-info');
-};
-
-window.logAlert = function(msg) {
-    appendLog(msg, 'log-alert');
-};
-
-window.logSuccess = function(msg) {
-    appendLog(msg, 'log-success');
-};
+// Global Logger
+window.logInfo = function(msg) { appendLog(msg, 'log-info'); };
+window.logAlert = function(msg) { appendLog(msg, 'log-alert'); };
+window.logSuccess = function(msg) { appendLog(msg, 'log-success'); };
 
 function appendLog(msg, typeClass) {
+    const time = new Date().toLocaleTimeString();
+    
+    // 1. Update mini bottom status bar text
+    const statusText = document.getElementById('status-bar-text');
+    if (statusText) {
+        statusText.innerHTML = `<span style="color:var(--text-muted);">[${time}]</span> ${msg}`;
+    }
+
+    // 2. Append to expandable drawer
     const drawer = document.getElementById('log-drawer');
     if (!drawer) return;
-    const time = new Date().toLocaleTimeString();
     const entry = document.createElement('div');
     entry.className = `log-entry ${typeClass || ''}`;
     entry.innerHTML = `<span class="log-time">[${time}]</span> ${msg}`;
@@ -28,7 +28,7 @@ function appendLog(msg, typeClass) {
     drawer.scrollTop = drawer.scrollHeight;
 }
 
-// Preset Fraud Scenarios
+// Preset Incident Profiles
 const PRESET_CASES = {
     evm_ps_bench: {
         wallet: '0xwallet_s',
@@ -78,13 +78,13 @@ const PRESET_CASES = {
     custom: null
 };
 
-// Application State
 class ForensicApp {
     constructor() {
         this.graphController = new ForensicGraphController('cy');
         this.cffManager = new CFFManager();
         this.noticeManager = new StatutoryNoticeManager();
         this.lastTraceData = null;
+        this.isTerminalExpanded = false;
     }
 
     init() {
@@ -94,9 +94,9 @@ class ForensicApp {
         this.setupTabNavigation();
         this.setupCallbacks();
 
-        window.logInfo("[SYSTEM] Forensic Graph Engine initialized. Ready for investigation.");
-
-        // Automatically run initial benchmark case
+        window.logInfo("Forensic Engine ready. Select a case preset or enter an incident wallet.");
+        
+        // Auto-run initial case
         this.triggerTrace();
     }
 
@@ -114,18 +114,87 @@ class ForensicApp {
         });
     }
 
+    toggleInspector() {
+        const drawer = document.getElementById('inspector-drawer');
+        if (drawer) {
+            drawer.classList.toggle('collapsed');
+            setTimeout(() => {
+                if (this.graphController && this.graphController.cy) {
+                    this.graphController.cy.resize();
+                }
+            }, 250);
+        }
+    }
+
+    openInspector() {
+        const drawer = document.getElementById('inspector-drawer');
+        if (drawer && drawer.classList.contains('collapsed')) {
+            drawer.classList.remove('collapsed');
+            setTimeout(() => {
+                if (this.graphController && this.graphController.cy) {
+                    this.graphController.cy.resize();
+                }
+            }, 250);
+        }
+    }
+
+    toggleTerminal() {
+        const drawer = document.getElementById('log-drawer');
+        const chevron = document.getElementById('terminal-chevron');
+        if (!drawer) return;
+        
+        this.isTerminalExpanded = !this.isTerminalExpanded;
+        if (this.isTerminalExpanded) {
+            drawer.classList.add('expanded');
+            if (chevron) chevron.innerText = '▼';
+        } else {
+            drawer.classList.remove('expanded');
+            if (chevron) chevron.innerText = '▲';
+        }
+    }
+
+    // Modal Dialogs
+    openIntakeModal() {
+        const m = document.getElementById('intake-modal');
+        if (m) m.style.display = 'flex';
+    }
+
+    closeIntakeModal() {
+        const m = document.getElementById('intake-modal');
+        if (m) m.style.display = 'none';
+    }
+
     setupCallbacks() {
         // Node Selection Callback
         window.onNodeSelected = (nodeData) => {
-            // Switch to Inspector tab
+            this.openInspector();
             this.activateTab('tab-node');
+
             document.getElementById('no-select-hint').style.display = 'none';
             document.getElementById('node-details').style.display = 'flex';
 
             document.getElementById('side-addr').innerText = nodeData.address || nodeData.id;
-            document.getElementById('side-role').innerText = nodeData.role || 'UNKNOWN';
-            document.getElementById('side-entity').innerText = nodeData.label || 'Unlabeled EOA';
-            document.getElementById('side-taint').innerText = (nodeData.taint_pct !== undefined ? nodeData.taint_pct : 0) + '%';
+            
+            // Role Badge styling
+            const roleEl = document.getElementById('side-role');
+            roleEl.innerText = nodeData.role || 'UNKNOWN';
+            roleEl.className = 'badge';
+            if (nodeData.role === 'SCAMMER') roleEl.classList.add('badge-crime');
+            else if (nodeData.role === 'CEX_DEPOSIT') roleEl.classList.add('badge-cex');
+            else if (nodeData.role === 'MULE_TRANSIT') roleEl.classList.add('badge-mule');
+            else roleEl.classList.add('badge-subtle');
+
+            document.getElementById('side-entity').innerText = nodeData.label || 'Unlabeled Account';
+            
+            const taintPct = nodeData.taint_pct !== undefined ? nodeData.taint_pct : 0;
+            document.getElementById('side-taint').innerText = `${taintPct}%`;
+            
+            const taintFill = document.getElementById('side-taint-bar');
+            if (taintFill) {
+                taintFill.style.width = `${taintPct}%`;
+                taintFill.style.background = taintPct > 50 ? 'var(--accent-crime)' : (taintPct > 20 ? 'var(--accent-mule)' : 'var(--accent-cex)');
+            }
+
             document.getElementById('side-held').innerText = '$' + Number(nodeData.held_amount || 0).toLocaleString();
             document.getElementById('side-gas').innerText = (nodeData.gas_burned || 0) + ' Gas';
 
@@ -143,14 +212,27 @@ class ForensicApp {
 
         // Edge Selection Callback
         window.onEdgeSelected = (edgeData) => {
+            this.openInspector();
             this.activateTab('tab-node');
+
             document.getElementById('no-select-hint').style.display = 'none';
             document.getElementById('node-details').style.display = 'flex';
 
             document.getElementById('side-addr').innerText = edgeData.tx_hash || 'TX_HASH';
-            document.getElementById('side-role').innerText = 'TRANSACTION WIRE';
-            document.getElementById('side-entity').innerText = `${edgeData.source.substring(0, 8)}... ➔ ${edgeData.target.substring(0, 8)}...`;
-            document.getElementById('side-taint').innerText = 'Direct Flow';
+            
+            const roleEl = document.getElementById('side-role');
+            roleEl.innerText = 'TRANSACTION WIRE';
+            roleEl.className = 'badge badge-subtle';
+
+            document.getElementById('side-entity').innerText = `${edgeData.source.substring(0, 8)}... → ${edgeData.target.substring(0, 8)}...`;
+            document.getElementById('side-taint').innerText = '100% Flow';
+            
+            const taintFill = document.getElementById('side-taint-bar');
+            if (taintFill) {
+                taintFill.style.width = '100%';
+                taintFill.style.background = 'var(--accent-cyan)';
+            }
+
             document.getElementById('side-held').innerText = edgeData.label || '';
             document.getElementById('side-gas').innerText = (edgeData.gas_fee || 0) + ' Gas Fee';
             document.getElementById('node-cex-action').style.display = 'none';
@@ -163,19 +245,19 @@ class ForensicApp {
             document.getElementById('node-cex-action').style.display = 'none';
         };
 
-        // Case Loaded Callback (from .cff file)
+        // Case Loaded Callback (from .cff container)
         window.onCaseLoaded = (data) => {
             this.lastTraceData = data;
             data.logs.forEach(l => window.logInfo(l));
 
             // Update Seal Badge
             const sealBadge = document.getElementById('cff-seal-badge');
-            sealBadge.style.display = 'inline-block';
+            sealBadge.style.display = 'inline-flex';
             if (data.is_tamper_free) {
                 sealBadge.className = 'badge badge-seal';
                 sealBadge.innerHTML = '🛡️ SEC 63 BNSS SEAL: VERIFIED';
             } else {
-                sealBadge.className = 'badge badge-alert';
+                sealBadge.className = 'badge badge-crime';
                 sealBadge.innerHTML = '⚠️ TAMPER DETECTED: INVALID SEAL';
             }
 
@@ -187,14 +269,12 @@ class ForensicApp {
                 if (data.case_metadata.crime_root_address) document.getElementById('wallet-input').value = data.case_metadata.crime_root_address;
             }
 
-            // Update KPIs & ML Cards
-            this.updateKPIs(data);
+            this.updateHUD(data);
             this.updateMLCard(data.ml_intelligence);
             this.updateActionableList(data.actionable_cex);
 
-            // Render Canvas
             this.graphController.render(data.elements);
-            window.logSuccess(`[CFF RECONSTRUCTION] Graph whiteboard reconstructed offline.`);
+            window.logSuccess("Graph whiteboard reconstructed offline from .cff container.");
         };
     }
 
@@ -215,20 +295,18 @@ class ForensicApp {
 
         document.getElementById('wallet-input').value = c.wallet;
         document.getElementById('chain-select').value = c.chain;
-        document.getElementById('amount-input').value = c.amount;
-        document.getElementById('mode-select').value = c.mode;
         if (c.inr) document.getElementById('inr-input').value = c.inr;
 
-        window.logInfo(`[CASE PRESET] Loaded configuration: ${caseKey.toUpperCase()}`);
+        window.logInfo(`Loaded scenario: ${caseKey.toUpperCase()}`);
         this.triggerTrace();
     }
 
     async triggerTrace() {
         const wallet = document.getElementById('wallet-input').value.trim();
         const chain = document.getElementById('chain-select').value;
-        const amount = parseFloat(document.getElementById('amount-input').value) || 50000.0;
-        const mode = document.getElementById('mode-select').value;
-        const tokenSymbol = (chain === 'evm' && wallet.startsWith('0x04b2')) ? 'ETH' : (chain === 'evm' && wallet.startsWith('0xd8da') ? 'ETH' : 'USDT');
+        const amount = 50000.0;
+        const mode = "auto";
+        const tokenSymbol = (chain === 'evm' && (wallet.startsWith('0x04b2') || wallet.startsWith('0xd8da'))) ? 'ETH' : 'USDT';
 
         const victim = document.getElementById('victim-input').value.trim();
         const fir = document.getElementById('fir-input').value.trim();
@@ -238,11 +316,11 @@ class ForensicApp {
         const incTimestamp = dtVal ? Math.floor(new Date(dtVal).getTime() / 1000) : null;
 
         if (!wallet) {
-            alert("Please enter a wallet address.");
+            alert("Please enter a target wallet address.");
             return;
         }
 
-        window.logInfo(`[TRACE INITIATED] Priority traversal for ${wallet.substring(0, 12)}... on ${chain.toUpperCase()}`);
+        window.logInfo(`Initiating priority traversal for ${wallet.substring(0, 14)}...`);
 
         try {
             const resp = await fetch('/api/trace', {
@@ -274,51 +352,57 @@ class ForensicApp {
             // Update CFF Seal Badge
             const sealBadge = document.getElementById('cff-seal-badge');
             if (data.cff_container && data.cff_container.cryptographic_seal) {
-                sealBadge.style.display = 'inline-block';
+                sealBadge.style.display = 'inline-flex';
                 sealBadge.className = 'badge badge-seal';
-                sealBadge.innerHTML = `🛡️ SEC 63 BNSS SEAL: ${data.cff_container.cryptographic_seal.integrity_hash.substring(0, 8)}...`;
+                sealBadge.innerHTML = `🛡️ SEC 63 BNSS: ${data.cff_container.cryptographic_seal.integrity_hash.substring(0, 8)}...`;
             }
 
-            // Update KPIs & ML Cards
-            this.updateKPIs(data);
+            this.updateHUD(data);
             this.updateMLCard(data.ml_intelligence);
             this.updateActionableList(data.actionable_cex);
 
-            // Render Cytoscape Canvas
             this.graphController.render(data.elements);
 
         } catch (err) {
-            window.logAlert(`[TRACE ERROR] ${err.message}`);
+            window.logAlert(`Trace Error: ${err.message}`);
         }
     }
 
-    updateKPIs(data) {
-        const srcEl = document.getElementById('kpi-source');
+    updateHUD(data) {
+        // Feed Source
+        const srcEl = document.getElementById('hud-source');
         if (data.is_cff_import) {
-            srcEl.innerHTML = `<span style="color:#10b981; font-weight:bold;">📁 Standalone .CFF File (Offline)</span>`;
+            srcEl.innerHTML = `<span style="color:var(--accent-cex);">📁 Offline .CFF</span>`;
         } else if (data.is_live) {
-            srcEl.innerHTML = `<span style="color:#10b981; font-weight:bold;">🟢 ${data.data_source}</span>`;
+            srcEl.innerHTML = `<span style="color:var(--accent-cex);">🟢 ${data.data_source}</span>`;
         } else {
-            srcEl.innerHTML = `<span style="color:#a855f7; font-weight:bold;">🟣 ${data.data_source}</span>`;
+            srcEl.innerHTML = `<span style="color:var(--accent-mixer);">🟣 ${data.data_source}</span>`;
         }
 
-        document.getElementById('kpi-accounts').innerText = data.stats.total_accounts_tracked;
-        document.getElementById('kpi-wires').innerText = data.stats.total_transactions_tracked;
-        document.getElementById('kpi-located').innerText = '$' + Number(data.stats.total_funds_at_exchanges).toLocaleString();
-        document.getElementById('kpi-recovery').innerText = data.stats.recovery_potential_pct + '%';
-        document.getElementById('kpi-sinks').innerText = data.actionable_cex.length;
+        document.getElementById('hud-accounts').innerText = data.stats.total_accounts_tracked;
+        document.getElementById('hud-wires').innerText = data.stats.total_transactions_tracked;
+        document.getElementById('hud-located').innerText = '$' + Number(data.stats.total_funds_at_exchanges).toLocaleString();
+        document.getElementById('hud-recovery').innerText = data.stats.recovery_potential_pct + '%';
+        document.getElementById('hud-sinks').innerText = data.actionable_cex.length;
     }
 
     updateMLCard(ml) {
         if (!ml) return;
         document.getElementById('ml-campaign').innerText = ml.campaign_name.replace(/_/g, " ");
-        document.getElementById('ml-score').innerText = ml.overall_risk_score + '/100';
+        document.getElementById('ml-score').innerText = ml.overall_risk_score + ' / 100';
         
+        const scoreBar = document.getElementById('ml-score-bar');
+        if (scoreBar) {
+            scoreBar.style.width = `${ml.overall_risk_score}%`;
+            scoreBar.style.background = ml.overall_risk_score > 70 ? 'var(--accent-crime)' : (ml.overall_risk_score > 40 ? 'var(--accent-mule)' : 'var(--accent-cex)');
+        }
+
         const prioEl = document.getElementById('ml-priority');
         prioEl.innerText = ml.investigation_priority;
-        if (ml.investigation_priority === 'CRITICAL') prioEl.style.color = 'var(--accent-crime)';
-        else if (ml.investigation_priority === 'HIGH') prioEl.style.color = 'var(--accent-mule)';
-        else prioEl.style.color = 'var(--accent-cex)';
+        prioEl.className = 'badge';
+        if (ml.investigation_priority === 'CRITICAL') prioEl.classList.add('badge-crime');
+        else if (ml.investigation_priority === 'HIGH') prioEl.classList.add('badge-mule');
+        else prioEl.classList.add('badge-cex');
 
         document.getElementById('ml-topo').innerText = ml.topological_fingerprint.replace(/_/g, " ");
         document.getElementById('ml-summary').innerText = ml.summary;
@@ -329,7 +413,7 @@ class ForensicApp {
         list.innerHTML = '';
 
         if (!actionableCexList || actionableCexList.length === 0) {
-            list.innerHTML = '<span style="font-size:11px; color:var(--text-muted);">No centralized exchange endpoints identified yet.</span>';
+            list.innerHTML = '<span style="font-size:11px; color:var(--text-muted);">No exchange cash-out endpoints identified yet.</span>';
             return;
         }
 
@@ -340,15 +424,15 @@ class ForensicApp {
             item.innerHTML = `
                 <div class="card-header">
                     <strong style="color:var(--accent-cex); font-size:12px;">${node.entity_tag}</strong>
-                    <span class="badge badge-seal">${node.taint_pct}% Taint</span>
+                    <span class="badge badge-cex">${node.taint_pct}% Taint</span>
                 </div>
-                <div style="font-family:var(--font-mono); font-size:11px; color:var(--text-secondary);">${node.address.substring(0, 16)}...</div>
+                <div style="font-family:var(--font-mono); font-size:11px; color:var(--text-secondary); word-break:break-all;">${node.address}</div>
                 <div class="field-row">
                     <span class="field-lbl">Stolen Held:</span>
                     <span class="field-val" style="color:var(--accent-cex);">$${Number(node.stolen_held).toLocaleString()} USDT</span>
                 </div>
-                <button class="btn btn-action" style="margin-top:6px; height:28px; font-size:11px;" onclick="window.app.noticeManager.openModal(window.app.lastTraceData, '${node.address}')">
-                    ⚖️ Draft Sec 94 BNSS Order
+                <button class="btn btn-blue btn-sm" style="margin-top:4px;" onclick="window.app.noticeManager.openModal(window.app.lastTraceData, '${node.address}')">
+                    Draft Sec 94 BNSS Notice
                 </button>
             `;
             list.appendChild(item);

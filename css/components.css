@@ -1,141 +1,127 @@
 /* ==============================================================================
-   COMPONENTS.CSS - Reusable Tactical UI Controls, Badges, Cards, and Modals
+   COMPONENTS.CSS - Enterprise Tactical Controls, Badges, Cards, and Modals
    ============================================================================== */
 
-/* Input Controls */
-.input-group {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.input-lbl {
-    font-size: 10px;
-    color: var(--text-muted);
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.input-box {
-    background: var(--bg-surface);
-    border: 1px solid var(--border-subtle);
-    color: var(--text-primary);
-    padding: 7px 10px;
-    border-radius: var(--radius-sm);
-    font-size: 12px;
-    outline: none;
-    transition: var(--transition-fast);
-}
-
-.input-box:focus {
-    border-color: var(--cyan-tactical);
-    box-shadow: 0 0 0 1px var(--cyan-tactical);
-}
-
-.input-box-mono {
-    font-family: var(--font-mono);
-}
-
-/* Action Buttons */
+/* Buttons */
 .btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
-    padding: 7px 14px;
+    padding: 6px 12px;
     border-radius: var(--radius-sm);
     font-size: 12px;
     font-weight: 600;
-    border: none;
+    border: 1px solid transparent;
     cursor: pointer;
     transition: var(--transition-fast);
-    height: 33px;
+    height: 32px;
     white-space: nowrap;
+    text-decoration: none;
 }
 
 .btn-primary {
-    background: #15803d;
+    background: #16a34a;
     color: #ffffff;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 .btn-primary:hover {
-    background: #16a34a;
+    background: #15803d;
     box-shadow: var(--shadow-glow-emerald);
 }
 
-.btn-action {
-    background: var(--blue-tactical);
+.btn-blue {
+    background: var(--primary-blue);
     color: #ffffff;
 }
-.btn-action:hover {
-    background: #3b82f6;
+.btn-blue:hover {
+    background: var(--primary-blue-hover);
 }
 
-.btn-purple {
-    background: #7c3aed;
-    color: #ffffff;
-}
-.btn-purple:hover {
-    background: #8b5cf6;
-}
-
-.btn-subtle {
+.btn-secondary {
     background: var(--bg-card);
-    border: 1px solid var(--border-subtle);
+    border-color: var(--border-medium);
     color: var(--text-secondary);
 }
-.btn-subtle:hover {
+.btn-secondary:hover {
+    background: var(--bg-card-hover);
     color: var(--text-primary);
-    border-color: var(--border-medium);
+    border-color: var(--border-accent);
 }
 
-.btn-copy {
-    background: #1e293b;
-    border: 1px solid var(--border-subtle);
+.btn-ghost {
+    background: transparent;
+    color: var(--text-secondary);
+}
+.btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.05);
     color: var(--text-primary);
-    padding: 6px 12px;
+}
+
+.btn-sm {
+    height: 26px;
+    padding: 3px 8px;
     font-size: 11px;
 }
-.btn-copy:hover {
-    background: #334155;
+
+.btn-icon {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border-radius: var(--radius-sm);
 }
 
-/* Status Badges */
+/* Badges & Tags */
 .badge {
-    padding: 3px 8px;
-    border-radius: var(--radius-sm);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 7px;
+    border-radius: var(--radius-xs);
     font-size: 10px;
     font-weight: 700;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.4px;
     text-transform: uppercase;
 }
 
 .badge-gov {
-    background: rgba(37, 99, 235, 0.18);
+    background: rgba(37, 99, 235, 0.15);
     color: #60a5fa;
     border: 1px solid rgba(59, 130, 246, 0.3);
 }
 
 .badge-sih {
-    background: rgba(22, 163, 74, 0.18);
+    background: rgba(22, 163, 74, 0.15);
     color: #4ade80;
     border: 1px solid rgba(34, 197, 94, 0.3);
 }
 
 .badge-seal {
-    background: rgba(16, 185, 129, 0.18);
+    background: rgba(16, 185, 129, 0.12);
     color: #34d399;
-    border: 1px solid rgba(16, 185, 129, 0.4);
+    border: 1px solid rgba(16, 185, 129, 0.35);
     font-family: var(--font-mono);
 }
 
-.badge-alert {
-    background: rgba(239, 68, 68, 0.18);
-    color: #f87171;
-    border: 1px solid rgba(239, 68, 68, 0.4);
+.badge-crime {
+    background: rgba(244, 63, 94, 0.15);
+    color: #fb7185;
+    border: 1px solid rgba(244, 63, 94, 0.3);
 }
 
-/* Toggle Switch */
+.badge-mule {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.badge-cex {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+/* Mode Switch Toggle */
 .switch {
     position: relative;
     display: inline-block;
@@ -147,8 +133,8 @@
     position: absolute;
     cursor: pointer;
     top: 0; left: 0; right: 0; bottom: 0;
-    background-color: #334155;
-    transition: 0.25s;
+    background-color: var(--border-medium);
+    transition: 0.2s;
     border-radius: 18px;
 }
 .slider:before {
@@ -159,10 +145,10 @@
     left: 3px;
     bottom: 3px;
     background-color: #ffffff;
-    transition: 0.25s;
+    transition: 0.2s;
     border-radius: 50%;
 }
-input:checked + .slider { background-color: var(--blue-tactical); }
+input:checked + .slider { background-color: var(--primary-blue); }
 input:checked + .slider:before { transform: translateX(14px); }
 
 /* Forensic Information Cards */
@@ -173,8 +159,7 @@ input:checked + .slider:before { transform: translateX(14px); }
     padding: 14px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    box-shadow: var(--shadow-sm);
+    gap: 10px;
 }
 
 .card-header {
@@ -184,9 +169,9 @@ input:checked + .slider:before { transform: translateX(14px); }
 }
 
 .card-title {
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 700;
-    color: var(--text-primary);
+    color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
@@ -197,12 +182,9 @@ input:checked + .slider:before { transform: translateX(14px); }
     align-items: center;
     font-size: 11px;
     padding: 4px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
-
-.field-row:last-child {
-    border-bottom: none;
-}
+.field-row:last-child { border-bottom: none; }
 
 .field-lbl {
     color: var(--text-muted);
@@ -215,11 +197,27 @@ input:checked + .slider:before { transform: translateX(14px); }
     font-weight: 600;
 }
 
-/* Modal Dialog */
+/* Progress / Taint Bars */
+.progress-track {
+    width: 100%;
+    height: 6px;
+    background: var(--bg-elevated);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    margin-top: 4px;
+}
+
+.progress-fill {
+    height: 100%;
+    border-radius: var(--radius-full);
+    transition: width 0.4s ease;
+}
+
+/* Modal Dialogs */
 .modal-overlay {
     position: fixed;
     top: 0; left: 0; width: 100vw; height: 100vh;
-    background: rgba(2, 6, 12, 0.85);
+    background: rgba(3, 7, 18, 0.85);
     backdrop-filter: blur(8px);
     display: none;
     justify-content: center;
@@ -231,7 +229,7 @@ input:checked + .slider:before { transform: translateX(14px); }
     background: var(--bg-surface);
     border: 1px solid var(--border-medium);
     border-radius: var(--radius-lg);
-    width: 800px;
+    width: 820px;
     max-width: 92vw;
     max-height: 88vh;
     display: flex;
@@ -249,6 +247,12 @@ input:checked + .slider:before { transform: translateX(14px); }
     background: var(--bg-elevated);
 }
 
+.modal-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+}
+
 .modal-close {
     font-size: 20px;
     color: var(--text-muted);
@@ -256,10 +260,7 @@ input:checked + .slider:before { transform: translateX(14px); }
     line-height: 1;
     transition: var(--transition-fast);
 }
-.modal-close:hover {
-    color: var(--text-primary);
-}
-
+.modal-close:hover { color: var(--text-primary); }
 
 .modal-body {
     padding: 20px;
@@ -281,3 +282,40 @@ input:checked + .slider:before { transform: translateX(14px); }
     gap: 10px;
     background: var(--bg-elevated);
 }
+
+/* Form Controls inside Modals */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.form-input {
+    background: var(--bg-base);
+    border: 1px solid var(--border-medium);
+    color: var(--text-primary);
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    outline: none;
+    transition: var(--transition-fast);
+}
+.form-input:focus {
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 0 1px var(--accent-cyan);
+}
+.form-input-mono { font-family: var(--font-mono); }
