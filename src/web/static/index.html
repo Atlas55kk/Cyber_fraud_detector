@@ -11,10 +11,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     
     <!-- Modular Enterprise Stylesheets -->
-    <link rel="stylesheet" href="css/variables.css?v=15">
-    <link rel="stylesheet" href="css/layout.css?v=15">
-    <link rel="stylesheet" href="css/components.css?v=15">
-    <link rel="stylesheet" href="css/graph.css?v=15">
+    <link rel="stylesheet" href="css/variables.css?v=17">
+    <link rel="stylesheet" href="css/layout.css?v=17">
+    <link rel="stylesheet" href="css/components.css?v=17">
+    <link rel="stylesheet" href="css/graph.css?v=17">
 
     <!-- Cytoscape Graph Engine -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"></script>
@@ -107,6 +107,18 @@
         <!-- Whiteboard Canvas Hero -->
         <div id="cy-container">
             <div id="cy"></div>
+
+            <!-- Tactical Canvas Preloader / Scanner -->
+            <div id="canvas-preloader" class="canvas-preloader" style="display:none;">
+                <div class="preloader-radar-core">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M12 2a10 10 0 0 1 10 10"></path>
+                    </svg>
+                </div>
+                <div class="preloader-caption" id="preloader-caption">TRAVERSING ON-CHAIN GRAPH...</div>
+                <div class="preloader-subtext" id="preloader-subtext">Executing Priority Best-First Search</div>
+            </div>
 
             <!-- Floating Top-Left Telemetry Chip -->
             <div class="floating-case-chip">
@@ -404,10 +416,10 @@
     </div>
 
     <!-- Modular Script Ingestion -->
-    <script src="js/standalone_presets.js?v=16"></script>
-    <script src="js/graph_controller.js?v=16"></script>
-    <script src="js/cff_manager.js?v=16"></script>
-    <script src="js/notice_manager.js?v=16"></script>
-    <script src="js/app.js?v=16"></script>
+    <script src="js/standalone_presets.js?v=17"></script>
+    <script src="js/graph_controller.js?v=17"></script>
+    <script src="js/cff_manager.js?v=17"></script>
+    <script src="js/notice_manager.js?v=17"></script>
+    <script src="js/app.js?v=17"></script>
 </body>
 </html>
