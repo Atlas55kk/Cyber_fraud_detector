@@ -637,7 +637,7 @@ class ForensicApp {
                             this.updateHUD(data);
                             this.updateMLCard(data.ml_intelligence);
                             this.updateActionableList(data.actionable_cex);
-                            this.graphController.runIncrementalLayout(true);
+                            this.graphController.applyLayout(this.graphController.currentLayout || 'dagre');
                             window.logSuccess(`[COMPLETED] Stream complete: ${data.stats.total_accounts_tracked} wallets, ${data.stats.total_transactions_tracked} wires tracked.`);
                             this.setExecutionStatus('Engine Ready (Active Graph)', 100, true, `✓ Streaming complete: ${data.stats.total_accounts_tracked} wallets, ${data.stats.total_transactions_tracked} wires.`);
                         } else if (eventType === 'error') {
@@ -691,8 +691,10 @@ class ForensicApp {
         const sealBadge = document.getElementById('cff-seal-badge');
 
         const elements = data.elements || [];
-        const nodes = elements.filter(el => el.group === 'nodes').map(el => el.data);
-        const wires = elements.filter(el => el.group === 'edges').map(el => el.data);
+        const nodes = elements.filter(el => el.group === 'nodes');
+        const wires = elements.filter(el => el.group === 'edges');
+
+        this.graphController.clearCanvas();
 
         this.setExecutionStatus('Connecting to RPC node...', 15, false, `● Connecting to RPC node & validating ${wallet.substring(0, 10)}...`);
         window.logInfo(`[STANDALONE] Tracing on-chain graph for ${wallet.substring(0, 14)}...`);
@@ -752,7 +754,7 @@ class ForensicApp {
         this.updateHUD(data);
         this.updateMLCard(data.ml_intelligence);
         this.updateActionableList(data.actionable_cex);
-        this.graphController.runIncrementalLayout(true);
+        this.graphController.applyLayout(this.graphController.currentLayout || 'dagre');
         window.logSuccess(`[COMPLETED] Stream complete: ${data.stats.total_accounts_tracked} wallets, ${data.stats.total_transactions_tracked} wires tracked.`);
         this.setExecutionStatus('Engine Ready (Active Graph)', 100, true, `✓ Streaming complete: ${data.stats.total_accounts_tracked} wallets, ${data.stats.total_transactions_tracked} wires.`);
     }
