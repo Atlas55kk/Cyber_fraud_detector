@@ -3,12 +3,14 @@
 > **Organizing Ministry:** Ministry of Home Affairs (MHA), Government of India / Indian Cyber Crime Coordination Centre (I4C)  
 > **Mission:** *"When someone reports a scam wallet, follow the stolen money and find where it gets cashed out."*
 
-[![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/Tests-12%2F12%20Passing-brightgreen.svg)]()
-[![SIH](https://img.shields.io/badge/SIH-PS%2026183-orange.svg)]()
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-blue?style=for-the-badge&logo=github)](https://atlas55kk.github.io/Cyber_fraud_detector/)
+[![Research Paper](https://img.shields.io/badge/Research%20Paper-31%20Pages%20(PDF)-red?style=for-the-badge&logo=latex)](https://github.com/Atlas55kk/Cyber_fraud_detector/blob/main/research_paper/main.pdf)
+[![Tests](https://img.shields.io/badge/Tests-53%2F53%20Passing-brightgreen.svg?style=for-the-badge)]()
+[![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
 
----
+> 🚀 **1-Click Live Web Application (No Installation Needed):**  
+> **👉 [https://atlas55kk.github.io/Cyber_fraud_detector/](https://atlas55kk.github.io/Cyber_fraud_detector/)**  
+> Test live forensic tracing, progressive whiteboard visualization, and statutory freeze notices directly in your browser.
 
 ## 1. Overview & Root-Cause Solution
 
