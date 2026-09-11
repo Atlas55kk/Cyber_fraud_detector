@@ -10,7 +10,7 @@ import time
 import math
 import re
 from typing import Dict, Any, List, Optional
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -28,6 +28,9 @@ from src.fetchers.mock_generator import MockFraudScenarioGenerator
 from src.fetchers.etherscan_fetcher import EtherscanFetcher
 from src.fetchers.tron_fetcher import TronFetcher
 from src.reporting.dossier_generator import LegalDossierGenerator, CaseDetails
+from src.reporting.pdf_generator import LegalNoticePDFGenerator
+from src.ml.transaction_classifier import TransactionMicroClassifier
+from src.ml.campaign_classifier import CampaignMacroClassifier
 
 app = FastAPI(
     title="Crypto Fraud Tracing Engine (MHA / SIH PS 26183)",
@@ -39,6 +42,8 @@ app = FastAPI(
 entity_resolver = EntityResolver()
 etherscan_fetcher = EtherscanFetcher()
 tron_fetcher = TronFetcher()
+micro_classifier = TransactionMicroClassifier()
+macro_classifier = CampaignMacroClassifier()
 
 # Request Models
 class TraceRequest(BaseModel):
@@ -217,6 +222,22 @@ async def execute_trace(req: TraceRequest):
         for n in actionable_cex_nodes
     ]
 
+    # Two-Tier ML Intelligence Evaluation
+    macro_eval = macro_classifier.evaluate_canvas(canvas)
+    logs.append(
+        f"[AI/ML CLASSIFIER] Macro Campaign Profile: {macro_eval.campaign_name} "
+        f"(Risk Score: {macro_eval.overall_risk_score}/100 | Priority: {macro_eval.investigation_priority})"
+    )
+
+    ml_intel = {
+        "campaign_name": macro_eval.campaign_name,
+        "overall_risk_score": macro_eval.overall_risk_score,
+        "investigation_priority": macro_eval.investigation_priority,
+        "topological_fingerprint": macro_eval.topological_fingerprint,
+        "cex_offramps_detected": macro_eval.cex_offramps_detected,
+        "summary": macro_eval.summary
+    }
+
     return {
         "success": True,
         "chain": chain_name,
@@ -225,6 +246,7 @@ async def execute_trace(req: TraceRequest):
         "stats": stats,
         "elements": elements,
         "actionable_cex": actionable_data,
+        "ml_intelligence": ml_intel,
         "logs": logs
     }
 
@@ -303,3 +325,52 @@ async def create_legal_notice(req: NoticeRequest):
         "entity_name": entity_name,
         "notice_text": final_notice
     }
+
+
+@app.post("/api/download_notice_pdf")
+async def download_notice_pdf(req: NoticeRequest):
+    """
+    Generates and streams formal Section 94 BNSS Requisition Notice as a downloadable PDF.
+    Watermarked as investigative draft with no unauthorized seals.
+    """
+    clean_target = WhiteboardCanvas.normalize_address(req.target_address)
+    
+    canvas = WhiteboardCanvas(canvas_id="PDF_Notice_Generation")
+    canvas.set_incident_root("0xscammer_wallet", req.loss_inr / 85.0, int(time.time()) - 3600)
+    
+    entity_info = entity_resolver.resolve(clean_target)
+    entity_name = entity_info.name if entity_info else "Identified Centralized Exchange Target"
+
+    target_node = canvas.get_or_create_node(
+        address=clean_target,
+        role=NodeRole.CEX_DEPOSIT,
+        stolen_held=req.loss_inr / 85.0,
+        stolen_taint=1.0,
+        entity_tag=entity_name
+    )
+
+    canvas.add_wire("0xtx_hop_1", "0xscammer_wallet", "0xmule_1", req.loss_inr / 85.0, timestamp=int(time.time()) - 3000)
+    canvas.add_wire("0xtx_hop_2", "0xmule_1", clean_target, req.loss_inr / 85.0, timestamp=int(time.time()) - 1500)
+
+    case = CaseDetails(
+        ack_number=req.ack_number,
+        fir_number=req.fir_number,
+        police_station=req.police_station,
+        investigating_officer=req.investigating_officer,
+        victim_name=req.victim_name,
+        loss_inr=req.loss_inr,
+        loss_crypto_str=req.loss_crypto_str
+    )
+
+    pdf_gen = LegalNoticePDFGenerator(canvas)
+    pdf_bytes = pdf_gen.generate_pdf_bytes(case, target_node, entity_info)
+
+    safe_target = re.sub(r"[^a-zA-Z0-9]", "_", clean_target)[:12]
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f"attachment; filename=Section_94_BNSS_{safe_target}.pdf"
+        }
+    )
+
