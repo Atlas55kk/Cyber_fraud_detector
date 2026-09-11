@@ -191,45 +191,45 @@ class WhiteboardCanvas:
         dfs(root, [], {root})
         return all_paths
 
+    def node_to_cytoscape(self, node: ForensicNodeBox) -> Dict[str, Any]:
+        """Converts a single ForensicNodeBox to a Cytoscape node element."""
+        return {
+            "group": "nodes",
+            "data": {
+                "id": node.address,
+                "label": f"{node.entity_tag or node.address[:6]+'..'+node.address[-4:]}",
+                "address": node.address,
+                "role": node.role.value,
+                "taint_pct": round(node.stolen_taint_ratio * 100, 1),
+                "held_amount": round(node.stolen_amount_held, 2),
+                "balance": round(node.current_balance, 2),
+                "gas_burned": round(node.gas_burned_total, 4)
+            }
+        }
+
+    def wire_to_cytoscape(self, wire: ForensicWire) -> Dict[str, Any]:
+        """Converts a single ForensicWire to a Cytoscape edge element."""
+        return {
+            "group": "edges",
+            "data": {
+                "id": wire.tx_hash,
+                "source": wire.from_address,
+                "target": wire.to_address,
+                "label": f"{wire.value:.2f} {wire.token_symbol}",
+                "value": wire.value,
+                "tainted_value": wire.tainted_value,
+                "taint_ratio": wire.taint_ratio,
+                "gas_fee": wire.gas_fee,
+                "timestamp": wire.timestamp
+            }
+        }
+
     def to_cytoscape_elements(self) -> List[Dict[str, Any]]:
         """
         Exports the entire canvas graph into Cytoscape.js format for interactive UI rendering.
         """
-        elements = []
-        
-        # Nodes
-        for addr, node in self.nodes.items():
-            elements.append({
-                "group": "nodes",
-                "data": {
-                    "id": addr,
-                    "label": f"{node.entity_tag or addr[:6]+'..'+addr[-4:]}",
-                    "address": addr,
-                    "role": node.role.value,
-                    "taint_pct": round(node.stolen_taint_ratio * 100, 1),
-                    "held_amount": round(node.stolen_amount_held, 2),
-                    "balance": round(node.current_balance, 2),
-                    "gas_burned": round(node.gas_burned_total, 4)
-                }
-            })
-
-        # Edges
-        for h, wire in self.wires.items():
-            elements.append({
-                "group": "edges",
-                "data": {
-                    "id": h,
-                    "source": wire.from_address,
-                    "target": wire.to_address,
-                    "label": f"{wire.value:.2f} {wire.token_symbol}",
-                    "value": wire.value,
-                    "tainted_value": wire.tainted_value,
-                    "taint_ratio": wire.taint_ratio,
-                    "gas_fee": wire.gas_fee,
-                    "timestamp": wire.timestamp
-                }
-            })
-
+        elements = [self.node_to_cytoscape(node) for node in self.nodes.values()]
+        elements.extend([self.wire_to_cytoscape(wire) for wire in self.wires.values()])
         return elements
 
     def summary_stats(self) -> Dict[str, Any]:

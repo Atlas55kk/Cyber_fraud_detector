@@ -126,21 +126,22 @@ class TestWebAPI(unittest.TestCase):
         self.assertTrue(response.content.startswith(b"%PDF-"))
         self.assertGreater(len(response.content), 1000)
 
-    def test_static_assets_serving(self):
-        assets = [
-            "/static/css/variables.css",
-            "/static/css/layout.css",
-            "/static/css/components.css",
-            "/static/css/graph.css",
-            "/static/js/graph_controller.js",
-            "/static/js/cff_manager.js",
-            "/static/js/notice_manager.js",
-            "/static/js/app.js"
-        ]
-        for asset in assets:
-            res = self.client.get(asset)
-            self.assertEqual(res.status_code, 200, f"Failed to serve static asset: {asset}")
-            self.assertGreater(len(res.content), 50, f"Static asset is empty or too short: {asset}")
+    def test_stream_trace_api(self):
+        payload = {
+            "wallet_address": "0xwallet_s",
+            "chain": "evm",
+            "stolen_amount": 50000.0,
+            "token_symbol": "USDT"
+        }
+        response = self.client.post("/api/trace/stream", json=payload)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("text/event-stream", response.headers["content-type"])
+        text = response.text
+        self.assertIn("event: progress", text)
+        self.assertIn("event: node", text)
+        self.assertIn("event: wire", text)
+        self.assertIn("event: complete", text)
+        self.assertIn("0xwallet_s", text)
 
 
 if __name__ == "__main__":

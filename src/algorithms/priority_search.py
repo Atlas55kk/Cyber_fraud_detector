@@ -13,7 +13,7 @@ Guarantees:
 
 import math
 import heapq
-from typing import List, Dict, Set, Optional, Tuple, Callable
+from typing import List, Dict, Set, Optional, Tuple, Callable, Any
 from src.core.node_box import ForensicNodeBox, NodeRole
 from src.core.wire_edge import ForensicWire
 from src.core.canvas import WhiteboardCanvas
@@ -115,7 +115,8 @@ class PrioritySearchEngine:
 
     def run_trace(
         self,
-        fetch_outgoing_wires_func: Callable[[str], List[ForensicWire]]
+        fetch_outgoing_wires_func: Callable[[str], List[ForensicWire]],
+        on_step: Optional[Callable[[str, Any], None]] = None
     ) -> List[ForensicNodeBox]:
         """
         Runs the priority search starting from the canvas incident root.
@@ -123,6 +124,7 @@ class PrioritySearchEngine:
         Args:
             fetch_outgoing_wires_func: Function taking an address and returning its outgoing wires
                                        (can be live API fetcher or mock generator).
+            on_step: Optional callback for streaming discovery events (event_type, data).
         
         Returns:
             List of identified actionable CEX deposit nodes where stolen funds landed.
@@ -134,6 +136,9 @@ class PrioritySearchEngine:
         root_node = self.canvas.nodes[root_addr]
         incident_time = self.canvas.incident_timestamp or 0
         initial_stolen = self.canvas.initial_stolen_amount
+
+        if on_step:
+            on_step("node", self.canvas.node_to_cytoscape(root_node))
 
         # Priority Queue holds: (-priority_score, hop_count, wire_hash, sender_addr, receiver_addr)
         # Note: heapq in Python is a min-heap, so negative score gives max-priority.
@@ -162,6 +167,10 @@ class PrioritySearchEngine:
             
             score = self.compute_edge_priority(w, root_node, receiver_node, incident_time, initial_stolen)
             heapq.heappush(pq, (-score, 1, w.tx_hash, root_addr, w.to_address))
+
+            if on_step:
+                on_step("node", self.canvas.node_to_cytoscape(receiver_node))
+                on_step("wire", self.canvas.wire_to_cytoscape(w))
 
         expanded_node_count = 1
 
@@ -203,6 +212,9 @@ class PrioritySearchEngine:
             if sweep_result and curr_node not in actionable_cex_found and curr_node.stolen_amount_held > 0:
                 actionable_cex_found.append(curr_node)
 
+            if on_step:
+                on_step("hop", {"hop": hop, "address": current_addr, "nodes_count": len(self.canvas.nodes), "wires_count": len(self.canvas.wires)})
+
             for w in outgoing_wires:
                 if w.tx_hash in visited_wires:
                     continue
@@ -221,6 +233,10 @@ class PrioritySearchEngine:
                 )
                 rec_node = self.canvas.get_or_create_node(w.to_address)
                 tainted_val, rec_ratio, is_pruned = self.taint_engine.propagate_taint(curr_node, rec_node, registered_wire)
+
+                if on_step:
+                    on_step("node", self.canvas.node_to_cytoscape(rec_node))
+                    on_step("wire", self.canvas.wire_to_cytoscape(registered_wire))
 
                 # Dynamic Pruning: If taint is negligible or dust, discard branch!
                 if is_pruned:
