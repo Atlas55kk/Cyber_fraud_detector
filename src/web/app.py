@@ -31,6 +31,7 @@ from src.reporting.dossier_generator import LegalDossierGenerator, CaseDetails
 from src.reporting.pdf_generator import LegalNoticePDFGenerator
 from src.ml.transaction_classifier import TransactionMicroClassifier
 from src.ml.campaign_classifier import CampaignMacroClassifier
+from src.core.cff_engine import CryptoForensicFileEngine
 
 app = FastAPI(
     title="Crypto Fraud Tracing Engine (MHA / SIH PS 26183)",
@@ -52,6 +53,15 @@ class TraceRequest(BaseModel):
     stolen_amount: float = 50000.0
     token_symbol: str = "USDT"
     mode: str = "auto" # "auto", "live", "benchmark"
+    victim_address: Optional[str] = None
+    incident_timestamp: Optional[int] = None
+    fir_number: Optional[str] = "FIR No. 42/2026"
+    ack_number: Optional[str] = "NCRP/2026/910283"
+    complainant_name: Optional[str] = "Confidential Complainant"
+    loss_inr: Optional[float] = 4250000.0
+
+class CFFLoadRequest(BaseModel):
+    cff_content: str
 
 class NoticeRequest(BaseModel):
     ack_number: str = "NCRP/2026/881230"
@@ -119,7 +129,8 @@ async def execute_trace(req: TraceRequest):
     search_cfg = SearchConfig(max_hops=4, max_nodes_budget=35, min_taint_ratio=0.01)
     search_engine = PrioritySearchEngine(canvas, taint_engine, entity_resolver, config=search_cfg)
 
-    canvas.set_incident_root(clean_addr, req.stolen_amount, int(time.time()) - 3600)
+    inc_time = req.incident_timestamp or (int(time.time()) - 3600)
+    canvas.set_incident_root(clean_addr, req.stolen_amount, inc_time)
     
     # Determine network and format
     is_tron = req.chain.lower() == "tron" or clean_addr.startswith("T")
@@ -129,6 +140,20 @@ async def execute_trace(req: TraceRequest):
         f"Ingested reported wallet: {clean_addr}",
         f"Selected Network: {chain_name} | Reported Loss: {req.stolen_amount:,.2f} {req.token_symbol}"
     ]
+
+    # Correlate Victim Entry if provided in Intake Form
+    if req.victim_address and req.victim_address.strip():
+        clean_victim = WhiteboardCanvas.normalize_address(req.victim_address)
+        canvas.get_or_create_node(clean_victim, role=NodeRole.VICTIM)
+        canvas.add_wire(
+            tx_hash=f"0xtx_ingress_{int(time.time())}",
+            from_address=clean_victim,
+            to_address=clean_addr,
+            value=req.stolen_amount,
+            token_symbol=req.token_symbol,
+            timestamp=inc_time
+        )
+        logs.append(f"Correlated Crime Origin: Victim ({clean_victim[:10]}...) -> Scammer Ingress ({clean_addr[:10]}...)")
 
     # Evaluate whether to trigger live on-chain ingestion
     is_real_candidate = False
@@ -238,6 +263,24 @@ async def execute_trace(req: TraceRequest):
         "summary": macro_eval.summary
     }
 
+    # Export Sealed .cff Container (Section 63 BNSS Electronic Evidence)
+    case_meta = CaseDetails(
+        ack_number=req.ack_number or "NCRP/2026/910283",
+        fir_number=req.fir_number or "FIR No. 42/2026",
+        police_station="Cyber Crime Police Station, Central District",
+        investigating_officer="Inspector R. K. Sharma",
+        victim_name=req.complainant_name or "Confidential Complainant",
+        loss_inr=req.loss_inr or (req.stolen_amount * 85.0),
+        loss_crypto_str=f"{req.stolen_amount:,.2f} {req.token_symbol}"
+    )
+    cff_container = CryptoForensicFileEngine.export_cff(
+        canvas=canvas,
+        case=case_meta,
+        ml_intelligence=ml_intel,
+        chain=chain_name,
+        victim_address=req.victim_address
+    )
+
     return {
         "success": True,
         "chain": chain_name,
@@ -247,6 +290,7 @@ async def execute_trace(req: TraceRequest):
         "elements": elements,
         "actionable_cex": actionable_data,
         "ml_intelligence": ml_intel,
+        "cff_container": cff_container,
         "logs": logs
     }
 
@@ -373,4 +417,60 @@ async def download_notice_pdf(req: NoticeRequest):
             "Content-Disposition": f"attachment; filename=Section_94_BNSS_{safe_target}.pdf"
         }
     )
+
+
+@app.post("/api/cff/load")
+async def load_cff_file(req: CFFLoadRequest):
+    """
+    Parses, cryptographically verifies, and interprets an uploaded .cff forensic case file.
+    Renders nodes and wires on the whiteboard canvas with zero external API calls.
+    """
+    try:
+        canvas, case, ml_intel, is_tamper_free, status_msg = CryptoForensicFileEngine.import_cff(req.cff_content)
+    except Exception as ex:
+        raise HTTPException(status_code=400, detail=f"Failed to parse .cff file: {str(ex)}")
+
+    stats = canvas.summary_stats()
+    elements = canvas.to_cytoscape_elements()
+
+    actionable_cex_nodes = [n for n in canvas.nodes.values() if n.role == NodeRole.CEX_DEPOSIT]
+    actionable_data = [
+        {
+            "address": n.address,
+            "entity_tag": n.entity_tag or "Centralized Exchange",
+            "stolen_held": n.stolen_amount_held,
+            "taint_pct": round(n.stolen_taint_ratio * 100, 1),
+            "paths": canvas.trace_paths_to_address(n.address)
+        }
+        for n in actionable_cex_nodes
+    ]
+
+    logs = [
+        f"[CFF INTERPRETER] Loaded case container: {canvas.canvas_id}",
+        f"[CRYPTOGRAPHIC AUDIT] {status_msg} (Section 63 BNSS)",
+        f"[OFFLINE RECONSTRUCTION] Interpreted {len(canvas.nodes)} accounts across {len(canvas.wires)} transactions without network calls."
+    ]
+
+    return {
+        "success": True,
+        "is_cff_import": True,
+        "is_tamper_free": is_tamper_free,
+        "status_message": status_msg,
+        "case_metadata": {
+            "ack_number": case.ack_number,
+            "fir_number": case.fir_number,
+            "police_station": case.police_station,
+            "investigating_officer": case.investigating_officer,
+            "victim_name": case.victim_name,
+            "loss_inr": case.loss_inr,
+            "loss_crypto_str": case.loss_crypto_str,
+            "crime_root_address": canvas.incident_root_address
+        },
+        "stats": stats,
+        "elements": elements,
+        "actionable_cex": actionable_data,
+        "ml_intelligence": ml_intel,
+        "logs": logs
+    }
+
 

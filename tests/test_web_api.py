@@ -45,6 +45,45 @@ class TestWebAPI(unittest.TestCase):
         self.assertIn("ml_intelligence", data)
         self.assertIn("campaign_name", data["ml_intelligence"])
         self.assertGreaterEqual(data["ml_intelligence"]["overall_risk_score"], 0)
+        self.assertIn("cff_container", data)
+        self.assertIn("cryptographic_seal", data["cff_container"])
+
+    def test_evm_trace_with_victim_intake(self):
+        payload = {
+            "wallet_address": "0xwallet_s",
+            "victim_address": "0xvictim_complainant_wallet",
+            "chain": "evm",
+            "stolen_amount": 50000.0,
+            "fir_number": "FIR 99/2026",
+            "ack_number": "NCRP/2026/888123"
+        }
+        response = self.client.post("/api/trace", json=payload)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(data["success"])
+        # Check that victim node exists
+        node_addrs = [el["data"]["id"] for el in data["elements"] if "source" not in el["data"]]
+        self.assertIn("0xvictim_complainant_wallet", node_addrs)
+
+    def test_load_cff_api(self):
+        # 1. Run trace to get CFF container
+        trace_payload = {
+            "wallet_address": "0xwallet_s",
+            "chain": "evm",
+            "stolen_amount": 50000.0
+        }
+        trace_resp = self.client.post("/api/trace", json=trace_payload)
+        cff_container = trace_resp.json()["cff_container"]
+
+        # 2. Post to /api/cff/load
+        import json
+        load_resp = self.client.post("/api/cff/load", json={"cff_content": json.dumps(cff_container)})
+        self.assertEqual(load_resp.status_code, 200)
+        load_data = load_resp.json()
+        self.assertTrue(load_data["success"])
+        self.assertTrue(load_data["is_tamper_free"])
+        self.assertIn("VERIFIED", load_data["status_message"])
+        self.assertGreater(len(load_data["elements"]), 0)
 
     def test_tron_trace_api(self):
         payload = {
