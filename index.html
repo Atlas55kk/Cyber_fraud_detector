@@ -4,240 +4,58 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crypto Fraud Tracing Engine | Ministry of Home Affairs (MHA / I4C)</title>
-    <!-- Cytoscape for Graph Visualization -->
+    
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Modular Tactical Stylesheets -->
+    <link rel="stylesheet" href="/static/css/variables.css">
+    <link rel="stylesheet" href="/static/css/layout.css">
+    <link rel="stylesheet" href="/static/css/components.css">
+    <link rel="stylesheet" href="/static/css/graph.css">
+
+    <!-- Cytoscape Graph Core and Dagre Layout Extension -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dagre/0.8.5/dagre.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/cytoscape-dagre@2.5.0/cytoscape-dagre.min.js"></script>
-    <style>
-        :root {
-            --bg-dark: #090d13;
-            --panel-bg: #121820;
-            --card-bg: #1a222d;
-            --border: #263242;
-            --text-main: #e6edf3;
-            --text-muted: #8b949e;
-            --accent-blue: #58a6ff;
-            --accent-green: #2ea043;
-            --accent-red: #f85149;
-            --accent-orange: #d29922;
-            --accent-purple: #bc8cff;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace; }
-        body { background: var(--bg-dark); color: var(--text-main); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-
-        /* Top Header */
-        header {
-            background: var(--panel-bg);
-            border-bottom: 1px solid var(--border);
-            padding: 10px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .brand { display: flex; align-items: center; gap: 14px; }
-        .badge-gov { background: #1f6feb; color: white; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; letter-spacing: 0.5px; }
-        .badge-sih { background: #238636; color: white; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
-        
-        /* Control Bar */
-        .control-bar {
-            background: #0f141c;
-            border-bottom: 1px solid var(--border);
-            padding: 12px 24px;
-            display: flex;
-            gap: 16px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        .input-group { display: flex; flex-direction: column; gap: 4px; }
-        .input-group label { font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
-        .input-box {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            color: var(--text-main);
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 13px;
-            outline: none;
-        }
-        .input-box:focus { border-color: var(--accent-blue); }
-        .btn-trace {
-            background: #238636;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            height: 38px;
-            margin-top: 18px;
-            transition: background 0.2s;
-        }
-        .btn-trace:hover { background: #2ea043; }
-        .btn-preset {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            color: var(--text-muted);
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-size: 11px;
-            cursor: pointer;
-            margin-top: 18px;
-        }
-        .btn-preset:hover { color: var(--text-main); border-color: var(--accent-blue); }
-
-        /* KPI Dashboard Bar */
-        .kpi-bar {
-            background: var(--panel-bg);
-            border-bottom: 1px solid var(--border);
-            padding: 8px 24px;
-            display: flex;
-            gap: 30px;
-        }
-        .kpi-item { display: flex; flex-direction: column; }
-        .kpi-val { font-size: 16px; font-weight: bold; color: var(--accent-blue); }
-        .kpi-lbl { font-size: 11px; color: var(--text-muted); }
-
-        /* Main Viewport Layout */
-        #main-viewport { display: flex; flex: 1; position: relative; overflow: hidden; }
-        #cy { flex: 1; height: 100%; background: #090d13; }
-
-        /* Sidebar Panel */
-        #sidebar {
-            width: 380px;
-            background: var(--panel-bg);
-            border-left: 1px solid var(--border);
-            padding: 18px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            overflow-y: auto;
-        }
-        .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 14px; }
-        .card h3 { font-size: 13px; color: var(--accent-blue); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .field { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 12px; }
-        .field-lbl { color: var(--text-muted); }
-        .field-val { font-weight: 600; text-align: right; word-break: break-all; max-width: 220px; }
-        
-        .btn-notice {
-            background: #1f6feb;
-            color: white;
-            border: none;
-            padding: 10px 14px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 12px;
-            width: 100%;
-            text-align: center;
-            margin-top: 8px;
-        }
-        .btn-notice:hover { background: #388bfd; }
-
-        /* Bottom Console Log */
-        #log-drawer {
-            height: 120px;
-            background: #0d1117;
-            border-top: 1px solid var(--border);
-            padding: 8px 16px;
-            overflow-y: auto;
-            font-family: monospace;
-            font-size: 11px;
-            color: #7ee787;
-        }
-        .log-entry { margin-bottom: 4px; }
-        .log-time { color: var(--text-muted); margin-right: 8px; }
-
-        /* Modal for Notice */
-        #notice-modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.75);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .modal-content {
-            background: var(--panel-bg);
-            border: 1px solid var(--border);
-            width: 750px;
-            max-height: 85vh;
-            border-radius: 8px;
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
-        .modal-body {
-            background: var(--card-bg);
-            padding: 16px;
-            border-radius: 6px;
-            font-family: monospace;
-            font-size: 11px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-            color: var(--text-main);
-            flex: 1;
-            max-height: 55vh;
-        }
-        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
-        .btn-close { background: #30363d; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; }
-        .btn-copy { background: #238636; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; }
-
-        /* Legend */
-        .legend-bar { display: flex; gap: 16px; font-size: 11px; margin-top: 4px; }
-        .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; margin-right: 4px; }
-
-        /* Practice / Official Mode Toggle Switch */
-        .switch { position: relative; display: inline-block; width: 34px; height: 18px; margin: 0; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #30363d; transition: .3s; border-radius: 18px; }
-        .slider:before { position: absolute; content: ""; height: 12px; width: 12px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
-        input:checked + .slider { background-color: #238636; }
-        input:checked + .slider:before { transform: translateX(16px); }
-    </style>
 </head>
 <body>
-    <!-- Top Header -->
-    <header>
-        <div class="brand">
-            <span class="badge-gov">GOVT OF INDIA</span>
-            <span class="badge-sih">SIH PS 26183</span>
-            <h2 style="font-size:16px;">Crypto Fraud Tracing Engine (I4C / MHA)</h2>
-            <div class="legend-bar">
-                <span><span class="dot" style="background:var(--accent-red)"></span> Crime Root</span>
-                <span><span class="dot" style="background:var(--accent-orange)"></span> Mule Transit</span>
-                <span><span class="dot" style="background:var(--accent-green)"></span> Actionable CEX Off-Ramp</span>
+    <!-- Top Master Header -->
+    <header class="master-header">
+        <div class="header-brand">
+            <span class="badge badge-gov">GOVT OF INDIA</span>
+            <span class="badge badge-sih">SIH PS 26183</span>
+            <h1 class="header-title">Crypto Fraud Tracing Engine (I4C / MHA)</h1>
+            <div class="header-legend">
+                <span class="legend-item"><span class="legend-dot" style="background:var(--accent-crime)"></span> Crime Root</span>
+                <span class="legend-item"><span class="legend-dot" style="background:var(--accent-mule)"></span> Mule Transit</span>
+                <span class="legend-item"><span class="legend-dot" style="background:var(--accent-cex)"></span> Actionable CEX Off-Ramp</span>
             </div>
         </div>
-        <div style="display:flex; align-items:center; gap:16px;">
-            <span id="cff-seal-badge" style="display:none; font-size:11px; padding:4px 8px; border-radius:4px; font-weight:bold;"></span>
-            <div style="display:flex; align-items:center; gap:8px; background:var(--card-bg); padding:5px 12px; border-radius:6px; border:1px solid var(--border);">
+        <div class="header-status">
+            <span id="cff-seal-badge" class="badge badge-seal" style="display:none;"></span>
+            <div class="dispatch-mode-toggle">
                 <label class="switch">
-                    <input type="checkbox" id="dispatch-toggle" onchange="onToggleDispatch(this.checked)">
+                    <input type="checkbox" id="dispatch-toggle" onchange="window.app.noticeManager.onToggleDispatch(this.checked)">
                     <span class="slider"></span>
                 </label>
-                <span id="dispatch-status-badge" style="font-size:11px; font-weight:bold; color:#e3b341;">
+                <span id="dispatch-status-badge" style="font-size:11px; font-weight:700; color:#e3b341;">
                     🧪 PRACTICE MODE (Sandbox)
                 </span>
             </div>
-            <div style="font-size:12px; color:var(--text-muted);">
-                Active Standard: <strong style="color:var(--text-main);">Section 94 BNSS / 91 CrPC</strong>
+            <div class="statutory-tag">
+                Active Mandate: <strong>Section 94 BNSS / 91 CrPC</strong>
             </div>
         </div>
     </header>
 
-    <!-- Control Bar -->
+    <!-- Top Primary Control Bar -->
     <div class="control-bar">
-        <div class="input-group" style="width:260px;">
-            <label>Case Study / Real Incident</label>
-            <select id="case-select" class="input-box" onchange="onCaseSelect(this.value)">
+        <div class="input-group" style="width:280px;">
+            <label for="case-select">Incident / Case Study</label>
+            <select id="case-select" class="input-field" onchange="window.app.onCaseSelect(this.value)">
                 <option value="evm_ps_bench" selected>🎯 MHA PS 26183 Multi-Hop Structuring (Benchmark)</option>
                 <option value="tron_1930_bench">🚨 1930 NCRP TRON Syndicate (Benchmark)</option>
                 <option value="wazirx_live">🔥 WazirX $235M Hack (Ethereum Mainnet - Live)</option>
@@ -246,625 +64,252 @@
                 <option value="custom">✏️ Custom Real Wallet Entry</option>
             </select>
         </div>
-        <div class="input-group" style="width:120px;">
-            <label>Ingestion Mode</label>
-            <select id="mode-select" class="input-box">
+        <div class="input-group" style="width:130px;">
+            <label for="mode-select">Ingestion Pipeline</label>
+            <select id="mode-select" class="input-field">
                 <option value="auto" selected>Auto-Detect</option>
                 <option value="live">Live Mainnet</option>
                 <option value="benchmark">Benchmark</option>
             </select>
         </div>
-        <div class="input-group" style="flex:1;">
-            <label>Target Fraud Wallet Address</label>
-            <input type="text" id="wallet-input" class="input-box" value="0xwallet_s" placeholder="Enter 0x... (EVM) or T... (TRON) wallet address">
+        <div class="input-group input-grow">
+            <label for="wallet-input">Target Fraud Wallet Address</label>
+            <input type="text" id="wallet-input" class="input-field font-mono" value="0xwallet_s" placeholder="Enter 0x... (EVM) or T... (TRON) wallet address">
         </div>
-        <div class="input-group" style="width:130px;">
-            <label>Network</label>
-            <select id="chain-select" class="input-box">
+        <div class="input-group" style="width:140px;">
+            <label for="chain-select">Blockchain</label>
+            <select id="chain-select" class="input-field">
                 <option value="evm" selected>Ethereum / EVM</option>
                 <option value="tron">TRON (TRC-20)</option>
             </select>
         </div>
         <div class="input-group" style="width:110px;">
-            <label>Stolen (Crypto)</label>
-            <input type="number" id="amount-input" class="input-box" value="50000">
+            <label for="amount-input">Stolen (Tokens)</label>
+            <input type="number" id="amount-input" class="input-field font-mono" value="50000">
         </div>
-        <button class="btn-trace" onclick="triggerTrace()">⚡ Trace Funds</button>
-        <button class="btn-trace" style="background:#1f6feb;" onclick="exportCurrentCaseCFF()" title="Download Case Dossier as .cff container">💾 Export .cff</button>
-        <button class="btn-trace" style="background:#8957e5;" onclick="openCFFFileDialog()" title="Load and verify offline .cff file">📁 Open .cff</button>
-        <input type="file" id="cff-file-input" style="display:none;" accept=".cff,.json" onchange="handleCFFUpload(event)">
+        <div style="display:flex; gap:8px; align-items:flex-end;">
+            <button class="btn btn-primary" onclick="window.app.triggerTrace()">⚡ Trace Funds</button>
+            <button class="btn btn-action" onclick="window.app.cffManager.exportCFF(window.app.lastTraceData)" title="Download Case Container as .cff file">💾 Export .cff</button>
+            <button class="btn btn-subtle" onclick="window.app.cffManager.openFileDialog()" title="Load and verify offline .cff file">📁 Open .cff</button>
+            <input type="file" id="cff-file-input" style="display:none;" accept=".cff,.json" onchange="window.app.cffManager.handleFileInput(event)">
+        </div>
     </div>
 
     <!-- Case Intake Wizard Panel -->
-    <div id="intake-panel" style="background:#0c1017; border-bottom:1px solid var(--border); padding:8px 24px; display:flex; gap:14px; align-items:center; flex-wrap:wrap; font-size:12px;">
-        <span style="font-weight:bold; color:var(--accent-blue); display:flex; align-items:center; gap:4px;">📋 Case Intake Details:</span>
-        <div class="input-group" style="width:190px;">
-            <input type="text" id="victim-input" class="input-box" placeholder="Victim's Wallet (Optional)" style="padding:5px 8px; font-size:11px;" title="Victim origin wallet">
+    <div id="intake-panel" class="intake-panel">
+        <span class="intake-label">📋 Case Intake Metadata:</span>
+        <div class="input-group" style="width:200px;">
+            <input type="text" id="victim-input" class="input-field input-sm font-mono" placeholder="Victim's Wallet (Optional)" title="Victim origin wallet">
         </div>
         <div class="input-group" style="width:160px;">
-            <input type="datetime-local" id="datetime-input" class="input-box" style="padding:5px 8px; font-size:11px;" title="Incident Timestamp (Temporal Pruning)">
+            <input type="datetime-local" id="datetime-input" class="input-field input-sm" title="Incident Timestamp (Temporal Pruning)">
         </div>
         <div class="input-group" style="width:130px;">
-            <input type="text" id="fir-input" class="input-box" value="FIR No. 42/2026" style="padding:5px 8px; font-size:11px;" title="FIR Number">
+            <input type="text" id="fir-input" class="input-field input-sm font-mono" value="FIR No. 42/2026" title="FIR Number">
         </div>
         <div class="input-group" style="width:150px;">
-            <input type="text" id="ack-input" class="input-box" value="NCRP/2026/910283" style="padding:5px 8px; font-size:11px;" title="1930 NCRP Ack Number">
+            <input type="text" id="ack-input" class="input-field input-sm font-mono" value="NCRP/2026/910283" title="1930 NCRP Ack Number">
         </div>
-        <div class="input-group" style="width:120px;">
-            <input type="number" id="inr-input" class="input-box" value="4250000" style="padding:5px 8px; font-size:11px;" title="Loss in INR (₹)">
+        <div class="input-group" style="width:130px;">
+            <input type="number" id="inr-input" class="input-field input-sm font-mono" value="4250000" title="Loss in INR (₹)">
         </div>
-        <span style="color:var(--text-muted); font-size:11px;">🔒 Cryptographically signed into .cff container under Sec 63 BNSS</span>
+        <span class="intake-hint">🔒 SHA-256 Tamper-Sealed Container under Sec 63 BNSS</span>
     </div>
 
     <!-- KPI Dashboard Ribbon -->
-    <div class="kpi-bar">
-        <div class="kpi-item">
-            <span class="kpi-val" id="kpi-source" style="font-size:13px; color:var(--accent-blue)">Ready</span>
-            <span class="kpi-lbl">Ingestion Pipeline</span>
+    <div class="kpi-ribbon">
+        <div class="kpi-card">
+            <span class="kpi-value font-mono" id="kpi-source">Ready</span>
+            <span class="kpi-title">Data Ingestion Feed</span>
         </div>
-        <div class="kpi-item">
-            <span class="kpi-val" id="kpi-accounts">0</span>
-            <span class="kpi-lbl">Tracked Accounts</span>
+        <div class="kpi-card">
+            <span class="kpi-value font-mono" id="kpi-accounts">0</span>
+            <span class="kpi-title">Tracked Wallets</span>
         </div>
-        <div class="kpi-item">
-            <span class="kpi-val" id="kpi-wires">0</span>
-            <span class="kpi-lbl">Transaction Wires</span>
+        <div class="kpi-card">
+            <span class="kpi-value font-mono" id="kpi-wires">0</span>
+            <span class="kpi-title">Transaction Wires</span>
         </div>
-        <div class="kpi-item">
-            <span class="kpi-val" id="kpi-located" style="color:var(--accent-green)">$0.00</span>
-            <span class="kpi-lbl">Located at CEXs</span>
+        <div class="kpi-card">
+            <span class="kpi-value font-mono text-cex" id="kpi-located">$0.00</span>
+            <span class="kpi-title">Located at CEX Off-Ramps</span>
         </div>
-        <div class="kpi-item">
-            <span class="kpi-val" id="kpi-recovery" style="color:var(--accent-blue)">0%</span>
-            <span class="kpi-lbl">Recovery Potential</span>
+        <div class="kpi-card">
+            <span class="kpi-value font-mono text-accent" id="kpi-recovery">0%</span>
+            <span class="kpi-title">Recovery Potential</span>
         </div>
-        <div class="kpi-item">
-            <span class="kpi-val" id="kpi-sinks" style="color:var(--accent-orange)">0</span>
-            <span class="kpi-lbl">Actionable Freeze Targets</span>
-        </div>
-    </div>
-
-    <!-- Main Viewport -->
-    <div id="main-viewport">
-        <div id="cy"></div>
-
-        <!-- Sidebar -->
-        <div id="sidebar">
-            <div class="card">
-                <h3>Selected Forensic Node</h3>
-                <p id="no-select-hint" style="font-size:12px; color:var(--text-muted);">Click on any wallet box or wire on the canvas to inspect evidence.</p>
-                <div id="node-details" style="display:none;">
-                    <div class="field"><span class="field-lbl">Address:</span><span class="field-val" id="side-addr"></span></div>
-                    <div class="field"><span class="field-lbl">Role:</span><span class="field-val" id="side-role"></span></div>
-                    <div class="field"><span class="field-lbl">Entity:</span><span class="field-val" id="side-entity"></span></div>
-                    <div class="field"><span class="field-lbl">Stolen Taint:</span><span class="field-val" id="side-taint"></span></div>
-                    <div class="field"><span class="field-lbl">Held Value:</span><span class="field-val" id="side-held"></span></div>
-                    <div class="field"><span class="field-lbl">Gas Burned:</span><span class="field-val" id="side-gas"></span></div>
-                </div>
-            </div>
-
-            <div class="card" id="ml-card" style="border-left: 3px solid var(--accent-purple);">
-                <h3 style="color:var(--accent-purple);">🧠 2-Tier AI/ML Threat Profile</h3>
-                <div id="ml-details" style="display:flex; flex-direction:column; gap:6px; font-size:12px;">
-                    <div><span class="field-lbl">Campaign:</span> <strong id="ml-campaign" style="color:var(--accent-blue);">Pending Trace</strong></div>
-                    <div><span class="field-lbl">Risk Score:</span> <span id="ml-score" class="field-val">--/100</span></div>
-                    <div><span class="field-lbl">Priority:</span> <span id="ml-priority" class="field-val">--</span></div>
-                    <div><span class="field-lbl">Topology:</span> <span id="ml-topo" class="field-val">--</span></div>
-                    <p id="ml-summary" style="font-size:11px; color:var(--text-muted); margin-top:4px; line-height:1.3;"></p>
-                </div>
-            </div>
-
-            <div class="card" id="actionable-card">
-                <h3>Actionable Freeze Off-Ramps</h3>
-                <div id="actionable-list" style="display:flex; flex-direction:column; gap:8px;">
-                    <span style="font-size:12px; color:var(--text-muted);">Run trace to locate exchange targets.</span>
-                </div>
-            </div>
-
-            <div class="card" id="notice-card" style="border-left: 3px solid #e3b341;">
-                <h3 id="notice-card-title" style="color:#e3b341;">🧪 Practice Mode: Forensic Reasoning</h3>
-                <p id="notice-card-desc" style="font-size:11px; color:var(--text-muted); margin-bottom:8px;">
-                    Practice sandbox active. Notice generation compiles mathematical reasoning and dry-run drafts without live statutory dispatch.
-                </p>
-                <button id="btn-generate-notice" class="btn-notice" style="background:#d29922;" onclick="generateNoticeModal()">
-                    🧪 Preview Simulated Notice (Practice)
-                </button>
-            </div>
+        <div class="kpi-card">
+            <span class="kpi-value font-mono text-mule" id="kpi-sinks">0</span>
+            <span class="kpi-title">Actionable Freeze Targets</span>
         </div>
     </div>
 
-    <!-- Bottom Log Drawer -->
+    <!-- Main Forensic Viewport Split -->
+    <main id="main-viewport">
+        <!-- Interactive Graph Canvas Container -->
+        <div id="viewport-container" style="flex:1; position:relative; height:100%; overflow:hidden;">
+            <div id="cy"></div>
+
+            <!-- Floating Graph Canvas Toolbar -->
+            <div class="graph-toolbar">
+                <button class="toolbar-btn" onclick="window.app.graphController.zoomIn()" title="Zoom In">➕</button>
+                <button class="toolbar-btn" onclick="window.app.graphController.zoomOut()" title="Zoom Out">➖</button>
+                <button class="toolbar-btn" onclick="window.app.graphController.fitView()" title="Fit to Screen">🎯</button>
+                <button class="toolbar-btn" onclick="window.app.graphController.resetView()" title="Reset Center">🔄</button>
+                <div class="toolbar-divider"></div>
+                <button class="toolbar-btn" onclick="window.app.graphController.applyLayout('dagre')" title="Hierarchical Flow (Dagre)">LR Flow</button>
+                <button class="toolbar-btn" onclick="window.app.graphController.applyLayout('breadthfirst')" title="Hop Level Tree (Breadthfirst)">Tree</button>
+                <button class="toolbar-btn" onclick="window.app.graphController.applyLayout('cose')" title="Physics Clustering (Cose)">Cluster</button>
+            </div>
+
+            <!-- Drag-and-Drop .cff Case Vault Overlay -->
+            <div id="drop-zone" class="drop-zone-overlay">
+                <div class="drop-zone-modal">
+                    <div style="font-size:36px; margin-bottom:12px;">📁</div>
+                    <h3 style="font-size:16px; margin-bottom:6px; color:var(--text-primary);">Drop .cff Case File Here</h3>
+                    <p style="font-size:12px; color:var(--text-secondary);">Load and reconstruct offline forensic investigation graph</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dockable Forensic Inspector Sidebar -->
+        <aside id="sidebar">
+            <div class="sidebar-tabs">
+                <button class="tab-btn active" data-tab="tab-node">Node Inspector</button>
+                <button class="tab-btn" data-tab="tab-ml">AI Threat Model</button>
+                <button class="tab-btn" data-tab="tab-actionable">Actionable Sinks</button>
+            </div>
+
+            <!-- Tab 1: Node & Edge Inspector -->
+            <div id="tab-node" class="tab-content active">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Forensic Element Details</h3>
+                    </div>
+                    <p id="no-select-hint" style="font-size:12px; color:var(--text-secondary);">Click on any wallet node or wire edge on the whiteboard to inspect chain telemetry.</p>
+                    <div id="node-details" style="display:none; flex-direction:column; gap:10px;">
+                        <div class="field-row">
+                            <span class="field-lbl">Address / Hash:</span>
+                            <span class="field-val font-mono" id="side-addr" style="font-size:11px;">--</span>
+                        </div>
+                        <div class="field-row">
+                            <span class="field-lbl">Identified Role:</span>
+                            <span class="field-val" id="side-role">--</span>
+                        </div>
+                        <div class="field-row">
+                            <span class="field-lbl">Attribution:</span>
+                            <span class="field-val" id="side-entity">--</span>
+                        </div>
+                        <div class="field-row">
+                            <span class="field-lbl">Stolen Taint %:</span>
+                            <span class="field-val font-mono" id="side-taint">--</span>
+                        </div>
+                        <div class="field-row">
+                            <span class="field-lbl">Held Value:</span>
+                            <span class="field-val font-mono text-cex" id="side-held">--</span>
+                        </div>
+                        <div class="field-row">
+                            <span class="field-lbl">Gas Burned:</span>
+                            <span class="field-val font-mono" id="side-gas">--</span>
+                        </div>
+                        <div id="node-cex-action" style="display:none; margin-top:8px; padding-top:8px; border-top:1px solid var(--border-subtle);">
+                            <button id="btn-freeze-single" class="btn btn-action" style="width:100%;">
+                                ⚖️ Draft Freezing Order for Node
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statutory Notice Requisition Card -->
+                <div class="card" id="notice-card" style="border-left: 3px solid #e3b341;">
+                    <div class="card-header">
+                        <h3 id="notice-card-title" style="color:#e3b341;">🧪 Practice Mode: Forensic Reasoning</h3>
+                    </div>
+                    <p id="notice-card-desc" style="font-size:11px; color:var(--text-secondary); margin-bottom:12px; line-height:1.4;">
+                        Practice sandbox active. Generates mathematical chain-of-custody rationale and simulated drafts without formal dispatch.
+                    </p>
+                    <button id="btn-generate-notice" class="btn btn-subtle" style="width:100%; color:#e3b341;" onclick="window.app.noticeManager.openModal(window.app.lastTraceData)">
+                        🧪 Preview Simulated Notice (Practice)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tab 2: 2-Tier AI/ML Threat Profiler -->
+            <div id="tab-ml" class="tab-content">
+                <div class="card" style="border-left: 3px solid var(--accent-ai);">
+                    <div class="card-header">
+                        <h3 style="color:var(--accent-ai);">🧠 Macro ML Campaign Fingerprint</h3>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:8px; font-size:12px;">
+                        <div class="field-row">
+                            <span class="field-lbl">Campaign:</span>
+                            <strong id="ml-campaign" style="color:var(--accent-primary);">Pending Trace</strong>
+                        </div>
+                        <div class="field-row">
+                            <span class="field-lbl">Overall Risk Score:</span>
+                            <span id="ml-score" class="field-val font-mono">--/100</span>
+                        </div>
+                        <div class="field-row">
+                            <span class="field-lbl">Investigative Priority:</span>
+                            <span id="ml-priority" class="field-val font-mono" style="font-weight:700;">--</span>
+                        </div>
+                        <div class="field-row">
+                            <span class="field-lbl">Topological Pattern:</span>
+                            <span id="ml-topo" class="field-val">--</span>
+                        </div>
+                        <p id="ml-summary" style="font-size:11px; color:var(--text-secondary); margin-top:6px; line-height:1.4; border-top:1px solid var(--border-subtle); padding-top:8px;"></p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Micro Transaction Classifier</h3>
+                    </div>
+                    <p style="font-size:11px; color:var(--text-secondary); line-height:1.4;">
+                        Real-time heuristic & ML profiling analyzes temporal burst velocities, peel change outputs, round-number structuring, and gas fee exhaustion across each hop.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Tab 3: Actionable CEX Off-Ramp Targets -->
+            <div id="tab-actionable" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Actionable Exchange Targets</h3>
+                    </div>
+                    <div id="actionable-list" style="display:flex; flex-direction:column; gap:10px;">
+                        <span style="font-size:12px; color:var(--text-secondary);">Run a forensic trace to identify exchange cash-out targets.</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <!-- Bottom Forensic Telemetry Terminal -->
     <div id="log-drawer">
-        <div class="log-entry"><span class="log-time">[SYSTEM]</span> Engine ready. Enter reported scam wallet and click "Initiate Forensic Trace".</div>
+        <div class="log-entry log-info"><span class="log-time">[SYSTEM]</span> Forensic Graph Engine ready. Enter reported target wallet or select a preset scenario.</div>
     </div>
 
-    <!-- Notice Modal -->
+    <!-- Section 94 BNSS Statutory Notice Modal -->
     <div id="notice-modal">
-        <div class="modal-content">
+        <div class="modal-card">
             <div class="modal-header">
                 <h3 id="modal-title" style="font-size:14px; color:#e3b341;">SIMULATED FORENSIC DRAFT (PRACTICE SANDBOX)</h3>
-                <span style="font-size:18px; cursor:pointer;" onclick="closeModal()">&times;</span>
+                <span class="modal-close" onclick="window.app.noticeManager.closeModal()">&times;</span>
             </div>
-            <div class="modal-body" id="notice-body">Generating notice...</div>
-            <div class="modal-actions">
-                <button class="btn-close" onclick="closeModal()">Close</button>
-                <button class="btn-copy" onclick="copyNotice()">📋 Copy Notice</button>
-                <button class="btn-copy" style="background:#1f6feb;" onclick="downloadNoticePdf()">📥 Download Section 94 Notice (.PDF)</button>
+            <div class="modal-body font-mono" id="notice-body">Drafting statutory Section 94 BNSS requisition notice...</div>
+            <div class="modal-footer">
+                <button class="btn btn-subtle" onclick="window.app.noticeManager.closeModal()">Close</button>
+                <button class="btn btn-primary" onclick="window.app.noticeManager.copyNotice()">📋 Copy Notice</button>
+                <button class="btn btn-action" onclick="window.app.noticeManager.downloadPDF(window.app.lastTraceData)">📥 Download Section 94 Notice (.PDF)</button>
             </div>
         </div>
     </div>
 
-    <script>
-        let cyInstance = null;
-        let lastTraceData = null;
-
-        function log(msg) {
-            const drawer = document.getElementById('log-drawer');
-            const time = new Date().toLocaleTimeString();
-            const entry = document.createElement('div');
-            entry.className = 'log-entry';
-            entry.innerHTML = `<span class="log-time">[${time}]</span> ${msg}`;
-            drawer.appendChild(entry);
-            drawer.scrollTop = drawer.scrollHeight;
-        }
-
-        const PRESET_CASES = {
-            evm_ps_bench: {
-                wallet: '0xwallet_s',
-                chain: 'evm',
-                amount: 50000,
-                token: 'USDT',
-                mode: 'benchmark'
-            },
-            tron_1930_bench: {
-                wallet: 'TScamSyndicate_Alpha_910283',
-                chain: 'tron',
-                amount: 50000,
-                token: 'USDT',
-                mode: 'benchmark'
-            },
-            wazirx_live: {
-                wallet: '0x04b21735E93Fa3f8df70e2Da89e6922616891a88',
-                chain: 'evm',
-                amount: 5000,
-                token: 'ETH',
-                mode: 'live'
-            },
-            tron_active_live: {
-                wallet: 'TPzGi4Mp4u2jesy3LpHqEk396gjMmX5SvZ',
-                chain: 'tron',
-                amount: 50000,
-                token: 'USDT',
-                mode: 'live'
-            },
-            vitalik_live: {
-                wallet: '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
-                chain: 'evm',
-                amount: 1000,
-                token: 'ETH',
-                mode: 'live'
-            },
-            custom: null
-        };
-
-        function onCaseSelect(caseKey) {
-            const config = PRESET_CASES[caseKey];
-            if (!config) return; // Custom manual entry
-
-            document.getElementById('wallet-input').value = config.wallet;
-            document.getElementById('chain-select').value = config.chain;
-            document.getElementById('amount-input').value = config.amount;
-            document.getElementById('mode-select').value = config.mode;
-            triggerTrace();
-        }
-
-        async function triggerTrace() {
-            const wallet = document.getElementById('wallet-input').value.trim();
-            const chain = document.getElementById('chain-select').value;
-            const amount = parseFloat(document.getElementById('amount-input').value) || 50000.0;
-            const mode = document.getElementById('mode-select').value;
-            const tokenSymbol = (chain === 'evm' && wallet.startsWith('0x04b2')) ? 'ETH' : (chain === 'evm' && wallet.startsWith('0xd8da') ? 'ETH' : 'USDT');
-
-            const victim = document.getElementById('victim-input').value.trim();
-            const fir = document.getElementById('fir-input').value.trim();
-            const ack = document.getElementById('ack-input').value.trim();
-            const inr = parseFloat(document.getElementById('inr-input').value) || (amount * 85.0);
-            const dtVal = document.getElementById('datetime-input').value;
-            const incTimestamp = dtVal ? Math.floor(new Date(dtVal).getTime() / 1000) : null;
-
-            if (!wallet) {
-                alert("Please enter a wallet address.");
-                return;
-            }
-
-            log(`Initiating priority graph search for ${wallet} on ${chain.toUpperCase()} [Mode: ${mode.toUpperCase()}]...`);
-
-            try {
-                const resp = await fetch('/api/trace', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        wallet_address: wallet,
-                        chain: chain,
-                        stolen_amount: amount,
-                        token_symbol: tokenSymbol,
-                        mode: mode,
-                        victim_address: victim || null,
-                        incident_timestamp: incTimestamp,
-                        fir_number: fir,
-                        ack_number: ack,
-                        loss_inr: inr
-                    })
-                });
-
-                const data = await resp.json();
-                if (!data.success) {
-                    alert("Error: " + (data.detail || "Trace execution failed"));
-                    return;
-                }
-
-                lastTraceData = data;
-                data.logs.forEach(l => log(l));
-
-                // Update CFF Seal Badge
-                if (data.cff_container && data.cff_container.cryptographic_seal) {
-                    const badge = document.getElementById('cff-seal-badge');
-                    badge.style.display = 'inline-block';
-                    badge.style.background = '#238636';
-                    badge.style.color = '#ffffff';
-                    badge.innerHTML = `🛡️ SEC 63 BNSS SEAL: ${data.cff_container.cryptographic_seal.integrity_hash.substring(0, 8)}...`;
-                }
-
-                // Update Ingestion Pipeline Badge
-                const srcEl = document.getElementById('kpi-source');
-                if (data.is_live) {
-                    srcEl.innerHTML = `<span style="color:#2ea043; font-weight:bold;">🟢 ${data.data_source}</span>`;
-                } else {
-                    srcEl.innerHTML = `<span style="color:#bc8cff; font-weight:bold;">🟣 ${data.data_source}</span>`;
-                }
-
-                // Update KPIs
-                document.getElementById('kpi-accounts').innerText = data.stats.total_accounts_tracked;
-                document.getElementById('kpi-wires').innerText = data.stats.total_transactions_tracked;
-                document.getElementById('kpi-located').innerText = '$' + Number(data.stats.total_funds_at_exchanges).toLocaleString();
-                document.getElementById('kpi-recovery').innerText = data.stats.recovery_potential_pct + '%';
-                document.getElementById('kpi-sinks').innerText = data.actionable_cex.length;
-
-                // Update ML Intelligence Profile
-                if (data.ml_intelligence) {
-                    const ml = data.ml_intelligence;
-                    document.getElementById('ml-campaign').innerText = ml.campaign_name.replace(/_/g, " ");
-                    document.getElementById('ml-score').innerText = ml.overall_risk_score + '/100';
-                    document.getElementById('ml-priority').innerText = ml.investigation_priority;
-                    document.getElementById('ml-priority').style.color = (ml.investigation_priority === 'CRITICAL') ? 'var(--accent-red)' : (ml.investigation_priority === 'HIGH') ? 'var(--accent-orange)' : 'var(--accent-green)';
-                    document.getElementById('ml-topo').innerText = ml.topological_fingerprint.replace(/_/g, " ");
-                    document.getElementById('ml-summary').innerText = ml.summary;
-                }
-
-                // Update Actionable Off-Ramps list
-                const list = document.getElementById('actionable-list');
-                list.innerHTML = '';
-                if (data.actionable_cex.length === 0) {
-                    list.innerHTML = '<span style="font-size:12px; color:var(--text-muted);">No exchange endpoints located yet.</span>';
-                } else {
-                    data.actionable_cex.forEach((node, idx) => {
-                        const item = document.createElement('div');
-                        item.style = 'background:#161c24; padding:8px; border-radius:4px; border-left:3px solid var(--accent-green);';
-                        item.innerHTML = `
-                            <div style="font-weight:bold; font-size:12px; color:var(--accent-green);">${node.entity_tag}</div>
-                            <div style="font-size:11px; color:var(--text-muted);">${node.address.substring(0, 16)}...</div>
-                            <div style="font-size:11px; margin-top:2px;">Stolen Held: <strong>$${Number(node.stolen_held).toLocaleString()}</strong> (${node.taint_pct}% taint)</div>
-                        `;
-                        list.appendChild(item);
-                    });
-                }
-
-                // Render Cytoscape Canvas
-                renderGraph(data.elements);
-
-            } catch (err) {
-                log(`Error executing trace: ${err.message}`);
-            }
-        }
-
-        function renderGraph(elements) {
-            cyInstance = cytoscape({
-                container: document.getElementById('cy'),
-                elements: elements,
-                style: [
-                    {
-                        selector: 'node',
-                        style: {
-                            'background-color': function(ele) {
-                                const role = ele.data('role');
-                                if (role === 'SCAMMER' || role === 'VICTIM') return '#f85149';
-                                if (role === 'CEX_DEPOSIT') return '#2ea043';
-                                if (role === 'MIXER_POOL') return '#bc8cff';
-                                return '#d29922';
-                            },
-                            'label': 'data(label)',
-                            'color': '#ffffff',
-                            'font-size': '11px',
-                            'text-valign': 'bottom',
-                            'text-margin-y': 6,
-                            'width': 40,
-                            'height': 40,
-                            'border-width': 2,
-                            'border-color': '#ffffff'
-                        }
-                    },
-                    {
-                        selector: 'edge',
-                        style: {
-                            'width': 2,
-                            'line-color': '#58a6ff',
-                            'target-arrow-color': '#58a6ff',
-                            'target-arrow-shape': 'triangle',
-                            'curve-style': 'bezier',
-                            'label': 'data(label)',
-                            'font-size': '9px',
-                            'color': '#8b949e',
-                            'text-rotation': 'autorotate'
-                        }
-                    }
-                ],
-                layout: {
-                    name: 'breadthfirst',
-                    directed: true,
-                    padding: 40,
-                    spacingFactor: 1.5
-                }
-            });
-
-            cyInstance.on('tap', 'node', function(evt) {
-                const node = evt.target;
-                document.getElementById('no-select-hint').style.display = 'none';
-                document.getElementById('node-details').style.display = 'block';
-
-                document.getElementById('side-addr').innerText = node.data('address');
-                document.getElementById('side-role').innerText = node.data('role');
-                document.getElementById('side-entity').innerText = node.data('label');
-                document.getElementById('side-taint').innerText = node.data('taint_pct') + '%';
-                document.getElementById('side-held').innerText = '$' + Number(node.data('held_amount')).toLocaleString();
-                document.getElementById('side-gas').innerText = node.data('gas_burned') + ' Gas';
-            });
-        }
-
-        function onToggleDispatch(isOfficial) {
-            const badge = document.getElementById('dispatch-status-badge');
-            const card = document.getElementById('notice-card');
-            const title = document.getElementById('notice-card-title');
-            const desc = document.getElementById('notice-card-desc');
-            const btn = document.getElementById('btn-generate-notice');
-
-            if (isOfficial) {
-                badge.innerHTML = '🚨 OFFICIAL DISPATCH MODE';
-                badge.style.color = 'var(--accent-blue)';
-                card.style.borderLeft = '3px solid var(--accent-blue)';
-                title.innerText = 'Statutory Notice Dispatch';
-                title.style.color = 'var(--accent-blue)';
-                desc.innerText = 'Official mode active. Generates unwatermarked Section 94 BNSS requisition ready for submission to exchange nodal officers.';
-                btn.innerText = '📄 Generate Official Section 94 BNSS Notice';
-                btn.style.background = '#1f6feb';
-                log('[MODE SWITCH] Official Dispatch Mode activated. Notice generation unlocked for legal service.');
-            } else {
-                badge.innerHTML = '🧪 PRACTICE MODE (Sandbox)';
-                badge.style.color = '#e3b341';
-                card.style.borderLeft = '3px solid #e3b341';
-                title.innerText = '🧪 Practice Mode: Forensic Reasoning';
-                title.style.color = '#e3b341';
-                desc.innerText = 'Practice sandbox active. Notice generation compiles mathematical reasoning and dry-run drafts without live statutory dispatch.';
-                btn.innerText = '🧪 Preview Simulated Notice (Practice)';
-                btn.style.background = '#d29922';
-                log('[MODE SWITCH] Practice Sandbox Mode active. Safe simulation enabled — no official legal notice will be generated.');
-            }
-        }
-
-        async function generateNoticeModal() {
-            if (!lastTraceData || lastTraceData.actionable_cex.length === 0) {
-                alert("Please run a trace that locates an exchange off-ramp first!");
-                return;
-            }
-
-            const isOfficial = document.getElementById('dispatch-toggle').checked;
-            const targetAddr = lastTraceData.actionable_cex[0].address;
-            const modal = document.getElementById('notice-modal');
-            const modalHeaderTitle = document.getElementById('modal-title');
-            
-            if (isOfficial) {
-                modalHeaderTitle.innerText = "OFFICIAL LEGAL REQUISITION (SECTION 94 BNSS / 91 CrPC)";
-                modalHeaderTitle.style.color = "var(--accent-blue)";
-            } else {
-                modalHeaderTitle.innerText = "SIMULATED FORENSIC DRAFT (PRACTICE / DRY-RUN MODE)";
-                modalHeaderTitle.style.color = "#e3b341";
-            }
-
-            modal.style.display = 'flex';
-            document.getElementById('notice-body').innerText = isOfficial ? 
-                'Drafting official Section 94 BNSS requisition...' : 
-                'Compiling simulated practice draft and forensic reasoning breakdown...';
-
-            try {
-                const resp = await fetch('/api/generate_notice', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        target_address: targetAddr,
-                        practice_mode: !isOfficial
-                    })
-                });
-                const data = await resp.json();
-                document.getElementById('notice-body').innerText = data.notice_text;
-            } catch (err) {
-                document.getElementById('notice-body').innerText = 'Error generating notice: ' + err.message;
-            }
-        }
-
-        function closeModal() {
-            document.getElementById('notice-modal').style.display = 'none';
-        }
-
-        function copyNotice() {
-            const text = document.getElementById('notice-body').innerText;
-            navigator.clipboard.writeText(text);
-            alert("Section 94 BNSS Requisition copied to clipboard!");
-        }
-
-        async function downloadNoticePdf() {
-            if (!lastTraceData || lastTraceData.actionable_cex.length === 0) {
-                alert("Please run a trace that locates an exchange off-ramp first!");
-                return;
-            }
-            const targetAddr = lastTraceData.actionable_cex[0].address;
-            log('[PDF GENERATOR] Compiling Section 94 BNSS Legal Requisition PDF...');
-            try {
-                const resp = await fetch('/api/download_notice_pdf', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        target_address: targetAddr,
-                        practice_mode: true
-                    })
-                });
-                if (!resp.ok) throw new Error('PDF Generation failed on server.');
-                const blob = await resp.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.style.display = 'none';
-                a.href = url;
-                a.download = `Section_94_BNSS_Notice_${targetAddr.substring(0, 10)}.pdf`;
-                document.body.appendChild(a);
-                a.click();
-                window.URL.revokeObjectURL(url);
-                log('[PDF DOWNLOAD] Section 94 BNSS Legal Requisition PDF downloaded successfully.');
-            } catch (err) {
-                alert('Error downloading PDF: ' + err.message);
-                log(`[PDF ERROR] ${err.message}`);
-            }
-        }
-
-        function openCFFFileDialog() {
-            document.getElementById('cff-file-input').click();
-        }
-
-        function exportCurrentCaseCFF() {
-            if (!lastTraceData || !lastTraceData.cff_container) {
-                alert("Please run a trace or load a case before exporting the .cff file!");
-                return;
-            }
-            const jsonStr = JSON.stringify(lastTraceData.cff_container, null, 2);
-            const blob = new Blob([jsonStr], {type: 'application/json'});
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = url;
-            const caseId = (lastTraceData.cff_container.metadata && lastTraceData.cff_container.metadata.case_id) || 'Forensic_Case';
-            a.download = `${caseId}.cff`;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            const seal = lastTraceData.cff_container.cryptographic_seal ? lastTraceData.cff_container.cryptographic_seal.integrity_hash.substring(0, 12) : 'OK';
-            log(`[CFF EXPORT] Saved case container (.cff) with SHA-256 seal: ${seal}...`);
-        }
-
-        async function handleCFFUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            log(`[CFF INGESTION] Reading case file: ${file.name}...`);
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                const content = e.target.result;
-                try {
-                    const resp = await fetch('/api/cff/load', {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({ cff_content: content })
-                    });
-                    const data = await resp.json();
-                    if (!data.success) {
-                        alert("CFF Import Failed: " + (data.detail || "Unknown error"));
-                        return;
-                    }
-
-                    lastTraceData = data;
-                    data.logs.forEach(l => log(l));
-
-                    // Update Seal Badge
-                    const badge = document.getElementById('cff-seal-badge');
-                    badge.style.display = 'inline-block';
-                    if (data.is_tamper_free) {
-                        badge.style.background = '#238636';
-                        badge.style.color = '#ffffff';
-                        badge.innerHTML = '🛡️ SEC 63 BNSS SEAL: VERIFIED';
-                    } else {
-                        badge.style.background = '#da3633';
-                        badge.style.color = '#ffffff';
-                        badge.innerHTML = '⚠️ TAMPER DETECTED: INVALID SEAL';
-                    }
-
-                    // Populate Intake Fields from case metadata
-                    if (data.case_metadata) {
-                        if (data.case_metadata.fir_number) document.getElementById('fir-input').value = data.case_metadata.fir_number;
-                        if (data.case_metadata.ack_number) document.getElementById('ack-input').value = data.case_metadata.ack_number;
-                        if (data.case_metadata.loss_inr) document.getElementById('inr-input').value = data.case_metadata.loss_inr;
-                        if (data.case_metadata.crime_root_address) document.getElementById('wallet-input').value = data.case_metadata.crime_root_address;
-                    }
-
-                    // Update KPIs
-                    const srcEl = document.getElementById('kpi-source');
-                    srcEl.innerHTML = `<span style="color:#2ea043; font-weight:bold;">📁 Standalone .CFF Container (Offline)</span>`;
-                    document.getElementById('kpi-accounts').innerText = data.stats.total_accounts_tracked;
-                    document.getElementById('kpi-wires').innerText = data.stats.total_transactions_tracked;
-                    document.getElementById('kpi-located').innerText = '$' + Number(data.stats.total_funds_at_exchanges).toLocaleString();
-                    document.getElementById('kpi-recovery').innerText = data.stats.recovery_potential_pct + '%';
-                    document.getElementById('kpi-sinks').innerText = data.actionable_cex.length;
-
-                    // Update ML Intelligence
-                    if (data.ml_intelligence) {
-                        const ml = data.ml_intelligence;
-                        document.getElementById('ml-campaign').innerText = ml.campaign_name.replace(/_/g, " ");
-                        document.getElementById('ml-score').innerText = ml.overall_risk_score + '/100';
-                        document.getElementById('ml-priority').innerText = ml.investigation_priority;
-                        document.getElementById('ml-priority').style.color = (ml.investigation_priority === 'CRITICAL') ? 'var(--accent-red)' : (ml.investigation_priority === 'HIGH') ? 'var(--accent-orange)' : 'var(--accent-green)';
-                        document.getElementById('ml-topo').innerText = ml.topological_fingerprint.replace(/_/g, " ");
-                        document.getElementById('ml-summary').innerText = ml.summary;
-                    }
-
-                    // Update Actionable Off-Ramps list
-                    const list = document.getElementById('actionable-list');
-                    list.innerHTML = '';
-                    if (data.actionable_cex.length === 0) {
-                        list.innerHTML = '<span style="font-size:12px; color:var(--text-muted);">No exchange endpoints located in case file.</span>';
-                    } else {
-                        data.actionable_cex.forEach(node => {
-                            const item = document.createElement('div');
-                            item.style = 'background:#161c24; padding:8px; border-radius:4px; border-left:3px solid var(--accent-green);';
-                            item.innerHTML = `
-                                <div style="font-weight:bold; font-size:12px; color:var(--accent-green);">${node.entity_tag}</div>
-                                <div style="font-size:11px; color:var(--text-muted);">${node.address.substring(0, 16)}...</div>
-                                <div style="font-size:11px; margin-top:2px;">Stolen Held: <strong>$${Number(node.stolen_held).toLocaleString()}</strong> (${node.taint_pct}% taint)</div>
-                            `;
-                            list.appendChild(item);
-                        });
-                    }
-
-                    // Render Cytoscape elements (The dots and boxes!)
-                    renderGraph(data.elements);
-                    log(`[CFF RENDER COMPLETE] Whiteboard graph reconstructed offline.`);
-
-                } catch (err) {
-                    alert("Error parsing .cff file: " + err.message);
-                    log(`[CFF ERROR] ${err.message}`);
-                }
-            };
-            reader.readAsText(file);
-        }
-
-        // Auto-run default EVM trace on load
-        window.onload = function() {
-            triggerTrace();
-        };
-    </script>
+    <!-- Modular Script Ingestion -->
+    <script src="/static/js/graph_controller.js"></script>
+    <script src="/static/js/cff_manager.js"></script>
+    <script src="/static/js/notice_manager.js"></script>
+    <script src="/static/js/app.js"></script>
 </body>
 </html>
