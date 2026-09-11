@@ -33,14 +33,13 @@
     /* Enterprise Brand Accents */
     --primary-blue: #2563eb;
     --primary-blue-hover: #1d4ed8;
-    --accent-cyan: #06b6d4;
+    --accent-cyan: #0ea5e9;
 
     /* Elevation Shadows */
     --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
     --shadow-md: 0 4px 12px -2px rgba(0, 0, 0, 0.5);
     --shadow-lg: 0 12px 28px -4px rgba(0, 0, 0, 0.65);
-    --shadow-glow-cyan: 0 0 16px rgba(6, 182, 212, 0.25);
-    --shadow-glow-emerald: 0 0 16px rgba(16, 185, 129, 0.25);
+    --shadow-subtle: 0 2px 8px rgba(0, 0, 0, 0.3);
 
     /* Radii */
     --radius-xs: 4px;

@@ -116,8 +116,11 @@ class ForensicApp {
 
     toggleInspector() {
         const drawer = document.getElementById('inspector-drawer');
+        const edgeTab = document.getElementById('btn-open-inspector');
         if (drawer) {
             drawer.classList.toggle('collapsed');
+            const isCollapsed = drawer.classList.contains('collapsed');
+            if (edgeTab) edgeTab.style.display = isCollapsed ? 'inline-flex' : 'none';
             setTimeout(() => {
                 if (this.graphController && this.graphController.cy) {
                     this.graphController.cy.resize();
@@ -128,8 +131,10 @@ class ForensicApp {
 
     openInspector() {
         const drawer = document.getElementById('inspector-drawer');
+        const edgeTab = document.getElementById('btn-open-inspector');
         if (drawer && drawer.classList.contains('collapsed')) {
             drawer.classList.remove('collapsed');
+            if (edgeTab) edgeTab.style.display = 'none';
             setTimeout(() => {
                 if (this.graphController && this.graphController.cy) {
                     this.graphController.cy.resize();
@@ -320,9 +325,20 @@ class ForensicApp {
             return;
         }
 
-        window.logInfo(`Initiating priority traversal for ${wallet.substring(0, 14)}...`);
+        const traceBtn = document.getElementById('btn-trace');
+        const traceText = document.getElementById('btn-trace-text');
+        const progBar = document.getElementById('execution-progress-bar');
+
+        if (traceBtn) traceBtn.disabled = true;
+        if (traceText) traceText.innerHTML = '<span class="btn-spinner"></span> Tracing...';
+        if (progBar) progBar.style.width = '35%';
+
+        window.logInfo(`[STEP 1/4] Connecting to network nodes & validating ${wallet.substring(0, 14)}...`);
 
         try {
+            if (progBar) progBar.style.width = '65%';
+            window.logInfo(`[STEP 2/4] Traversing multi-hop transactions on ${chain.toUpperCase()}...`);
+
             const resp = await fetch('/api/trace', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -340,31 +356,47 @@ class ForensicApp {
                 })
             });
 
+            if (progBar) progBar.style.width = '85%';
+            window.logInfo(`[STEP 3/4] Parsing transaction graph & identifying exchange off-ramps...`);
+
             const data = await resp.json();
             if (!data.success) {
                 alert("Trace Failed: " + (data.detail || "Unknown error"));
+                if (traceBtn) traceBtn.disabled = false;
+                if (traceText) traceText.innerText = 'Trace';
+                if (progBar) progBar.style.width = '0%';
                 return;
             }
 
             this.lastTraceData = data;
             data.logs.forEach(l => window.logInfo(l));
 
-            // Update CFF Seal Badge
+            // Update CFF Seal Badge (Compact)
             const sealBadge = document.getElementById('cff-seal-badge');
             if (data.cff_container && data.cff_container.cryptographic_seal) {
                 sealBadge.style.display = 'inline-flex';
                 sealBadge.className = 'badge badge-seal';
-                sealBadge.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> SEC 63 BNSS: ${data.cff_container.cryptographic_seal.integrity_hash.substring(0, 8)}...`;
+                sealBadge.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> SEC 63: ${data.cff_container.cryptographic_seal.integrity_hash.substring(0, 8)}`;
             }
 
             this.updateHUD(data);
             this.updateMLCard(data.ml_intelligence);
             this.updateActionableList(data.actionable_cex);
 
+            window.logSuccess(`[STEP 4/4] Graph rendered: ${data.stats.total_accounts_tracked} wallets, ${data.stats.total_transactions_tracked} wires.`);
             this.graphController.render(data.elements);
+
+            if (progBar) {
+                progBar.style.width = '100%';
+                setTimeout(() => { progBar.style.width = '0%'; }, 400);
+            }
 
         } catch (err) {
             window.logAlert(`Trace Error: ${err.message}`);
+            if (progBar) progBar.style.width = '0%';
+        } finally {
+            if (traceBtn) traceBtn.disabled = false;
+            if (traceText) traceText.innerText = 'Trace';
         }
     }
 

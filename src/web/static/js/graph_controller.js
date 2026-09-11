@@ -26,8 +26,8 @@ class ForensicGraphController {
                     style: {
                         'shape': 'round-rectangle',
                         'corner-radius': 6,
-                        'width': 136,
-                        'height': 42,
+                        'width': 116,
+                        'height': 34,
                         'background-color': '#0f172a',
                         'border-width': 1.5,
                         'border-color': '#334155',
@@ -36,12 +36,12 @@ class ForensicGraphController {
                         'text-halign': 'center',
                         'text-wrap': 'wrap',
                         'text-max-width': '126px',
-                        'font-family': 'Inter, sans-serif',
+                        'font-family': 'JetBrains Mono, monospace',
                         'font-size': '10px',
                         'font-weight': 600,
-                        'line-height': 1.35,
+                        'line-height': 1.3,
                         'color': '#f8fafc',
-                        'transition-property': 'background-color, border-color, shadow-blur',
+                        'transition-property': 'background-color, border-color',
                         'transition-duration': '0.15s'
                     }
                 },
@@ -53,33 +53,36 @@ class ForensicGraphController {
                         'border-color': '#ef4444',
                         'border-width': 2,
                         'color': '#fca5a5',
-                        'shadow-blur': 14,
-                        'shadow-color': 'rgba(239, 68, 68, 0.4)',
-                        'shadow-opacity': 0.8
+                        'shadow-blur': 6,
+                        'shadow-color': 'rgba(239, 68, 68, 0.25)',
+                        'shadow-opacity': 0.6
                     }
                 },
                 {
                     selector: 'node[role = "CEX_DEPOSIT"]',
                     style: {
+                        'width': 136,
+                        'height': 42,
                         'background-color': '#0b201a',
                         'border-color': '#10b981',
                         'border-width': 2,
                         'color': '#6ee7b7',
-                        'shadow-blur': 14,
-                        'shadow-color': 'rgba(16, 185, 129, 0.4)',
-                        'shadow-opacity': 0.8
+                        'font-family': 'Inter, sans-serif',
+                        'shadow-blur': 6,
+                        'shadow-color': 'rgba(16, 185, 129, 0.25)',
+                        'shadow-opacity': 0.6
                     }
                 },
                 {
                     selector: 'node[role = "MULE_TRANSIT"], node[role = "PEEL_CHANGE"], node[role = "UNKNOWN"]',
                     style: {
-                        'background-color': '#1a2030',
+                        'background-color': '#1a1912',
                         'border-color': '#f59e0b',
                         'border-width': 1.5,
                         'color': '#fde68a',
-                        'shadow-blur': 10,
-                        'shadow-color': 'rgba(245, 158, 11, 0.25)',
-                        'shadow-opacity': 0.7
+                        'shadow-blur': 4,
+                        'shadow-color': 'rgba(245, 158, 11, 0.2)',
+                        'shadow-opacity': 0.6
                     }
                 },
                 {
@@ -119,11 +122,11 @@ class ForensicGraphController {
                 {
                     selector: 'node:selected',
                     style: {
-                        'border-color': '#38bdf8',
-                        'border-width': 2.5,
-                        'shadow-blur': 22,
-                        'shadow-color': '#38bdf8',
-                        'shadow-opacity': 1.0
+                        'border-color': '#3b82f6',
+                        'border-width': 2,
+                        'shadow-blur': 8,
+                        'shadow-color': 'rgba(59, 130, 246, 0.4)',
+                        'shadow-opacity': 0.8
                     }
                 },
                 // Transaction Wires (Edges)
@@ -132,15 +135,15 @@ class ForensicGraphController {
                     style: {
                         'curve-style': 'bezier',
                         'target-arrow-shape': 'triangle',
-                        'target-arrow-color': '#0ea5e9',
-                        'line-color': '#1e293b',
-                        'width': 2,
-                        'opacity': 0.9,
+                        'target-arrow-color': '#3b82f6',
+                        'line-color': '#334155',
+                        'width': 1.8,
+                        'opacity': 0.85,
                         'label': 'data(label)',
                         'font-size': '9px',
                         'font-family': 'JetBrains Mono, monospace',
                         'font-weight': 600,
-                        'color': '#38bdf8',
+                        'color': '#cbd5e1',
                         'text-rotation': 'autorotate',
                         'text-background-opacity': 0.95,
                         'text-background-color': '#080c14',
@@ -154,9 +157,9 @@ class ForensicGraphController {
                 {
                     selector: 'edge:selected',
                     style: {
-                        'line-color': '#38bdf8',
-                        'target-arrow-color': '#38bdf8',
-                        'width': 3.5,
+                        'line-color': '#3b82f6',
+                        'target-arrow-color': '#3b82f6',
+                        'width': 3,
                         'opacity': 1.0
                     }
                 }
@@ -202,24 +205,14 @@ class ForensicGraphController {
                     ? `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}` 
                     : addr;
                 
-                let roleTitle = '';
-                if (d.role === 'SCAMMER') roleTitle = '🚨 Crime Root';
-                else if (d.role === 'CEX_DEPOSIT') roleTitle = '🏦 CEX Off-Ramp';
-                else if (d.role === 'MULE_TRANSIT') roleTitle = '⚠️ Transit Mule';
-                else if (d.role === 'PEEL_CHANGE') roleTitle = '🔄 Peel Change';
-                else if (d.role === 'VICTIM') roleTitle = '🛡️ Victim Origin';
-                else if (d.role === 'MIXER_POOL') roleTitle = '🌪️ Mixer Pool';
-                else if (d.role === 'UNKNOWN' || !d.role) roleTitle = '⚠️ Transit Mule';
-                else roleTitle = d.role;
-
-                let tag = d.label;
-                if (!tag || tag.startsWith('0x') || tag.startsWith('T') || tag.includes('..')) {
-                    tag = roleTitle;
-                } else if (d.role === 'CEX_DEPOSIT' && !tag.includes('🏦')) {
-                    tag = `🏦 ${tag}`;
+                // If recognizable exchange entity, show its name and address.
+                // Otherwise, show ONLY the address - color alone communicates Crime Root vs Mule vs CEX!
+                if (d.role === 'CEX_DEPOSIT' && d.label && !d.label.startsWith('0x') && !d.label.startsWith('T') && !d.label.includes('..')) {
+                    const cleanTag = d.label.replace('🏦 ', '');
+                    d.display_label = `${cleanTag}\n${shortAddr}`;
+                } else {
+                    d.display_label = shortAddr;
                 }
-
-                d.display_label = `${tag}\n${shortAddr}`;
             }
         });
 
