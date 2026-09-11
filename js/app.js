@@ -106,6 +106,34 @@ class ForensicApp {
             return;
         }
 
+        if (urlParams.get('simulate_complete') === '1') {
+            fetch('/api/trace', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    wallet_address: '0xwallet_s',
+                    chain: 'evm',
+                    stolen_amount: 50000,
+                    token_symbol: 'USDT',
+                    mode: 'benchmark'
+                })
+            }).then(r => r.json()).then(data => {
+                this.lastTraceData = data;
+                this.updateHUD(data);
+                this.updateMLCard(data.ml_intelligence);
+                this.updateActionableList(data.actionable_cex);
+                this.graphController.render(data.elements);
+                const sealBadge = document.getElementById('cff-seal-badge');
+                if (data.cff_container && data.cff_container.cryptographic_seal && sealBadge) {
+                    sealBadge.style.display = 'inline-flex';
+                    sealBadge.className = 'badge badge-seal';
+                    sealBadge.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> SEC 63: ${data.cff_container.cryptographic_seal.integrity_hash.substring(0, 8)}`;
+                }
+                this.setExecutionStatus('Engine Ready (Active Graph)', 100, true, `✓ Rendered: ${data.stats.total_accounts_tracked} wallets, ${data.stats.total_transactions_tracked} wires.`);
+            });
+            return;
+        }
+
         if (urlParams.get('auto_trace') === '1') {
             this.triggerTrace();
             return;
@@ -453,18 +481,29 @@ class ForensicApp {
         this.activeAbortController = new AbortController();
         this.updateTraceButtonState(true);
 
-        // Reset step logs for new trace
+        // Reset canvas, HUD counters, and step logs for real-time progressive stream
+        this.graphController.clearCanvas();
+        const accEl = document.getElementById('hud-accounts');
+        if (accEl) accEl.innerText = '0';
+        const wiresEl = document.getElementById('hud-wires');
+        if (wiresEl) wiresEl.innerText = '0';
+        const locEl = document.getElementById('hud-located');
+        if (locEl) locEl.innerText = '$0';
+        const recEl = document.getElementById('hud-recovery');
+        if (recEl) recEl.innerText = '0%';
+        const sinksEl = document.getElementById('hud-sinks');
+        if (sinksEl) sinksEl.innerText = '0';
+        const sealBadge = document.getElementById('cff-seal-badge');
+        if (sealBadge) sealBadge.style.display = 'none';
+
         const logList = document.getElementById('widget-log-list');
         if (logList) logList.innerHTML = '';
 
-        this.setExecutionStatus('Validating node...', 25, false, `● Connecting to RPC node & validating ${wallet.substring(0, 10)}...`);
-        window.logInfo(`[STEP 1/4] Connecting to network nodes & validating ${wallet.substring(0, 14)}...`);
+        this.setExecutionStatus('Connecting to RPC node...', 15, false, `● Connecting to RPC node & validating ${wallet.substring(0, 10)}...`);
+        window.logInfo(`[STREAM] Connecting to network nodes & validating ${wallet.substring(0, 14)}...`);
 
         try {
-            this.setExecutionStatus(`Traversing hops on ${chain.toUpperCase()}...`, 55, false, `● Traversing multi-hop transactions on ${chain.toUpperCase()}...`);
-            window.logInfo(`[STEP 2/4] Traversing multi-hop transactions on ${chain.toUpperCase()}...`);
-
-            const resp = await fetch('/api/trace', {
+            const resp = await fetch('/api/trace/stream', {
                 method: 'POST',
                 signal: this.activeAbortController.signal,
                 headers: { 'Content-Type': 'application/json' },
@@ -482,38 +521,85 @@ class ForensicApp {
                 })
             });
 
-            this.setExecutionStatus('Analyzing off-ramps...', 80, false, `● Parsing transaction graph & identifying exchange off-ramps...`);
-            window.logInfo(`[STEP 3/4] Parsing transaction graph & identifying exchange off-ramps...`);
-
-            const data = await resp.json();
-            if (!data.success) {
-                alert("Trace Failed: " + (data.detail || "Unknown error"));
-                this.setExecutionStatus('Trace Failed', 0, false, `✕ Error: ${data.detail || 'Unknown error'}`);
-                return;
+            if (!resp.ok) {
+                const errText = await resp.text();
+                throw new Error(`HTTP ${resp.status}: ${errText}`);
             }
 
-            this.lastTraceData = data;
-            data.logs.forEach(l => window.logInfo(l));
+            const reader = resp.body.getReader();
+            const decoder = new TextDecoder('utf-8');
+            let buffer = '';
+            let accountsCount = 0;
+            let wiresCount = 0;
 
-            // Update CFF Seal Badge (Compact)
-            const sealBadge = document.getElementById('cff-seal-badge');
-            if (data.cff_container && data.cff_container.cryptographic_seal) {
-                sealBadge.style.display = 'inline-flex';
-                sealBadge.className = 'badge badge-seal';
-                sealBadge.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> SEC 63: ${data.cff_container.cryptographic_seal.integrity_hash.substring(0, 8)}`;
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                buffer += decoder.decode(value, { stream: true });
+                const parts = buffer.split('\n\n');
+                buffer = parts.pop();
+
+                for (const part of parts) {
+                    if (!part.trim()) continue;
+                    const lines = part.split('\n');
+                    let eventType = 'message';
+                    let dataStr = '';
+
+                    for (const line of lines) {
+                        if (line.startsWith('event:')) {
+                            eventType = line.substring(6).trim();
+                        } else if (line.startsWith('data:')) {
+                            dataStr = line.substring(5).trim();
+                        }
+                    }
+
+                    if (!dataStr) continue;
+
+                    try {
+                        const parsed = JSON.parse(dataStr);
+
+                        if (eventType === 'progress') {
+                            this.setExecutionStatus(parsed.message, parsed.percent || 0, false, '● ' + parsed.message);
+                            if (parsed.message) window.logInfo(parsed.message);
+                        } else if (eventType === 'node') {
+                            this.graphController.addNodeProgressive(parsed);
+                            accountsCount++;
+                            if (accEl) accEl.innerText = accountsCount;
+                        } else if (eventType === 'wire') {
+                            this.graphController.addWireProgressive(parsed);
+                            wiresCount++;
+                            if (wiresEl) wiresEl.innerText = wiresCount;
+                        } else if (eventType === 'complete') {
+                            const data = parsed;
+                            this.lastTraceData = data;
+                            if (data.logs) {
+                                data.logs.forEach(l => window.logInfo(l));
+                            }
+                            if (data.cff_container && data.cff_container.cryptographic_seal && sealBadge) {
+                                sealBadge.style.display = 'inline-flex';
+                                sealBadge.className = 'badge badge-seal';
+                                sealBadge.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> SEC 63: ${data.cff_container.cryptographic_seal.integrity_hash.substring(0, 8)}`;
+                            }
+                            this.updateHUD(data);
+                            this.updateMLCard(data.ml_intelligence);
+                            this.updateActionableList(data.actionable_cex);
+                            this.graphController.runIncrementalLayout(true);
+                            window.logSuccess(`[COMPLETED] Stream complete: ${data.stats.total_accounts_tracked} wallets, ${data.stats.total_transactions_tracked} wires tracked.`);
+                            this.setExecutionStatus('Engine Ready (Active Graph)', 100, true, `✓ Streaming complete: ${data.stats.total_accounts_tracked} wallets, ${data.stats.total_transactions_tracked} wires.`);
+                        } else if (eventType === 'error') {
+                            window.logAlert(`Trace Error: ${parsed.detail || 'Unknown stream error'}`);
+                            this.setExecutionStatus('Trace Failed', 0, false, `✕ Error: ${parsed.detail || 'Unknown stream error'}`);
+                        }
+                    } catch (e) {
+                        console.error('SSE parse error', e, dataStr);
+                    }
+                }
             }
-
-            this.updateHUD(data);
-            this.updateMLCard(data.ml_intelligence);
-            this.updateActionableList(data.actionable_cex);
-
-            window.logSuccess(`[STEP 4/4] Graph rendered: ${data.stats.total_accounts_tracked} wallets, ${data.stats.total_transactions_tracked} wires.`);
-            this.graphController.render(data.elements);
-
-            this.setExecutionStatus('Engine Ready (Active Graph)', 100, true, `✓ Rendered: ${data.stats.total_accounts_tracked} wallets, ${data.stats.total_transactions_tracked} wires.`);
 
         } catch (err) {
             if (err.name === 'AbortError') {
+                this.graphController.runIncrementalLayout(false);
                 return;
             }
             window.logAlert(`Trace Error: ${err.message}`);

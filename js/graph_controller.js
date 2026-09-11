@@ -193,26 +193,106 @@ class ForensicGraphController {
         });
     }
 
+    clearCanvas() {
+        if (this.cy) {
+            this.cy.elements().remove();
+        }
+    }
+
+    formatNodeData(d) {
+        const addr = d.address || d.id || '';
+        const shortAddr = addr.length > 14 
+            ? `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}` 
+            : addr;
+        
+        if (d.role === 'CEX_DEPOSIT' && d.label && !d.label.startsWith('0x') && !d.label.startsWith('T') && !d.label.includes('..')) {
+            const cleanTag = d.label.replace('🏦 ', '');
+            d.display_label = `${cleanTag}\n${shortAddr}`;
+        } else {
+            d.display_label = shortAddr;
+        }
+        return d;
+    }
+
+    addNodeProgressive(nodeElement) {
+        if (!this.cy) this.init();
+        const data = this.formatNodeData(nodeElement.data);
+        const existing = this.cy.getElementById(data.id);
+        if (existing.length > 0) {
+            existing.data(data);
+            return existing;
+        }
+
+        const added = this.cy.add({
+            group: 'nodes',
+            data: data
+        });
+        this.throttleLayout();
+        return added;
+    }
+
+    addWireProgressive(wireElement) {
+        if (!this.cy) this.init();
+        const d = wireElement.data;
+        const wid = d.id || d.tx_hash;
+        const existing = this.cy.getElementById(wid);
+        if (existing.length > 0) {
+            existing.data(d);
+            return existing;
+        }
+
+        const src = this.cy.getElementById(d.source);
+        const tgt = this.cy.getElementById(d.target);
+        if (src.length === 0 || tgt.length === 0) {
+            return null;
+        }
+
+        const added = this.cy.add({
+            group: 'edges',
+            data: d
+        });
+        this.throttleLayout();
+        return added;
+    }
+
+    throttleLayout() {
+        if (this.layoutTimer) clearTimeout(this.layoutTimer);
+        this.layoutTimer = setTimeout(() => {
+            this.runIncrementalLayout();
+        }, 120);
+    }
+
+    runIncrementalLayout() {
+        if (!this.cy || this.cy.elements().length === 0) return;
+        this.cy.resize();
+        let layoutOptions = {
+            name: this.currentLayout || 'dagre',
+            animate: true,
+            animationDuration: 280,
+            fit: true,
+            padding: 60
+        };
+
+        if (layoutOptions.name === 'dagre') {
+            layoutOptions.rankDir = 'LR';
+            layoutOptions.nodeSep = 60;
+            layoutOptions.rankSep = 140;
+        } else if (layoutOptions.name === 'breadthfirst') {
+            layoutOptions.directed = true;
+            layoutOptions.spacingFactor = 1.75;
+        }
+
+        const l = this.cy.layout(layoutOptions);
+        l.run();
+    }
+
     render(elements) {
         if (!this.cy) this.init();
 
         // Format entity display labels for enterprise card presentation
         elements.forEach(el => {
             if (el.group === 'nodes' && el.data) {
-                const d = el.data;
-                const addr = d.address || d.id || '';
-                const shortAddr = addr.length > 14 
-                    ? `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}` 
-                    : addr;
-                
-                // If recognizable exchange entity, show its name and address.
-                // Otherwise, show ONLY the address - color alone communicates Crime Root vs Mule vs CEX!
-                if (d.role === 'CEX_DEPOSIT' && d.label && !d.label.startsWith('0x') && !d.label.startsWith('T') && !d.label.includes('..')) {
-                    const cleanTag = d.label.replace('🏦 ', '');
-                    d.display_label = `${cleanTag}\n${shortAddr}`;
-                } else {
-                    d.display_label = shortAddr;
-                }
+                this.formatNodeData(el.data);
             }
         });
 
