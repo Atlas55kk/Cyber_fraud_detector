@@ -187,6 +187,7 @@ class ForensicGraphController {
 
     render(elements) {
         if (!this.cy) this.init();
+        this.cy.resize();
         this.cy.elements().remove();
         this.cy.add(elements);
         this.applyLayout(this.currentLayout);
@@ -200,8 +201,8 @@ class ForensicGraphController {
             layoutOptions = {
                 name: 'dagre',
                 rankDir: 'LR',
-                nodeSep: 60,
-                rankSep: 100,
+                nodeSep: 70,
+                rankSep: 120,
                 animate: true,
                 animationDuration: 400
             };
@@ -209,7 +210,7 @@ class ForensicGraphController {
             layoutOptions = {
                 name: 'breadthfirst',
                 directed: true,
-                spacingFactor: 1.3,
+                spacingFactor: 1.5,
                 animate: true,
                 animationDuration: 400
             };
@@ -218,16 +219,21 @@ class ForensicGraphController {
                 name: 'cose',
                 animate: true,
                 randomize: false,
-                componentSpacing: 100,
-                nodeRepulsion: 400000,
-                idealEdgeLength: 100,
+                componentSpacing: 120,
+                nodeRepulsion: 500000,
+                idealEdgeLength: 120,
                 animationDuration: 500
             };
         }
 
         const l = this.cy.layout(layoutOptions);
+        l.one('layoutstop', () => {
+            this.cy.resize();
+            this.cy.fit(null, 60);
+        });
         l.run();
     }
+
 
     zoomIn() {
         if (this.cy) this.cy.zoom(this.cy.zoom() * 1.25);

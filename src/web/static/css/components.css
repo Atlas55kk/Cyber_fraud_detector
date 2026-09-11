@@ -249,6 +249,18 @@ input:checked + .slider:before { transform: translateX(14px); }
     background: var(--bg-elevated);
 }
 
+.modal-close {
+    font-size: 20px;
+    color: var(--text-muted);
+    cursor: pointer;
+    line-height: 1;
+    transition: var(--transition-fast);
+}
+.modal-close:hover {
+    color: var(--text-primary);
+}
+
+
 .modal-body {
     padding: 20px;
     overflow-y: auto;

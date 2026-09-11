@@ -11,10 +11,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     
     <!-- Modular Tactical Stylesheets -->
-    <link rel="stylesheet" href="/static/css/variables.css">
-    <link rel="stylesheet" href="/static/css/layout.css">
-    <link rel="stylesheet" href="/static/css/components.css">
-    <link rel="stylesheet" href="/static/css/graph.css">
+    <link rel="stylesheet" href="/static/css/variables.css?v=2">
+    <link rel="stylesheet" href="/static/css/layout.css?v=2">
+    <link rel="stylesheet" href="/static/css/components.css?v=2">
+    <link rel="stylesheet" href="/static/css/graph.css?v=2">
 
     <!-- Cytoscape Graph Core and Dagre Layout Extension -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"></script>
@@ -22,21 +22,21 @@
     <script src="https://cdn.jsdelivr.net/npm/cytoscape-dagre@2.5.0/cytoscape-dagre.min.js"></script>
 </head>
 <body>
-    <!-- Top Master Header -->
-    <header class="master-header">
-        <div class="header-brand">
+    <!-- Top Command Header Bar -->
+    <header class="app-header">
+        <div class="brand-section">
             <span class="badge badge-gov">GOVT OF INDIA</span>
             <span class="badge badge-sih">SIH PS 26183</span>
-            <h1 class="header-title">Crypto Fraud Tracing Engine (I4C / MHA)</h1>
-            <div class="header-legend">
-                <span class="legend-item"><span class="legend-dot" style="background:var(--accent-crime)"></span> Crime Root</span>
-                <span class="legend-item"><span class="legend-dot" style="background:var(--accent-mule)"></span> Mule Transit</span>
-                <span class="legend-item"><span class="legend-dot" style="background:var(--accent-cex)"></span> Actionable CEX Off-Ramp</span>
+            <h1 class="brand-title">Crypto Fraud Tracing Engine (I4C / MHA)</h1>
+            <div class="legend-bar">
+                <div class="legend-item"><span class="legend-dot" style="background:var(--accent-crime)"></span> Crime Root</div>
+                <div class="legend-item"><span class="legend-dot" style="background:var(--accent-mule)"></span> Mule Transit</div>
+                <div class="legend-item"><span class="legend-dot" style="background:var(--accent-cex)"></span> Actionable CEX Off-Ramp</div>
             </div>
         </div>
-        <div class="header-status">
+        <div style="display:flex; align-items:center; gap:16px;">
             <span id="cff-seal-badge" class="badge badge-seal" style="display:none;"></span>
-            <div class="dispatch-mode-toggle">
+            <div style="display:flex; align-items:center; gap:8px;">
                 <label class="switch">
                     <input type="checkbox" id="dispatch-toggle" onchange="window.app.noticeManager.onToggleDispatch(this.checked)">
                     <span class="slider"></span>
@@ -45,17 +45,17 @@
                     🧪 PRACTICE MODE (Sandbox)
                 </span>
             </div>
-            <div class="statutory-tag">
-                Active Mandate: <strong>Section 94 BNSS / 91 CrPC</strong>
+            <div style="font-size:11px; color:var(--text-secondary);">
+                Active Mandate: <strong style="color:var(--text-primary);">Section 94 BNSS / 91 CrPC</strong>
             </div>
         </div>
     </header>
 
-    <!-- Top Primary Control Bar -->
+    <!-- Primary Control Bar -->
     <div class="control-bar">
         <div class="input-group" style="width:280px;">
-            <label for="case-select">Incident / Case Study</label>
-            <select id="case-select" class="input-field" onchange="window.app.onCaseSelect(this.value)">
+            <label class="input-lbl" for="case-select">Incident / Case Study</label>
+            <select id="case-select" class="input-box" onchange="window.app.onCaseSelect(this.value)">
                 <option value="evm_ps_bench" selected>🎯 MHA PS 26183 Multi-Hop Structuring (Benchmark)</option>
                 <option value="tron_1930_bench">🚨 1930 NCRP TRON Syndicate (Benchmark)</option>
                 <option value="wazirx_live">🔥 WazirX $235M Hack (Ethereum Mainnet - Live)</option>
@@ -65,110 +65,108 @@
             </select>
         </div>
         <div class="input-group" style="width:130px;">
-            <label for="mode-select">Ingestion Pipeline</label>
-            <select id="mode-select" class="input-field">
+            <label class="input-lbl" for="mode-select">Ingestion Pipeline</label>
+            <select id="mode-select" class="input-box">
                 <option value="auto" selected>Auto-Detect</option>
                 <option value="live">Live Mainnet</option>
                 <option value="benchmark">Benchmark</option>
             </select>
         </div>
-        <div class="input-group input-grow">
-            <label for="wallet-input">Target Fraud Wallet Address</label>
-            <input type="text" id="wallet-input" class="input-field font-mono" value="0xwallet_s" placeholder="Enter 0x... (EVM) or T... (TRON) wallet address">
+        <div class="input-group" style="flex:1;">
+            <label class="input-lbl" for="wallet-input">Target Fraud Wallet Address</label>
+            <input type="text" id="wallet-input" class="input-box input-box-mono" value="0xwallet_s" placeholder="Enter 0x... (EVM) or T... (TRON) wallet address">
         </div>
         <div class="input-group" style="width:140px;">
-            <label for="chain-select">Blockchain</label>
-            <select id="chain-select" class="input-field">
+            <label class="input-lbl" for="chain-select">Blockchain</label>
+            <select id="chain-select" class="input-box">
                 <option value="evm" selected>Ethereum / EVM</option>
                 <option value="tron">TRON (TRC-20)</option>
             </select>
         </div>
         <div class="input-group" style="width:110px;">
-            <label for="amount-input">Stolen (Tokens)</label>
-            <input type="number" id="amount-input" class="input-field font-mono" value="50000">
+            <label class="input-lbl" for="amount-input">Stolen (Tokens)</label>
+            <input type="number" id="amount-input" class="input-box input-box-mono" value="50000">
         </div>
-        <div style="display:flex; gap:8px; align-items:flex-end;">
+        <div style="display:flex; gap:8px;">
             <button class="btn btn-primary" onclick="window.app.triggerTrace()">⚡ Trace Funds</button>
             <button class="btn btn-action" onclick="window.app.cffManager.exportCFF(window.app.lastTraceData)" title="Download Case Container as .cff file">💾 Export .cff</button>
-            <button class="btn btn-subtle" onclick="window.app.cffManager.openFileDialog()" title="Load and verify offline .cff file">📁 Open .cff</button>
+            <button class="btn btn-purple" onclick="window.app.cffManager.openFileDialog()" title="Load and verify offline .cff file">📁 Open .cff</button>
             <input type="file" id="cff-file-input" style="display:none;" accept=".cff,.json" onchange="window.app.cffManager.handleFileInput(event)">
         </div>
     </div>
 
     <!-- Case Intake Wizard Panel -->
     <div id="intake-panel" class="intake-panel">
-        <span class="intake-label">📋 Case Intake Metadata:</span>
+        <span style="font-weight:700; color:var(--cyan-tactical); font-size:11px; display:flex; align-items:center; gap:4px;">📋 Case Intake Metadata:</span>
         <div class="input-group" style="width:200px;">
-            <input type="text" id="victim-input" class="input-field input-sm font-mono" placeholder="Victim's Wallet (Optional)" title="Victim origin wallet">
+            <input type="text" id="victim-input" class="input-box input-box-mono" style="padding:4px 8px; font-size:11px;" placeholder="Victim's Wallet (Optional)" title="Victim origin wallet">
         </div>
         <div class="input-group" style="width:160px;">
-            <input type="datetime-local" id="datetime-input" class="input-field input-sm" title="Incident Timestamp (Temporal Pruning)">
+            <input type="datetime-local" id="datetime-input" class="input-box" style="padding:4px 8px; font-size:11px;" title="Incident Timestamp (Temporal Pruning)">
         </div>
         <div class="input-group" style="width:130px;">
-            <input type="text" id="fir-input" class="input-field input-sm font-mono" value="FIR No. 42/2026" title="FIR Number">
+            <input type="text" id="fir-input" class="input-box input-box-mono" style="padding:4px 8px; font-size:11px;" value="FIR No. 42/2026" title="FIR Number">
         </div>
         <div class="input-group" style="width:150px;">
-            <input type="text" id="ack-input" class="input-field input-sm font-mono" value="NCRP/2026/910283" title="1930 NCRP Ack Number">
+            <input type="text" id="ack-input" class="input-box input-box-mono" style="padding:4px 8px; font-size:11px;" value="NCRP/2026/910283" title="1930 NCRP Ack Number">
         </div>
-        <div class="input-group" style="width:130px;">
-            <input type="number" id="inr-input" class="input-field input-sm font-mono" value="4250000" title="Loss in INR (₹)">
+        <div class="input-group" style="width:120px;">
+            <input type="number" id="inr-input" class="input-box input-box-mono" style="padding:4px 8px; font-size:11px;" value="4250000" title="Loss in INR (₹)">
         </div>
-        <span class="intake-hint">🔒 SHA-256 Tamper-Sealed Container under Sec 63 BNSS</span>
+        <span style="color:var(--text-muted); font-size:11px; margin-left:auto;">🔒 SHA-256 Tamper-Sealed Container under Sec 63 BNSS</span>
     </div>
 
-    <!-- KPI Dashboard Ribbon -->
+    <!-- KPI Telemetry Ribbon -->
     <div class="kpi-ribbon">
-        <div class="kpi-card">
-            <span class="kpi-value font-mono" id="kpi-source">Ready</span>
-            <span class="kpi-title">Data Ingestion Feed</span>
+        <div class="kpi-item">
+            <span class="kpi-val" id="kpi-source" style="font-size:12px; color:var(--cyan-tactical);">Ready</span>
+            <span class="kpi-lbl">Data Ingestion Feed</span>
         </div>
-        <div class="kpi-card">
-            <span class="kpi-value font-mono" id="kpi-accounts">0</span>
-            <span class="kpi-title">Tracked Wallets</span>
+        <div class="kpi-item">
+            <span class="kpi-val" id="kpi-accounts">0</span>
+            <span class="kpi-lbl">Tracked Wallets</span>
         </div>
-        <div class="kpi-card">
-            <span class="kpi-value font-mono" id="kpi-wires">0</span>
-            <span class="kpi-title">Transaction Wires</span>
+        <div class="kpi-item">
+            <span class="kpi-val" id="kpi-wires">0</span>
+            <span class="kpi-lbl">Transaction Wires</span>
         </div>
-        <div class="kpi-card">
-            <span class="kpi-value font-mono text-cex" id="kpi-located">$0.00</span>
-            <span class="kpi-title">Located at CEX Off-Ramps</span>
+        <div class="kpi-item">
+            <span class="kpi-val" id="kpi-located" style="color:var(--accent-cex);">$0.00</span>
+            <span class="kpi-lbl">Located at CEX Off-Ramps</span>
         </div>
-        <div class="kpi-card">
-            <span class="kpi-value font-mono text-accent" id="kpi-recovery">0%</span>
-            <span class="kpi-title">Recovery Potential</span>
+        <div class="kpi-item">
+            <span class="kpi-val" id="kpi-recovery" style="color:var(--cyan-tactical);">0%</span>
+            <span class="kpi-lbl">Recovery Potential</span>
         </div>
-        <div class="kpi-card">
-            <span class="kpi-value font-mono text-mule" id="kpi-sinks">0</span>
-            <span class="kpi-title">Actionable Freeze Targets</span>
+        <div class="kpi-item">
+            <span class="kpi-val" id="kpi-sinks" style="color:var(--accent-mule);">0</span>
+            <span class="kpi-lbl">Actionable Freeze Targets</span>
         </div>
     </div>
 
-    <!-- Main Forensic Viewport Split -->
+    <!-- Main Viewport Split -->
     <main id="main-viewport">
         <!-- Interactive Graph Canvas Container -->
-        <div id="viewport-container" style="flex:1; position:relative; height:100%; overflow:hidden;">
+        <div id="cy-container">
             <div id="cy"></div>
 
-            <!-- Floating Graph Canvas Toolbar -->
+            <!-- Floating Graph Toolbar -->
             <div class="graph-toolbar">
-                <button class="toolbar-btn" onclick="window.app.graphController.zoomIn()" title="Zoom In">➕</button>
-                <button class="toolbar-btn" onclick="window.app.graphController.zoomOut()" title="Zoom Out">➖</button>
-                <button class="toolbar-btn" onclick="window.app.graphController.fitView()" title="Fit to Screen">🎯</button>
-                <button class="toolbar-btn" onclick="window.app.graphController.resetView()" title="Reset Center">🔄</button>
-                <div class="toolbar-divider"></div>
-                <button class="toolbar-btn" onclick="window.app.graphController.applyLayout('dagre')" title="Hierarchical Flow (Dagre)">LR Flow</button>
-                <button class="toolbar-btn" onclick="window.app.graphController.applyLayout('breadthfirst')" title="Hop Level Tree (Breadthfirst)">Tree</button>
-                <button class="toolbar-btn" onclick="window.app.graphController.applyLayout('cose')" title="Physics Clustering (Cose)">Cluster</button>
+                <button class="graph-tool-btn" onclick="window.app.graphController.zoomIn()" title="Zoom In">➕ Zoom In</button>
+                <button class="graph-tool-btn" onclick="window.app.graphController.zoomOut()" title="Zoom Out">➖ Zoom Out</button>
+                <button class="graph-tool-btn" onclick="window.app.graphController.fitView()" title="Fit to Screen">🎯 Fit</button>
+                <button class="graph-tool-btn" onclick="window.app.graphController.resetView()" title="Reset Center">🔄 Center</button>
+                <div style="width:1px; background:var(--border-subtle); margin:0 4px;"></div>
+                <button class="graph-tool-btn" onclick="window.app.graphController.applyLayout('dagre')" title="Hierarchical Flow">LR Flow</button>
+                <button class="graph-tool-btn" onclick="window.app.graphController.applyLayout('breadthfirst')" title="Hop Tree">Tree</button>
+                <button class="graph-tool-btn" onclick="window.app.graphController.applyLayout('cose')" title="Physics Cluster">Cluster</button>
             </div>
 
-            <!-- Drag-and-Drop .cff Case Vault Overlay -->
-            <div id="drop-zone" class="drop-zone-overlay">
-                <div class="drop-zone-modal">
-                    <div style="font-size:36px; margin-bottom:12px;">📁</div>
-                    <h3 style="font-size:16px; margin-bottom:6px; color:var(--text-primary);">Drop .cff Case File Here</h3>
-                    <p style="font-size:12px; color:var(--text-secondary);">Load and reconstruct offline forensic investigation graph</p>
-                </div>
+            <!-- Drag & Drop Case Vault Overlay -->
+            <div id="drop-zone">
+                <div class="drop-icon">📁</div>
+                <div class="drop-text" style="font-size:16px; font-weight:700; color:var(--text-primary);">Drop .cff Case Container Here</div>
+                <div class="drop-sub" style="font-size:12px; color:var(--text-secondary);">Reconstruct and verify complete offline forensic graph whiteboard</div>
             </div>
         </div>
 
@@ -176,21 +174,21 @@
         <aside id="sidebar">
             <div class="sidebar-tabs">
                 <button class="tab-btn active" data-tab="tab-node">Node Inspector</button>
-                <button class="tab-btn" data-tab="tab-ml">AI Threat Model</button>
-                <button class="tab-btn" data-tab="tab-actionable">Actionable Sinks</button>
+                <button class="tab-btn" data-tab="tab-ml">AI Threat</button>
+                <button class="tab-btn" data-tab="tab-actionable">Actionable CEX</button>
             </div>
 
-            <!-- Tab 1: Node & Edge Inspector -->
+            <!-- Tab 1: Node Inspector -->
             <div id="tab-node" class="tab-content active">
                 <div class="card">
                     <div class="card-header">
-                        <h3>Forensic Element Details</h3>
+                        <span class="card-title">Forensic Element Telemetry</span>
                     </div>
-                    <p id="no-select-hint" style="font-size:12px; color:var(--text-secondary);">Click on any wallet node or wire edge on the whiteboard to inspect chain telemetry.</p>
-                    <div id="node-details" style="display:none; flex-direction:column; gap:10px;">
+                    <p id="no-select-hint" style="font-size:11px; color:var(--text-muted); line-height:1.4;">Click on any wallet box or wire edge on the canvas to inspect chain telemetry.</p>
+                    <div id="node-details" style="display:none; flex-direction:column; gap:6px;">
                         <div class="field-row">
                             <span class="field-lbl">Address / Hash:</span>
-                            <span class="field-val font-mono" id="side-addr" style="font-size:11px;">--</span>
+                            <span class="field-val" id="side-addr" style="font-size:10px; max-width:210px; word-break:break-all;">--</span>
                         </div>
                         <div class="field-row">
                             <span class="field-lbl">Identified Role:</span>
@@ -202,15 +200,15 @@
                         </div>
                         <div class="field-row">
                             <span class="field-lbl">Stolen Taint %:</span>
-                            <span class="field-val font-mono" id="side-taint">--</span>
+                            <span class="field-val" id="side-taint">--</span>
                         </div>
                         <div class="field-row">
                             <span class="field-lbl">Held Value:</span>
-                            <span class="field-val font-mono text-cex" id="side-held">--</span>
+                            <span class="field-val" id="side-held" style="color:var(--accent-cex);">--</span>
                         </div>
                         <div class="field-row">
                             <span class="field-lbl">Gas Burned:</span>
-                            <span class="field-val font-mono" id="side-gas">--</span>
+                            <span class="field-val" id="side-gas">--</span>
                         </div>
                         <div id="node-cex-action" style="display:none; margin-top:8px; padding-top:8px; border-top:1px solid var(--border-subtle);">
                             <button id="btn-freeze-single" class="btn btn-action" style="width:100%;">
@@ -223,62 +221,53 @@
                 <!-- Statutory Notice Requisition Card -->
                 <div class="card" id="notice-card" style="border-left: 3px solid #e3b341;">
                     <div class="card-header">
-                        <h3 id="notice-card-title" style="color:#e3b341;">🧪 Practice Mode: Forensic Reasoning</h3>
+                        <span class="card-title" id="notice-card-title" style="color:#e3b341;">🧪 Practice Mode: Reasoning</span>
                     </div>
-                    <p id="notice-card-desc" style="font-size:11px; color:var(--text-secondary); margin-bottom:12px; line-height:1.4;">
-                        Practice sandbox active. Generates mathematical chain-of-custody rationale and simulated drafts without formal dispatch.
+                    <p id="notice-card-desc" style="font-size:11px; color:var(--text-secondary); line-height:1.4;">
+                        Practice sandbox active. Generates mathematical chain-of-custody rationale and simulated drafts without formal statutory dispatch.
                     </p>
-                    <button id="btn-generate-notice" class="btn btn-subtle" style="width:100%; color:#e3b341;" onclick="window.app.noticeManager.openModal(window.app.lastTraceData)">
+                    <button id="btn-generate-notice" class="btn btn-subtle" style="width:100%; color:#e3b341; margin-top:4px;" onclick="window.app.noticeManager.openModal(window.app.lastTraceData)">
                         🧪 Preview Simulated Notice (Practice)
                     </button>
                 </div>
             </div>
 
-            <!-- Tab 2: 2-Tier AI/ML Threat Profiler -->
+            <!-- Tab 2: AI ML Threat -->
             <div id="tab-ml" class="tab-content">
                 <div class="card" style="border-left: 3px solid var(--accent-ai);">
                     <div class="card-header">
-                        <h3 style="color:var(--accent-ai);">🧠 Macro ML Campaign Fingerprint</h3>
+                        <span class="card-title" style="color:var(--accent-ai);">🧠 Macro ML Threat Profile</span>
                     </div>
-                    <div style="display:flex; flex-direction:column; gap:8px; font-size:12px;">
+                    <div style="display:flex; flex-direction:column; gap:6px;">
                         <div class="field-row">
                             <span class="field-lbl">Campaign:</span>
-                            <strong id="ml-campaign" style="color:var(--accent-primary);">Pending Trace</strong>
+                            <span class="field-val" id="ml-campaign" style="color:var(--cyan-tactical);">Pending Trace</span>
                         </div>
                         <div class="field-row">
-                            <span class="field-lbl">Overall Risk Score:</span>
-                            <span id="ml-score" class="field-val font-mono">--/100</span>
+                            <span class="field-lbl">Risk Score:</span>
+                            <span class="field-val" id="ml-score">--/100</span>
                         </div>
                         <div class="field-row">
-                            <span class="field-lbl">Investigative Priority:</span>
-                            <span id="ml-priority" class="field-val font-mono" style="font-weight:700;">--</span>
+                            <span class="field-lbl">Priority:</span>
+                            <span class="field-val" id="ml-priority">--</span>
                         </div>
                         <div class="field-row">
-                            <span class="field-lbl">Topological Pattern:</span>
-                            <span id="ml-topo" class="field-val">--</span>
+                            <span class="field-lbl">Topology:</span>
+                            <span class="field-val" id="ml-topo">--</span>
                         </div>
-                        <p id="ml-summary" style="font-size:11px; color:var(--text-secondary); margin-top:6px; line-height:1.4; border-top:1px solid var(--border-subtle); padding-top:8px;"></p>
+                        <p id="ml-summary" style="font-size:11px; color:var(--text-secondary); margin-top:6px; line-height:1.4; border-top:1px solid var(--border-subtle); padding-top:6px;"></p>
                     </div>
-                </div>
-
-                <div class="card">
-                    <div class="card-header">
-                        <h3>Micro Transaction Classifier</h3>
-                    </div>
-                    <p style="font-size:11px; color:var(--text-secondary); line-height:1.4;">
-                        Real-time heuristic & ML profiling analyzes temporal burst velocities, peel change outputs, round-number structuring, and gas fee exhaustion across each hop.
-                    </p>
                 </div>
             </div>
 
-            <!-- Tab 3: Actionable CEX Off-Ramp Targets -->
+            <!-- Tab 3: Actionable CEX -->
             <div id="tab-actionable" class="tab-content">
                 <div class="card">
                     <div class="card-header">
-                        <h3>Actionable Exchange Targets</h3>
+                        <span class="card-title">Actionable Exchange Off-Ramps</span>
                     </div>
-                    <div id="actionable-list" style="display:flex; flex-direction:column; gap:10px;">
-                        <span style="font-size:12px; color:var(--text-secondary);">Run a forensic trace to identify exchange cash-out targets.</span>
+                    <div id="actionable-list" style="display:flex; flex-direction:column; gap:8px;">
+                        <span style="font-size:11px; color:var(--text-muted);">Run trace to locate exchange targets.</span>
                     </div>
                 </div>
             </div>
@@ -290,26 +279,26 @@
         <div class="log-entry log-info"><span class="log-time">[SYSTEM]</span> Forensic Graph Engine ready. Enter reported target wallet or select a preset scenario.</div>
     </div>
 
-    <!-- Section 94 BNSS Statutory Notice Modal -->
-    <div id="notice-modal">
-        <div class="modal-card">
+    <!-- Section 94 BNSS Statutory Notice Modal (Hidden by default overlay) -->
+    <div id="notice-modal" class="modal-overlay">
+        <div class="modal-dialog">
             <div class="modal-header">
-                <h3 id="modal-title" style="font-size:14px; color:#e3b341;">SIMULATED FORENSIC DRAFT (PRACTICE SANDBOX)</h3>
+                <span class="modal-title" id="modal-title" style="font-size:13px; color:#e3b341;">SIMULATED FORENSIC DRAFT (PRACTICE SANDBOX)</span>
                 <span class="modal-close" onclick="window.app.noticeManager.closeModal()">&times;</span>
             </div>
             <div class="modal-body font-mono" id="notice-body">Drafting statutory Section 94 BNSS requisition notice...</div>
             <div class="modal-footer">
                 <button class="btn btn-subtle" onclick="window.app.noticeManager.closeModal()">Close</button>
-                <button class="btn btn-primary" onclick="window.app.noticeManager.copyNotice()">📋 Copy Notice</button>
+                <button class="btn btn-copy" onclick="window.app.noticeManager.copyNotice()">📋 Copy Notice</button>
                 <button class="btn btn-action" onclick="window.app.noticeManager.downloadPDF(window.app.lastTraceData)">📥 Download Section 94 Notice (.PDF)</button>
             </div>
         </div>
     </div>
 
     <!-- Modular Script Ingestion -->
-    <script src="/static/js/graph_controller.js"></script>
-    <script src="/static/js/cff_manager.js"></script>
-    <script src="/static/js/notice_manager.js"></script>
-    <script src="/static/js/app.js"></script>
+    <script src="/static/js/graph_controller.js?v=2"></script>
+    <script src="/static/js/cff_manager.js?v=2"></script>
+    <script src="/static/js/notice_manager.js?v=2"></script>
+    <script src="/static/js/app.js?v=2"></script>
 </body>
 </html>
