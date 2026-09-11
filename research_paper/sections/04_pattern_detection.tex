@@ -86,7 +86,7 @@ A destination address $b \in \mathcal{V}$ is categorized as a \textbf{Cross-Chai
 \begin{equation}
     b \in \mathcal{B}_{\text{bridge}} = \{\text{Stargate}, \text{Across}, \text{Hop}, \text{Wormhole}, \text{Arbitrum Bridge}, \dots\}
 \end{equation}
-or if the transaction input data invokes known lock-and-burn function selectors (e.g., \texttt{depositTo()}, \texttt{bridgeTokens()}, \texttt{swapAndBridge()}).
+or if the transaction input data invokes known lock-and-burn function selectors (e.g., \texttt{depositTo()}, \texttt{bridgeTokens()}, or \texttt{swapAndBridge()}).
 
 \subsubsection{Cross-Ledger State Transition Invariant}
 When tainted capital reaches a bridge contract $b$ on source chain $\mathcal{C}_{\text{src}}$ at timestamp $t_{\text{lock}}$, the physical asset is locked or burned. The engine records a synthetic state transition:
@@ -109,6 +109,7 @@ where $\mathcal{I}_k(u)$ represents heuristic indicator functions defined in Tab
 \centering
 \caption{Heuristic Risk Scoring Indicator Weights.}
 \label{tab:risk_indicators}
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{clcc}
 \toprule
 \textbf{Indicator} & \textbf{Forensic Criteria} & \textbf{Weight ($\omega_k$)} & \textbf{Severity} \\
@@ -121,7 +122,8 @@ $\mathcal{I}_5(u)$ & Cross-Chain Bridge Lock Event & 65 & Medium \\
 $\mathcal{I}_6(u)$ & Interaction with Unregulated / Instant Non-KYC Swap & 60 & Medium \\
 $\mathcal{I}_7(u)$ & Taint Dilution Coefficient $\tau(u) \ge 0.5$ & 50 & Medium \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table}
 
 This multi-factor formulation ensures that addresses directly involved in high-risk obfuscation vectors are immediately escalated to the top of the forensic priority queue.

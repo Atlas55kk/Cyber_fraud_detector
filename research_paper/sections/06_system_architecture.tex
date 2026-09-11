@@ -37,7 +37,7 @@ A critical vulnerability in real-time analytical web applications is \emph{event
 To achieve robust fault isolation and zero-starvation concurrency, our backend implements a \textbf{Decoupled Thread-Worker Architecture}:
 
 \begin{enumerate}
-    \item \textbf{Thread Isolation:} When an investigator dispatches a trace request via \texttt{POST /api/trace/stream}, the server instantiates an isolated asynchronous queue:
+    \item \textbf{Thread Isolation:} When an investigator dispatches a trace request via the endpoint \nolinkurl{POST /api/trace/stream}, the server instantiates an isolated asynchronous queue:
     \begin{equation}
         \mathcal{Q}_{\text{async}} = \text{asyncio.Queue}(\text{maxsize}=500)
     \end{equation}
@@ -65,18 +65,24 @@ To achieve robust fault isolation and zero-starvation concurrency, our backend i
 The communication channel between the forensic engine and the analyst's workstation utilizes the W3C Server-Sent Events (SSE) standard over HTTP/1.1 chunked transfer encoding (\texttt{Content-Type: text/event-stream}). We define six discrete structured event schemas:
 
 \begin{itemize}
-    \item \textbf{\texttt{init\_stream}}: Transmits metadata, initial stolen capital, root address identity, and total anticipated search bounds.
-    \item \textbf{\texttt{node\_discovered}}: Emits an individual address node record:
+    \item \texttt{init\_stream}: Transmits metadata, initial stolen capital, root address identity, and total anticipated search bounds.
+    \item \texttt{node\_discovered}: Emits an individual address node record:
     \begin{equation}
-        \{\text{``type''}: \text{``node''}, \text{``data''}: \{\text{``id''}: u, \text{``label''}: \text{Label}(u), \text{``risk''}: \text{Risk}(u), \text{``taint''}: \tau(u)\}\}
+    \begin{split}
+        \{\text{``type''}: \text{``node''}, \text{``data''}: &\{\text{``id''}: u, \text{``label''}: \text{Label}(u), \\
+        &\text{``risk''}: \text{Risk}(u), \text{``taint''}: \tau(u)\}\}
+    \end{split}
     \end{equation}
-    \item \textbf{\texttt{wire\_discovered}}: Emits a directed transaction wire:
+    \item \texttt{wire\_discovered}: Emits a directed transaction wire:
     \begin{equation}
-        \{\text{``type''}: \text{``wire''}, \text{``data''}: \{\text{``source''}: u, \text{``target''}: v, \text{``amount''}: w_e, \text{``token''}: \kappa_e, \text{``tx\_hash''}: h_e\}\}
+    \begin{split}
+        \{\text{``type''}: \text{``wire''}, \text{``data''}: &\{\text{``source''}: u, \text{``target''}: v, \text{``amount''}: w_e, \\
+        &\text{``token''}: \kappa_e, \text{``tx\_hash''}: h_e\}\}
+    \end{split}
     \end{equation}
-    \item \textbf{\texttt{heuristic\_alert}}: Dispatches high-priority forensic warnings (e.g., ``Peel Chain Detected'', ``Mixer Interaction Flagged'').
-    \item \textbf{\texttt{stats\_update}}: Periodically pushes aggregated metrics (nodes explored, wires mapped, total tainted volume tracked, exploration percentage).
-    \item \textbf{\texttt{stream\_complete}} / \textbf{\texttt{stream\_error}}: Finalizes the transaction session and flushes state buffers.
+    \item \texttt{heuristic\_alert}: Dispatches high-priority forensic warnings (e.g., ``Peel Chain Detected'', ``Mixer Interaction Flagged'').
+    \item \texttt{stats\_update}: Periodically pushes aggregated metrics (nodes explored, wires mapped, total tainted volume tracked, exploration percentage).
+    \item \texttt{stream\_complete} / \texttt{stream\_error}: Finalizes the transaction session and flushes state buffers.
 \end{itemize}
 
 \subsection{Client-Side Whiteboard Rendering and Edge Buffering Pipeline}

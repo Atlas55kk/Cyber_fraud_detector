@@ -27,7 +27,7 @@ Adversaries frequently route stolen ERC-20 tokens through high-liquidity Automat
 \subsubsection{Public Blockchain RPC Rate Limiting}
 A primary operational challenge in public forensic tracing is RPC rate limiting (HTTP status 429). Public nodes (e.g., standard Cloudflare or Etherscan community endpoints) enforce strict request quotas (e.g., 5 calls per second). During deep priority searches where a high-degree node possesses dozens of candidate branches, unmanaged concurrent requests trigger immediate throttling.
 
-\textbf{Defensive Countermeasure:} Our system implements an adaptive request scheduler equipped with:
+\paragraph{Defensive Countermeasures.} Our system implements an adaptive request scheduler equipped with:
 \begin{enumerate}
     \item \emph{Exponential Jitter Backoff:}
     \begin{equation}

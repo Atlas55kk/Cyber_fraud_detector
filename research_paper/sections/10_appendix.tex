@@ -7,6 +7,7 @@
 To ensure full interoperability across heterogeneous forensic microservices, our platform specifies strict JSON Schema definitions for all emitted streaming events.
 
 \subsubsection*{1. Node Discovery Event Schema}
+\begin{footnotesize}
 \begin{verbatim}
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
@@ -31,8 +32,10 @@ To ensure full interoperability across heterogeneous forensic microservices, our
   "required": ["type", "data"]
 }
 \end{verbatim}
+\end{footnotesize}
 
 \subsubsection*{2. Wire Discovery Event Schema}
+\begin{footnotesize}
 \begin{verbatim}
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
@@ -57,6 +60,7 @@ To ensure full interoperability across heterogeneous forensic microservices, our
   "required": ["type", "data"]
 }
 \end{verbatim}
+\end{footnotesize}
 
 \subsection*{B. Supplementary Mathematical Proofs}
 
@@ -96,6 +100,7 @@ Table~\ref{tab:hyperparameters} catalogs the complete hyperparameter configurati
 \centering
 \caption{Framework Hyperparameter Configuration Reference.}
 \label{tab:hyperparameters}
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{llcl}
 \toprule
 \textbf{Parameter} & \textbf{Symbol} & \textbf{Default Value} & \textbf{Functional Description} \\
@@ -113,5 +118,6 @@ Smurf Variance Bound & $\epsilon_{\text{variance}}$ & 0.35 & Maximum coefficient
 Stream Buffer Size & $M_{\text{queue}}$ & 500 & Maximum item capacity of async streaming event queue. \\
 RPC Request Timeout & $T_{\text{rpc\_timeout}}$ & $2.0\,\text{s}$ & Network HTTP timeout before triggering benchmark fallback. \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table}
