@@ -368,23 +368,48 @@ class ForensicApp {
         }
     }
 
+    applyLayoutMode(layoutName) {
+        ['dagre', 'tree', 'cluster'].forEach(k => {
+            const el = document.getElementById(`btn-layout-${k}`);
+            if (el) el.classList.remove('active');
+        });
+        const activeBtn = document.getElementById(`btn-layout-${layoutName}`);
+        if (activeBtn) activeBtn.classList.add('active');
+
+        if (this.graphController) {
+            this.graphController.applyLayout(layoutName);
+        }
+    }
+
     updateHUD(data) {
-        // Feed Source
+        // Live / Benchmark Feed Indicator
         const srcEl = document.getElementById('hud-source');
-        if (data.is_cff_import) {
-            srcEl.innerHTML = `<span style="color:var(--accent-cex); display:inline-flex; align-items:center; gap:5px;"><span style="width:6px; height:6px; border-radius:50%; background:var(--accent-cex); display:inline-block;"></span> Offline .CFF</span>`;
-        } else if (data.is_live) {
-            srcEl.innerHTML = `<span style="color:var(--accent-cex); display:inline-flex; align-items:center; gap:5px;"><span style="width:6px; height:6px; border-radius:50%; background:var(--accent-cex); display:inline-block;"></span> ${data.data_source}</span>`;
-        } else {
-            srcEl.innerHTML = `<span style="color:var(--accent-mixer); display:inline-flex; align-items:center; gap:5px;"><span style="width:6px; height:6px; border-radius:50%; background:var(--accent-mixer); display:inline-block;"></span> ${data.data_source}</span>`;
+        if (srcEl) {
+            let dotColor = 'var(--accent-cyan)';
+            let label = data.data_source || 'Benchmark Feed';
+            if (data.is_cff_import) {
+                dotColor = 'var(--accent-cex)';
+                label = 'Offline .CFF Container';
+            } else if (data.is_live) {
+                dotColor = 'var(--accent-cex)';
+            }
+            srcEl.innerHTML = `<span class="chip-live-dot" style="background:${dotColor}; box-shadow:0 0 6px ${dotColor};"></span> ${label}`;
         }
 
+        const accEl = document.getElementById('hud-accounts');
+        if (accEl) accEl.innerText = data.stats.total_accounts_tracked;
 
-        document.getElementById('hud-accounts').innerText = data.stats.total_accounts_tracked;
-        document.getElementById('hud-wires').innerText = data.stats.total_transactions_tracked;
-        document.getElementById('hud-located').innerText = '$' + Number(data.stats.total_funds_at_exchanges).toLocaleString();
-        document.getElementById('hud-recovery').innerText = data.stats.recovery_potential_pct + '%';
-        document.getElementById('hud-sinks').innerText = data.actionable_cex.length;
+        const wiresEl = document.getElementById('hud-wires');
+        if (wiresEl) wiresEl.innerText = data.stats.total_transactions_tracked;
+
+        const locEl = document.getElementById('hud-located');
+        if (locEl) locEl.innerText = '$' + Number(data.stats.total_funds_at_exchanges).toLocaleString();
+
+        const recEl = document.getElementById('hud-recovery');
+        if (recEl) recEl.innerText = data.stats.recovery_potential_pct + '%';
+
+        const sinksEl = document.getElementById('hud-sinks');
+        if (sinksEl) sinksEl.innerText = data.actionable_cex.length;
     }
 
     updateMLCard(ml) {

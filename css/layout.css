@@ -19,16 +19,16 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
-/* 1. Unified Command Bar (52px) */
+/* 1. Unified Command Header (48px) */
 .command-header {
-    height: 52px;
+    height: 48px;
     background: var(--bg-surface);
     border-bottom: 1px solid var(--border-subtle);
     padding: 0 16px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 16px;
+    gap: 14px;
     z-index: 30;
     flex-shrink: 0;
 }
@@ -54,7 +54,8 @@ body {
 
 .brand-text {
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    gap: 8px;
 }
 
 .brand-title {
@@ -62,44 +63,44 @@ body {
     font-weight: 700;
     letter-spacing: -0.2px;
     color: var(--text-primary);
+    white-space: nowrap;
 }
 
-.brand-subtitle {
-    font-size: 10px;
-    font-weight: 500;
-    color: var(--text-muted);
-    letter-spacing: 0.3px;
-}
-
-/* Center Search & Case Command Hub */
+/* Center Search & Case Command Capsule */
 .command-hub {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     background: var(--bg-base);
     border: 1px solid var(--border-medium);
     border-radius: var(--radius-md);
-    padding: 3px 6px;
-    max-width: 720px;
+    padding: 2px 6px;
+    max-width: 680px;
     flex: 1;
+    transition: border-color var(--transition-fast);
+}
+
+.command-hub:focus-within {
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 0 1px rgba(6, 182, 212, 0.25);
 }
 
 .hub-select {
     background: transparent;
     border: none;
     color: var(--text-secondary);
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
-    padding: 4px 8px;
+    padding: 4px 6px;
     outline: none;
     cursor: pointer;
-    max-width: 200px;
+    max-width: 190px;
 }
 .hub-select:focus { color: var(--text-primary); }
 
 .hub-divider {
     width: 1px;
-    height: 18px;
+    height: 16px;
     background: var(--border-subtle);
 }
 
@@ -109,16 +110,17 @@ body {
     color: var(--text-primary);
     font-family: var(--font-mono);
     font-size: 12px;
-    padding: 4px 8px;
+    padding: 4px 6px;
     outline: none;
     flex: 1;
+    min-width: 140px;
 }
 
 .hub-chain-btn {
     background: var(--bg-card);
     border: 1px solid var(--border-subtle);
     color: var(--text-secondary);
-    padding: 3px 8px;
+    padding: 3px 7px;
     border-radius: var(--radius-xs);
     font-size: 11px;
     font-weight: 600;
@@ -146,7 +148,7 @@ body {
     height: 100%;
     position: relative;
     background-color: var(--bg-base);
-    background-image: radial-gradient(circle, #182338 1px, transparent 1px);
+    background-image: radial-gradient(circle, #151f33 1px, transparent 1px);
     background-size: 28px 28px;
 }
 
@@ -158,71 +160,140 @@ body {
     left: 0;
 }
 
-/* Floating HUD Metrics Ribbon */
-.hud-metrics-ribbon {
+/* Floating Single-Pill Case Telemetry Chip (Top-Left) */
+.floating-case-chip {
     position: absolute;
     top: 14px;
     left: 16px;
+    background: rgba(15, 23, 42, 0.88);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-full);
+    padding: 5px 14px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    box-shadow: var(--shadow-md);
     z-index: 10;
     pointer-events: auto;
 }
 
-.hud-pill {
-    background: var(--bg-glass-card);
-    backdrop-filter: blur(10px);
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-full);
-    padding: 5px 12px;
-    display: flex;
+.chip-live {
+    display: inline-flex;
     align-items: center;
     gap: 6px;
-    font-size: 11px;
-    color: var(--text-secondary);
-    box-shadow: var(--shadow-sm);
-    transition: var(--transition-fast);
-}
-.hud-pill:hover { border-color: var(--border-medium); }
-
-.hud-pill-val {
-    font-family: var(--font-mono);
-    font-weight: 700;
+    font-weight: 600;
     color: var(--text-primary);
 }
 
-/* Floating Bottom Left Canvas Toolbar */
-.canvas-toolbar {
-    position: absolute;
-    bottom: 16px;
-    left: 16px;
-    background: var(--bg-glass-card);
-    backdrop-filter: blur(10px);
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-md);
-    padding: 4px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    box-shadow: var(--shadow-md);
-    z-index: 10;
+.chip-live-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent-cyan);
+    box-shadow: 0 0 6px var(--accent-cyan);
 }
 
-/* Floating Bottom Center Minimalist Legend */
-.canvas-legend {
+.chip-divider {
+    width: 1px;
+    height: 12px;
+    background: var(--border-medium);
+}
+
+.chip-stat {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.chip-lbl {
+    color: var(--text-muted);
+    font-size: 11px;
+}
+
+.chip-val {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: var(--text-primary);
+    font-size: 11px;
+}
+
+.chip-val.text-emerald { color: var(--accent-cex); }
+.chip-val.text-cyan { color: var(--accent-cyan); }
+.chip-val.text-amber { color: var(--accent-mule); }
+
+/* Floating Canvas Dock (Bottom Center) */
+.floating-canvas-dock {
     position: absolute;
     bottom: 16px;
     left: 50%;
     transform: translateX(-50%);
-    background: var(--bg-glass-card);
-    backdrop-filter: blur(10px);
-    border: 1px solid var(--border-subtle);
+    background: rgba(15, 23, 42, 0.88);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: var(--radius-full);
-    padding: 5px 16px;
+    padding: 4px 10px;
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 6px;
+    box-shadow: var(--shadow-lg);
+    z-index: 15;
+}
+
+.dock-group {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.dock-divider {
+    width: 1px;
+    height: 16px;
+    background: var(--border-medium);
+    margin: 0 4px;
+}
+
+.dock-btn {
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-secondary);
+    padding: 4px 9px;
+    border-radius: var(--radius-full);
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: var(--transition-fast);
+}
+
+.dock-btn:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.dock-btn.active {
+    color: var(--accent-cyan);
+    background: rgba(6, 182, 212, 0.12);
+    border-color: rgba(6, 182, 212, 0.3);
+}
+
+/* Floating Bottom-Right Minimalist Legend */
+.canvas-legend {
+    position: absolute;
+    bottom: 16px;
+    right: 16px;
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--radius-full);
+    padding: 5px 14px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
     font-size: 11px;
     color: var(--text-secondary);
     box-shadow: var(--shadow-sm);
@@ -241,9 +312,13 @@ body {
     border-radius: var(--radius-full);
 }
 
+.dot-crime { background: var(--accent-crime); box-shadow: 0 0 6px rgba(244, 63, 94, 0.4); }
+.dot-mule { background: var(--accent-mule); }
+.dot-cex { background: var(--accent-cex); box-shadow: 0 0 6px rgba(16, 185, 129, 0.4); }
+
 /* 3. Sleek Slide-Out Inspector Drawer */
 #inspector-drawer {
-    width: 390px;
+    width: 380px;
     background: var(--bg-surface);
     border-left: 1px solid var(--border-subtle);
     display: flex;
@@ -308,7 +383,7 @@ body {
 
 /* 4. Minimalist Bottom Telemetry Status Bar */
 .status-bar {
-    height: 28px;
+    height: 26px;
     background: var(--bg-surface);
     border-top: 1px solid var(--border-subtle);
     padding: 0 16px;
