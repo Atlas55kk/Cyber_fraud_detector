@@ -1,0 +1,173 @@
+\section{Formal Graph Theory and Mathematical Modeling}
+\label{sec:math_modeling}
+
+In this section, we establish the rigorous mathematical foundation of our blockchain forensic framework. We formulate account-based transaction networks as time-stamped, multi-token directed multigraphs, define dynamic taint propagation and dilution conservation laws, formalize our edge priority scoring function, and provide theoretical proofs governing bounded traversal and algorithmic convergence.
+
+\subsection{Multi-Token Dynamic Account Multigraph Formalism}
+
+Let $\mathcal{A}$ represent the set of all unique 160-bit or cryptographic blockchain addresses (including Externally Owned Accounts [EOAs], smart contracts, and multi-signature wallets). Let $\mathcal{K}$ denote the finite set of supported fungible asset denominations, comprising the native gas token (e.g., $\text{ETH}, \text{TRX}$) and smart contract token standards (e.g., ERC-20, TRC-20):
+\begin{equation}
+    \mathcal{K} = \{\kappa_{\text{native}}, \kappa_{\text{USDT}}, \kappa_{\text{USDC}}, \kappa_{\text{DAI}}, \dots\}
+\end{equation}
+
+We define the \textbf{Multi-Token Dynamic Account Multigraph} as a directed, attributed multigraph:
+\begin{equation}
+    \mathcal{G} = (\mathcal{V}, \mathcal{E}, \mathcal{T}, \Phi_v, \Phi_e)
+\end{equation}
+where:
+\begin{itemize}
+    \item $\mathcal{V} \subseteq \mathcal{A}$ is the set of observed active blockchain addresses (nodes).
+    \item $\mathcal{E} \subseteq \mathcal{V} \times \mathcal{V} \times \mathbb{N}$ is the multiset of directed asset transfer operations (wires/edges).
+    \item $\mathcal{T} \subset \mathbb{R}^+$ represents the continuous or discrete block timestamp domain.
+    \item $\Phi_v: \mathcal{V} \to \mathcal{S}_v$ maps each node to an entity state vector:
+    \begin{equation}
+        \Phi_v(u) = \langle \text{Type}(u), \text{Label}(u), \mathcal{B}_u, \text{Risk}(u), \tau(u) \rangle
+    \end{equation}
+    where $\text{Type}(u) \in \{\text{EOA}, \text{Contract}, \text{Mixer}, \text{Bridge}, \text{Exchange}, \text{Unknown}\}$, $\mathcal{B}_u: \mathcal{K} \to \mathbb{R}^+$ represents the multi-token balance vector, $\text{Risk}(u) \in [0, 100]$ is the composite heuristic risk score, and $\tau(u) \in [0, 1]$ represents the scalar taint coefficient.
+    \item $\Phi_e: \mathcal{E} \to \mathcal{S}_e$ maps each directed edge $e = (u, v, k)$ to a transaction attribute tuple:
+    \begin{equation}
+        \Phi_e(e) = \langle h_e, t_e, b_e, w_e, \kappa_e, g_e, \rho_e \rangle
+    \end{equation}
+    where $h_e \in \{0, 1\}^{256}$ is the cryptographic transaction hash, $t_e \in \mathcal{T}$ is the block timestamp, $b_e \in \mathbb{N}$ is the block height, $w_e \in \mathbb{R}^+$ is the nominal transacted amount, $\kappa_e \in \mathcal{K}$ is the transferred asset token symbol, $g_e \in \mathbb{R}^+$ represents consumed gas fees, and $\rho_e \in [0, 1]$ is the edge priority metric.
+\end{itemize}
+
+\subsection{Taint Propagation and Dilution Conservation Laws}
+
+Let $u_0 \in \mathcal{V}$ denote the designated \emph{incident root address} (the compromised victim wallet or the initial exploiter address), and let $W_0 \in \mathbb{R}^+$ be the confirmed principal stolen amount in base denomination asset $\kappa^* \in \mathcal{K}$ at initial exploit timestamp $t_0$.
+
+\subsubsection{Scalar Taint Inoculation}
+At time $t = t_0$, the incident root node is initialized with maximum taint:
+\begin{equation}
+    \tau(u_0) = 1.0, \quad \text{TaintedBalance}(u_0, \kappa^*) = W_0
+\end{equation}
+
+\subsubsection{Dynamic Proportional Taint Propagation}
+Consider a directed transaction wire $e = (u, v)$ occurring at timestamp $t_e > t_0$ carrying amount $w_e$ of asset $\kappa^*$. The fraction of taint $\tau(e)$ transferred across wire $e$ is determined by the taint coefficient of the sender $\tau(u)$ immediately prior to timestamp $t_e$:
+\begin{equation}
+    \tau(e) = \tau(u) \cdot \min\left(1.0, \frac{w_e}{\mathcal{B}_u(\kappa^*)}\right)
+\end{equation}
+
+Upon receipt of wire $e$, the destination address $v$ updates its aggregate taint coefficient via a conservation weighted average:
+\begin{equation}
+    \tau(v)^{(\text{new})} = \frac{\tau(v)^{(\text{prev})} \cdot \mathcal{B}_v(\kappa^*) + \tau(e) \cdot w_e}{\mathcal{B}_v(\kappa^*) + w_e}
+    \label{eq:taint_update}
+\end{equation}
+
+\subsubsection{Temporal Velocity Decay}
+Laundering operations exhibit high temporal velocity immediately post-exploit to evade manual freezing. Over extended time deltas $\Delta t = t_e - t_{\text{prev}}$, fund movement through intermediate dormant wallets experiences exponential relevance decay:
+\begin{equation}
+    \gamma(\Delta t) = \exp(-\lambda \cdot \Delta t)
+\end{equation}
+where $\lambda > 0$ is the empirical half-life decay parameter (typically calibrated to $\lambda = \frac{\ln(2)}{86400\,\text{s}}$ for a 24-hour half-life).
+
+\subsection{The Heuristic Priority Scoring Function}
+
+To resolve the combinatorial state-space explosion problem without dropping primary laundering conduits, we construct an adaptive priority scoring function $S(e)$ for each outgoing wire $e = (u, v)$ evaluated during graph expansion:
+\begin{equation}
+    S(e) = \omega_1 \cdot \psi(w_e, W_0) + \omega_2 \cdot \tau(u) + \omega_3 \cdot \gamma(t_e - t_0) - \omega_4 \cdot \delta(d_u)
+    \label{eq:priority_formula}
+\end{equation}
+where:
+\begin{itemize}
+    \item $\psi(w_e, W_0)$ is the sub-linear logarithmic volume ratio:
+    \begin{equation}
+        \psi(w_e, W_0) = \frac{\ln(1 + w_e)}{\ln(1 + W_0)}
+    \end{equation}
+    which bounds the contribution of ultra-high transfers while ensuring that fractional peeling payments receive proportional sensitivity.
+    \item $\tau(u) \in [0, 1]$ is the source node's scalar taint metric.
+    \item $\gamma(t_e - t_0) \in (0, 1]$ is the temporal velocity factor.
+    \item $\delta(d_u) = \frac{d_u}{d_{\max}}$ is the normalized hop depth penalty, where $d_u$ represents the graph distance from root $u_0$, ensuring search containment within maximum investigative depth $d_{\max}$.
+    \item $\omega_1, \omega_2, \omega_3, \omega_4 \in \mathbb{R}^+$ are tunable hyperparameter weights satisfying the convex normalization constraint:
+    \begin{equation}
+        \sum_{i=1}^{4} \omega_i = 1.0
+    \end{equation}
+\end{itemize}
+
+An edge $e$ is admitted into the exploration priority queue if and only if its composite score exceeds the adaptive pruning threshold $\theta$:
+\begin{equation}
+    S(e) \ge \theta, \quad \theta \in [0, 1)
+\end{equation}
+
+\subsection{Theoretical Theorems and Formal Proofs}
+
+We now formalize the core theoretical guarantees of our mathematical formulation.
+
+\begin{theorem}[Conservation of Tainted Mass]
+\label{thm:conservation}
+In an account-based multigraph $\mathcal{G}$ with proportional dilution (Equation~\ref{eq:taint_update}), in the absence of external unobserved coin minting, the total tainted capital $M_{\tau}(t)$ across all reachable nodes is bounded from above by the initial stolen capital $W_0$:
+\begin{equation}
+    M_{\tau}(t) = \sum_{v \in \mathcal{V}} \tau(v, t) \cdot \mathcal{B}_v(\kappa^*, t) \le W_0, \quad \forall t \ge t_0
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+At initial time $t = t_0$, $M_{\tau}(t_0) = \tau(u_0) \cdot \mathcal{B}_{u_0}(\kappa^*) = 1.0 \cdot W_0 = W_0$.
+Consider any transfer $e = (u, v)$ occurring at timestamp $t_e$ carrying amount $w_e$ with gas fee $g_e \ge 0$.
+The sender balance transforms as:
+\begin{equation}
+    \mathcal{B}_u' = \mathcal{B}_u - w_e - g_e
+\end{equation}
+The receiver balance transforms as:
+\begin{equation}
+    \mathcal{B}_v' = \mathcal{B}_v + w_e
+\end{equation}
+The consumed gas $g_e$ is irreversibly burned (e.g., EIP-1559) or paid to an external block proposer validator $v_{\text{validator}}$, carrying taint $\tau(e) \cdot g_e$.
+The post-transaction aggregate tainted mass is:
+\begin{align*}
+    M_{\tau}(t_e^+) &= \sum_{x \in \mathcal{V} \setminus \{u, v\}} \tau(x)\mathcal{B}_x + \tau(u)'\mathcal{B}_u' + \tau(v)'\mathcal{B}_v' \\
+    &= \sum_{x \ne u, v} \tau(x)\mathcal{B}_x + \tau(u)(\mathcal{B}_u - w_e - g_e) + (\tau(v)\mathcal{B}_v + \tau(e)w_e) \\
+    &= M_{\tau}(t_e^-) - \tau(u)g_e \le M_{\tau}(t_e^-)
+\end{align*}
+Since gas fee consumption strictly satisfies $\tau(u)g_e \ge 0$, $M_{\tau}(t)$ is monotonically non-increasing over time:
+\begin{equation}
+    M_{\tau}(t) \le M_{\tau}(t_0) = W_0
+\end{equation}
+which completes the proof.
+\end{proof}
+
+\begin{theorem}[Bounded Traversal Complexity under Priority Thresholding]
+\label{thm:bounded_traversal}
+Let $K_{\max} = \sup_{u \in \mathcal{V}} \text{deg}^+(u)$ denote the maximum out-degree of any node in the blockchain ledger. Under a non-zero pruning threshold $\theta > 0$, the maximum number of explored nodes $|V_{\text{explored}}|$ to depth $d_{\max}$ is strictly bounded by a polynomial factor in $\frac{W_0}{w_{\min}}$ rather than the exponential upper bound $O(K_{\max}^{d_{\max}})$.
+\end{theorem}
+
+\begin{proof}
+By definition of the priority scoring function (Equation~\ref{eq:priority_formula}), for any edge $e = (u, v)$ to satisfy $S(e) \ge \theta$, the nominal volume $w_e$ must satisfy:
+\begin{equation}
+    \omega_1 \cdot \frac{\ln(1 + w_e)}{\ln(1 + W_0)} + \omega_2 + \omega_3 \ge \theta + \omega_4 \delta(d_u)
+\end{equation}
+Rearranging for $w_e$ yields a strictly positive lower bound $w_{\min}(d_u) > 0$:
+\begin{equation}
+    w_e \ge \exp\left( \frac{\theta + \omega_4 \delta(d_u) - \omega_2 - \omega_3}{\omega_1} \cdot \ln(1 + W_0) \right) - 1 = w_{\min}
+\end{equation}
+By Theorem~\ref{thm:conservation}, the total available tainted capital at depth $d_u$ cannot exceed $W_0$. Therefore, the maximum number of admissible child edges branching from any level cannot exceed:
+\begin{equation}
+    N_{\text{edges}}(d_u) \le \frac{W_0}{w_{\min}}
+\end{equation}
+Consequently, the total explored vertex set is bounded by:
+\begin{equation}
+    |V_{\text{explored}}| \le 1 + d_{\max} \cdot \left(\frac{W_0}{w_{\min}}\right) \ll K_{\max}^{d_{\max}}
+\end{equation}
+This eliminates the state-space combinatorial explosion and guarantees bounded execution.
+\end{proof}
+
+\begin{theorem}[Monotonic Taint Dissipation in Laundering Splits]
+\label{thm:dissipation}
+Let an attacker divide capital $W$ across $m$ independent smurfing accounts $\{v_1, v_2, \dots, v_m\}$ with equal fractions $\frac{W}{m}$. If each recipient account has a non-tainted clean pre-existing balance $b_0 > 0$, the maximum taint coefficient of any descendant account $\tau(v_j)$ decreases strictly monotonically with increasing $m$:
+\begin{equation}
+    \lim_{m \to \infty} \tau(v_j) = 0, \quad \forall j \in \{1, \dots, m\}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+From Equation~\ref{eq:taint_update}, assuming the sender possesses initial taint $\tau_0 = 1.0$:
+\begin{equation}
+    \tau(v_j) = \frac{0 \cdot b_0 + 1.0 \cdot \frac{W}{m}}{b_0 + \frac{W}{m}} = \frac{W}{m \cdot b_0 + W} = \frac{1}{1 + m \left(\frac{b_0}{W}\right)}
+\end{equation}
+Taking the derivative with respect to $m$:
+\begin{equation}
+    \frac{\partial \tau(v_j)}{\partial m} = -\frac{\frac{b_0}{W}}{\left(1 + m \frac{b_0}{W}\right)^2} < 0, \quad \forall b_0, W > 0
+\end{equation}
+Since the derivative is strictly negative for all valid parameters, the taint coefficient decays monotonically, converging to $\lim_{m \to \infty} \tau(v_j) = 0$.
+\end{proof}
+
+This mathematical reality highlights why adversarial syndicates execute massive smurfing fan-outs into addresses with existing liquidity: it mathematically dilutes taint scores in conventional naive tracking models. Our priority heuristic overcomes this by indexing on \emph{absolute tainted volume} rather than diluted relative fractions alone.

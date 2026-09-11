@@ -1,0 +1,173 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\citation{nakamoto2008bitcoin,wood2014ethereum}
+\citation{chainalysis2024crime,elliptic2023typologies}
+\citation{fatf2021virtual,chainalysis2024crime}
+\citation{meiklejohn2013fistful,ron2013quantitative,kalodner2020blocksci}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{4}{section.1}\protected@file@percent }
+\newlabel{sec:introduction}{{1}{4}{Introduction}{section.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.1}The Challenge of Forensic Graph Exploration in Account-Based Chains}{4}{subsection.1.1}\protected@file@percent }
+\citation{pertsev2020tornado,ghesmati2022deanonymizing}
+\citation{wang2022characterizing}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.2}Research Motivation and Objectives}{5}{subsection.1.2}\protected@file@percent }
+\citation{nakamoto2008bitcoin}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.3}Key Contributions}{6}{subsection.1.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.4}Paper Organization}{6}{subsection.1.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {2}Background and Related Work}{6}{section.2}\protected@file@percent }
+\newlabel{sec:related_work}{{2}{6}{Background and Related Work}{section.2}{}}
+\citation{meiklejohn2013fistful}
+\citation{ron2013quantitative}
+\citation{spagnuolo2014bitiodine}
+\citation{kalodner2020blocksci}
+\citation{moser2014towards}
+\citation{wood2014ethereum}
+\citation{victor2020address,beres2021blockchain}
+\citation{chen2020traveling,wu2021tnet}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Foundations of Blockchain Graph Forensics}{7}{subsection.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Forensic Evolution in Account-Based Blockchains}{7}{subsection.2.2}\protected@file@percent }
+\citation{victor2020address}
+\citation{beres2021blockchain}
+\citation{chen2020traveling}
+\citation{wu2021tnet}
+\citation{moser2014towards,frantz2021systematic}
+\citation{sasson2014zerocash,pertsev2020tornado}
+\citation{pertsev2020tornado}
+\citation{ghesmati2022deanonymizing}
+\citation{beres2021blockchain}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Taint Analysis and Capital Tracking Models}{8}{subsection.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.4}Privacy-Enhancing Technologies and Evasion Strategies}{8}{subsection.2.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.4.1}Mixers and Zero-Knowledge Proofs}{8}{subsubsection.2.4.1}\protected@file@percent }
+\citation{elliptic2023typologies}
+\citation{spagnuolo2014bitiodine}
+\citation{kalodner2020blocksci}
+\citation{chainalysis2024crime}
+\citation{elliptic2023typologies}
+\citation{wu2021tnet}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Systematic Comparison of Cryptocurrency Forensic and Graph Analytics Frameworks.}}{9}{table.caption.1}\protected@file@percent }
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{tab:forensic_comparison}{{1}{9}{Systematic Comparison of Cryptocurrency Forensic and Graph Analytics Frameworks}{table.caption.1}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.4.2}Cross-Chain Bridges and Swappers}{9}{subsubsection.2.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.5}Comparison of Commercial vs. Academic Forensic Tools}{9}{subsection.2.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3}Formal Graph Theory and Mathematical Modeling}{9}{section.3}\protected@file@percent }
+\newlabel{sec:math_modeling}{{3}{9}{Formal Graph Theory and Mathematical Modeling}{section.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Multi-Token Dynamic Account Multigraph Formalism}{9}{subsection.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Taint Propagation and Dilution Conservation Laws}{10}{subsection.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.1}Scalar Taint Inoculation}{10}{subsubsection.3.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.2}Dynamic Proportional Taint Propagation}{10}{subsubsection.3.2.2}\protected@file@percent }
+\newlabel{eq:taint_update}{{9}{10}{Dynamic Proportional Taint Propagation}{equation.9}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.3}Temporal Velocity Decay}{11}{subsubsection.3.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}The Heuristic Priority Scoring Function}{11}{subsection.3.3}\protected@file@percent }
+\newlabel{eq:priority_formula}{{11}{11}{The Heuristic Priority Scoring Function}{equation.11}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Theoretical Theorems and Formal Proofs}{11}{subsection.3.4}\protected@file@percent }
+\newlabel{thm:conservation}{{1}{11}{Conservation of Tainted Mass}{theorem.1}{}}
+\newlabel{thm:bounded_traversal}{{2}{12}{Bounded Traversal Complexity under Priority Thresholding}{theorem.2}{}}
+\newlabel{thm:dissipation}{{3}{12}{Monotonic Taint Dissipation in Laundering Splits}{theorem.3}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4}Laundering Topology and Heuristic Pattern Detection}{13}{section.4}\protected@file@percent }
+\newlabel{sec:pattern_detection}{{4}{13}{Laundering Topology and Heuristic Pattern Detection}{section.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Peel Chain Topology and Change Disambiguation}{13}{subsection.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.1}Formal Structural Definition}{13}{subsubsection.4.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.2}Change Address Disambiguation}{14}{subsubsection.4.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Smurfing and Multi-Tier Structuring}{14}{subsection.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.1}Fan-Out Dispersion Stage}{14}{subsubsection.4.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.2}Fan-In Consolidation Stage}{14}{subsubsection.4.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Mixer Protocols and Anonymity Pools}{14}{subsection.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.1}On-Chain Mixer Identification}{15}{subsubsection.4.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.2}Fixed-Denomination Accumulator Signature}{15}{subsubsection.4.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Cross-Chain Bridges and Multi-Ledger Hopping}{15}{subsection.4.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.4.1}Bridge Contract Attribution}{15}{subsubsection.4.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.4.2}Cross-Ledger State Transition Invariant}{15}{subsubsection.4.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Composite Multi-Factor Heuristic Risk Scoring}{15}{subsection.4.5}\protected@file@percent }
+\newlabel{eq:risk_score}{{37}{15}{Composite Multi-Factor Heuristic Risk Scoring}{equation.37}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Heuristic Risk Scoring Indicator Weights.}}{16}{table.caption.2}\protected@file@percent }
+\newlabel{tab:risk_indicators}{{2}{16}{Heuristic Risk Scoring Indicator Weights}{table.caption.2}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Algorithmic Framework and Complexity Analysis}{16}{section.5}\protected@file@percent }
+\newlabel{sec:algorithms}{{5}{16}{Algorithmic Framework and Complexity Analysis}{section.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}The Priority Heuristic Traversal Algorithm}{16}{subsection.5.1}\protected@file@percent }
+\@writefile{loa}{\contentsline {algorithm}{\numberline {1}{\ignorespaces Priority Heuristic Traversal Algorithm}}{17}{algorithm.1}\protected@file@percent }
+\newlabel{alg:priority_search}{{1}{17}{Priority Heuristic Traversal Algorithm}{algorithm.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Peel Chain and Change Address Disambiguation Procedure}{17}{subsection.5.2}\protected@file@percent }
+\@writefile{loa}{\contentsline {algorithm}{\numberline {2}{\ignorespaces Peel Chain Disambiguation and Spine Extraction}}{18}{algorithm.2}\protected@file@percent }
+\newlabel{alg:peel_chain}{{2}{18}{Peel Chain Disambiguation and Spine Extraction}{algorithm.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Smurfing and Structuring Detection Algorithm}{18}{subsection.5.3}\protected@file@percent }
+\@writefile{loa}{\contentsline {algorithm}{\numberline {3}{\ignorespaces Smurfing / Structuring Detection Procedure}}{18}{algorithm.3}\protected@file@percent }
+\newlabel{alg:smurfing_detect}{{3}{18}{Smurfing / Structuring Detection Procedure}{algorithm.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Computational Complexity Analysis}{18}{subsection.5.4}\protected@file@percent }
+\newlabel{thm:time_complexity}{{4}{18}{Worst-Case Time Complexity}{theorem.4}{}}
+\newlabel{thm:space_complexity}{{5}{19}{Space Complexity}{theorem.5}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6}System Architecture and Progressive Streaming Pipeline}{19}{section.6}\protected@file@percent }
+\newlabel{sec:system_architecture}{{6}{19}{System Architecture and Progressive Streaming Pipeline}{section.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Architectural Overview}{19}{subsection.6.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Decoupled Multi-Threaded Progressive Streaming System Architecture.}}{20}{figure.caption.3}\protected@file@percent }
+\newlabel{fig:system_architecture}{{1}{20}{Decoupled Multi-Threaded Progressive Streaming System Architecture}{figure.caption.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Concurrency Engineering and Event Loop Starvation Resolution}{20}{subsection.6.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3}The Progressive Server-Sent Events (SSE) Wire Protocol}{21}{subsection.6.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.4}Client-Side Whiteboard Rendering and Edge Buffering Pipeline}{21}{subsection.6.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.4.1}Out-of-Order Wire Arrival and Dynamic Edge Buffering}{21}{subsubsection.6.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.4.2}Address Canonicalization Across Runtimes}{21}{subsubsection.6.4.2}\protected@file@percent }
+\citation{chainalysis2024crime}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.4.3}Dynamic Physics Layout Management}{22}{subsubsection.6.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7}Empirical Evaluation and Real-World Case Studies}{22}{section.7}\protected@file@percent }
+\newlabel{sec:case_studies}{{7}{22}{Empirical Evaluation and Real-World Case Studies}{section.7}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.1}Experimental Setup and Methodology}{22}{subsection.7.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.2}Case Study 1: The WazirX \$230 Million Cyber Exploit (July 2024)}{22}{subsection.7.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {7.2.1}Forensic Investigation Parameters}{22}{subsubsection.7.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {7.2.2}Progressive Forensic Discoveries}{23}{subsubsection.7.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.3}Case Study 2: High-Throughput Distribution Analysis (Vitalik Buterin)}{23}{subsection.7.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.4}Case Study 3: Cross-Chain TRON USDT Multi-Hop Laundering}{23}{subsection.7.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.5}Quantitative Performance Benchmarks}{24}{subsection.7.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {7.5.1}Execution Latency vs. Graph Depth}{24}{subsubsection.7.5.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces End-to-End Search Latency across Search Depths ($W_0 = 50,000\,\text  {USDT}$).}}{24}{table.caption.4}\protected@file@percent }
+\newlabel{tab:latency_benchmark}{{3}{24}{End-to-End Search Latency across Search Depths ($W_0 = 50,000\,\text {USDT}$)}{table.caption.4}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces System Memory Footprint across Active Graph Sizes.}}{24}{table.caption.5}\protected@file@percent }
+\newlabel{tab:memory_table}{{4}{24}{System Memory Footprint across Active Graph Sizes}{table.caption.5}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {7.5.2}Pruning Sensitivity and Receiver Operating Characteristic (ROC)}{24}{subsubsection.7.5.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces Detection Accuracy and False Positive Rates as a Function of Pruning Threshold $\theta $.}}{24}{table.caption.6}\protected@file@percent }
+\newlabel{tab:pruning_sensitivity}{{5}{24}{Detection Accuracy and False Positive Rates as a Function of Pruning Threshold $\theta $}{table.caption.6}{}}
+\citation{pertsev2020tornado,ghesmati2022deanonymizing}
+\citation{moser2018anonymous}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {7.5.3}Client Visual Rendering Stability}{25}{subsubsection.7.5.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {8}Security Limitations, Evasion Vectors, and Defensive Countermeasures}{25}{section.8}\protected@file@percent }
+\newlabel{sec:limitations}{{8}{25}{Security Limitations, Evasion Vectors, and Defensive Countermeasures}{section.8}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.1}Adversarial Evasion Techniques}{25}{subsection.8.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.1.1}Cryptographic Zero-Knowledge Severance}{25}{subsubsection.8.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.1.2}Conversion to Ring-Signature Privacy Blockchains}{25}{subsubsection.8.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.1.3}Automated Decentralized Exchange (DEX) Pool Churning}{26}{subsubsection.8.1.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.2}System Constraints and Operational Bottlenecks}{26}{subsection.8.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.2.1}Public Blockchain RPC Rate Limiting}{26}{subsubsection.8.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.2.2}Address Checksum and Format Inconsistencies}{26}{subsubsection.8.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {9}Conclusion and Future Work}{26}{section.9}\protected@file@percent }
+\newlabel{sec:conclusion}{{9}{26}{Conclusion and Future Work}{section.9}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.1}Summary of Scientific Contributions}{26}{subsection.9.1}\protected@file@percent }
+\bibstyle{plain}
+\bibdata{references}
+\bibcite{beres2021blockchain}{1}
+\bibcite{chainalysis2024crime}{2}
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.2}Future Research Directions}{27}{subsection.9.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {9.2.1}Graph Neural Network (GNN) Embeddings for Predictive Attribution}{27}{subsubsection.9.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {9.2.2}Cross-Chain Atomic Swap and Layer-2 State Parsing}{27}{subsubsection.9.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {9.2.3}Automated Cryptographic Evidence Dossier Generation}{27}{subsubsection.9.2.3}\protected@file@percent }
+\bibcite{chen2020traveling}{3}
+\bibcite{elliptic2023typologies}{4}
+\bibcite{fatf2021virtual}{5}
+\bibcite{frantz2021systematic}{6}
+\bibcite{ghesmati2022deanonymizing}{7}
+\bibcite{kalodner2020blocksci}{8}
+\bibcite{meiklejohn2013fistful}{9}
+\bibcite{moser2014towards}{10}
+\bibcite{moser2018anonymous}{11}
+\bibcite{nakamoto2008bitcoin}{12}
+\bibcite{pertsev2020tornado}{13}
+\bibcite{ron2013quantitative}{14}
+\bibcite{sasson2014zerocash}{15}
+\bibcite{spagnuolo2014bitiodine}{16}
+\bibcite{victor2020address}{17}
+\bibcite{wang2022characterizing}{18}
+\bibcite{wood2014ethereum}{19}
+\bibcite{wu2021tnet}{20}
+\@writefile{toc}{\contentsline {section}{Appendix}{30}{subsubsection.9.2.3}\protected@file@percent }
+\newlabel{sec:appendix}{{9.2.3}{30}{}{subsubsection.9.2.3}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Framework Hyperparameter Configuration Reference.}}{32}{table.caption.7}\protected@file@percent }
+\newlabel{tab:hyperparameters}{{6}{32}{Framework Hyperparameter Configuration Reference}{table.caption.7}{}}
+\gdef \@abspage@last{32}

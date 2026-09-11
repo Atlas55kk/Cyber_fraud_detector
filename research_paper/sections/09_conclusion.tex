@@ -1,0 +1,28 @@
+\section{Conclusion and Future Work}
+\label{sec:conclusion}
+
+In this paper, we introduced an end-to-end mathematical framework and high-performance system architecture for real-time cryptocurrency forensic analysis and anti-money laundering (AML) graph exploration. By formalizing the multi-token dynamic account multigraph and deriving conservation laws for taint dilution and temporal velocity decay, we addressed the foundational challenges of tracing illicit capital flows across account-based blockchains such as Ethereum and TRON.
+
+\subsection{Summary of Scientific Contributions}
+
+Our work delivers several concrete advancements to the field of computational cyber forensics:
+
+\begin{enumerate}
+    \item \textbf{Mathematical Formalism:} We established formal proofs demonstrating that our Priority Heuristic Search eliminates the combinatorial state-space explosion problem ($O(K_{\max}^d)$), bounding total graph traversal to polynomial complexity while preserving 100\% of primary laundering trajectories.
+    \item \textbf{Automated Topological Detection:} We formalized deterministic algorithms for identifying asymmetric peel chains, smurfing structuring gateways, mixer accumulator interactions, and cross-chain bridge gateways, achieving an empirical F1-score of 0.985 with a 96.8\% dust rejection rate.
+    \item \textbf{High-Concurrency Streaming Architecture:} We resolved critical event loop starvation and out-of-order packet arrival hurdles through an asynchronous, thread-isolated worker pipeline and client-side edge buffering queue, delivering smooth 60 FPS interactive whiteboard visualization.
+    \item \textbf{Empirical Validation:} We demonstrated the system's operational efficacy against the \$230 million WazirX exchange compromise, accurately isolating 88 core addresses and 158 high-value transaction wires within seconds.
+\end{enumerate}
+
+\subsection{Future Research Directions}
+
+Building upon this platform, our ongoing and future research agenda encompasses three primary vectors:
+
+\subsubsection{Graph Neural Network (GNN) Embeddings for Predictive Attribution}
+While deterministic heuristics provide high interpretability and court-admissible precision, sophisticated laundering syndicates continually vary their splitting ratios. We are currently developing continuous-time temporal Graph Convolutional Networks (T-GCNs) trained on historical exploit topologies to predict destination offramps \emph{before} funds are deposited, providing pre-emptive intervention capabilities to Virtual Asset Service Providers (VASPs).
+
+\subsubsection{Cross-Chain Atomic Swap and Layer-2 State Parsing}
+As liquidity migrates toward decentralized cross-chain messaging protocols (e.g., LayerZero, Chainlink CCIP) and zero-knowledge rollups (zkSync, Starknet), future iterations of the engine will ingest validity state proofs directly, enabling continuous unified graph traversal across heterogeneous execution layers without relying on centralized bridge indexers.
+
+\subsubsection{Automated Cryptographic Evidence Dossier Generation}
+To streamline legal prosecution, we plan to integrate automated, zero-knowledge verifiable audit reporting. This capability will generate tamper-evident PDF dossiers embedding Merkle inclusion proofs, timestamped block headers, and digital signatures from indexers, providing law enforcement agencies with turnkey, court-admissible forensic evidence packages.

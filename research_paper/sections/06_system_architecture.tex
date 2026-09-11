@@ -1,0 +1,114 @@
+\section{System Architecture and Progressive Streaming Pipeline}
+\label{sec:system_architecture}
+
+In this section, we describe the engineering architecture of our forensic exploration platform. Translating formal graph algorithms into a responsive investigative system requires solving critical concurrency, event dispatch, and client-side rendering bottlenecks. We detail our decoupled multi-threaded backend, the Server-Sent Events (SSE) wire protocol, and the Cytoscape.js progressive whiteboard rendering engine.
+
+\subsection{Architectural Overview}
+
+The system employs a reactive, decoupled client-server architecture designed for high-throughput streaming and low-latency visualization. Figure~\ref{fig:system_architecture} illustrates the structural interaction between the five primary architectural subsystems:
+
+\begin{figure*}[t]
+\centering
+\begin{minipage}{0.95\textwidth}
+\centering
+\fbox{
+\begin{minipage}{0.9\textwidth}
+\small
+\textbf{[Data Layer]} Blockchain RPCs (Etherscan V2, TronGrid, Synthetic Mock Generator) \\
+$\quad \downarrow$ \\
+\textbf{[Ingestion \& Normalization]} Address Canonicalization ($0x\dots \to \text{lowercase}$), Token Scaler \\
+$\quad \downarrow$ \\
+\textbf{[Algorithmic Core (Worker Thread)]} Priority Queue BFS $\to$ Peel/Smurf Heuristics $\to$ Taint Dilution Engine \\
+$\quad \downarrow$ \emph{thread-safe queue dispatch (\texttt{loop.call\_soon\_threadsafe})} \\
+\textbf{[Async Event Dispatcher]} FastAPI Asyncio Event Loop $\to$ Server-Sent Events (SSE) HTTP Pipeline \\
+$\quad \downarrow$ \emph{continuous chunked text/event-stream} \\
+\textbf{[Client Whiteboard Engine]} Web UI $\to$ Edge Buffer Queue $\to$ Cytoscape.js Physics Layout
+\end{minipage}
+}
+\end{minipage}
+\caption{Decoupled Multi-Threaded Progressive Streaming System Architecture.}
+\label{fig:system_architecture}
+\end{figure*}
+
+\subsection{Concurrency Engineering and Event Loop Starvation Resolution}
+
+A critical vulnerability in real-time analytical web applications is \emph{event loop starvation}. Standard asynchronous Python web servers (such as Uvicorn and FastAPI) execute within a single-threaded asynchronous event loop (\texttt{asyncio}). If an analytical endpoint initiates synchronous network I/O (e.g., querying external blockchain RPCs with multi-second connection timeouts) or performs computationally intensive graph traversals directly inside an \texttt{async def} event generator, the entire server process blocks. Incoming requests from other analysts are queued indefinitely, client keep-alive heartbeats fail, and the active SSE connection collapses.
+
+To achieve robust fault isolation and zero-starvation concurrency, our backend implements a \textbf{Decoupled Thread-Worker Architecture}:
+
+\begin{enumerate}
+    \item \textbf{Thread Isolation:} When an investigator dispatches a trace request via \texttt{POST /api/trace/stream}, the server instantiates an isolated asynchronous queue:
+    \begin{equation}
+        \mathcal{Q}_{\text{async}} = \text{asyncio.Queue}(\text{maxsize}=500)
+    \end{equation}
+    and launches the Priority BFS traversal inside an independent OS daemon thread:
+    \begin{equation}
+        \mathcal{T}_{\text{worker}} = \text{threading.Thread}(\text{target}=\text{run\_search}, \text{daemon}=\mathbf{True})
+    \end{equation}
+    
+    \item \textbf{Thread-Safe Event Dispatch:} The worker thread does not interact directly with asyncio sockets. Instead, as new nodes and wires are discovered, the worker pushes JSON-serialized event payloads into $\mathcal{Q}_{\text{async}}$ via:
+    \begin{equation}
+        \text{loop.call\_soon\_threadsafe}(\mathcal{Q}_{\text{async}}.\text{put\_nowait}, \text{payload})
+    \end{equation}
+    
+    \item \textbf{Non-Blocking Generator Yield:} The asynchronous generator on the main event loop continuously awaits items from the queue:
+    \begin{equation}
+        \text{payload} = \mathbf{await}\;\mathcal{Q}_{\text{async}}.\text{get}()
+    \end{equation}
+    yielding chunked HTTP SSE packets to the browser without blocking concurrent connections.
+    
+    \item \textbf{Graceful Interruption Mechanics:} If the investigator clicks the ``Stop Trace'' button, a non-blocking \texttt{threading.Event()} cancellation flag $\sigma_{\text{cancel}}$ is signaled. The worker thread checks $\sigma_{\text{cancel}}$ at each priority queue iteration, terminating cleanly within $<5\,\text{ms}$ and freeing memory buffers.
+\end{enumerate}
+
+\subsection{The Progressive Server-Sent Events (SSE) Wire Protocol}
+
+The communication channel between the forensic engine and the analyst's workstation utilizes the W3C Server-Sent Events (SSE) standard over HTTP/1.1 chunked transfer encoding (\texttt{Content-Type: text/event-stream}). We define six discrete structured event schemas:
+
+\begin{itemize}
+    \item \textbf{\texttt{init\_stream}}: Transmits metadata, initial stolen capital, root address identity, and total anticipated search bounds.
+    \item \textbf{\texttt{node\_discovered}}: Emits an individual address node record:
+    \begin{equation}
+        \{\text{``type''}: \text{``node''}, \text{``data''}: \{\text{``id''}: u, \text{``label''}: \text{Label}(u), \text{``risk''}: \text{Risk}(u), \text{``taint''}: \tau(u)\}\}
+    \end{equation}
+    \item \textbf{\texttt{wire\_discovered}}: Emits a directed transaction wire:
+    \begin{equation}
+        \{\text{``type''}: \text{``wire''}, \text{``data''}: \{\text{``source''}: u, \text{``target''}: v, \text{``amount''}: w_e, \text{``token''}: \kappa_e, \text{``tx\_hash''}: h_e\}\}
+    \end{equation}
+    \item \textbf{\texttt{heuristic\_alert}}: Dispatches high-priority forensic warnings (e.g., ``Peel Chain Detected'', ``Mixer Interaction Flagged'').
+    \item \textbf{\texttt{stats\_update}}: Periodically pushes aggregated metrics (nodes explored, wires mapped, total tainted volume tracked, exploration percentage).
+    \item \textbf{\texttt{stream\_complete}} / \textbf{\texttt{stream\_error}}: Finalizes the transaction session and flushes state buffers.
+\end{itemize}
+
+\subsection{Client-Side Whiteboard Rendering and Edge Buffering Pipeline}
+
+The frontend visualization is implemented using Cytoscape.js integrated into an interactive canvas workstation. Rendering a dynamic, progressively growing graph in real-time introduces specific graphical engineering hurdles:
+
+\subsubsection{Out-of-Order Wire Arrival and Dynamic Edge Buffering}
+Due to network packet reordering or rapid traversal dispatch, a directed wire event $e = (u, v)$ may arrive at the browser client before the destination node $v$ has completed DOM instantiation in Cytoscape. In standard graph visualization libraries, attempting to add an edge referencing a non-existent target node triggers an immediate fatal JavaScript exception and drops the edge.
+
+To guarantee zero dropped transactions, our client whiteboard implements a \textbf{Pending Wire Buffer}:
+\begin{equation}
+    \mathcal{B}_{\text{pending}} = \{e \in \mathcal{E}_{\text{incoming}} \mid \text{cy.\$id}(u).\text{empty}() \lor \text{cy.\$id}(v).\text{empty}()\}
+\end{equation}
+Whenever a new node $x$ is rendered, the client executes an edge-flushing cycle:
+\begin{equation}
+    \forall e = (u, v) \in \mathcal{B}_{\text{pending}} \quad \text{s.t.} \quad (u = x \lor v = x), \quad \text{cy.add}(e), \; \mathcal{B}_{\text{pending}} \gets \mathcal{B}_{\text{pending}} \setminus \{e\}
+\end{equation}
+This ensures 100\% edge recovery across arbitrary network jitter.
+
+\subsubsection{Address Canonicalization Across Runtimes}
+In EVM networks, addresses are hexadecimal representations that can appear in all-lowercase (e.g., \texttt{0x04b217...}) or EIP-55 mixed-case checksum format (e.g., \texttt{0x04b21735E93Fa3f8...}). In Python dictionaries and JavaScript DOM selectors, these strings evaluate as distinct keys, inducing node duplication and disconnected wires. Our pipeline enforces strict lowercase canonicalization at both the REST gateway and JavaScript Cytoscape ingestion layers:
+\begin{equation}
+    \text{NormalizeAddress}(a) = \begin{cases}
+    \text{lower}(a), & \text{if } a \text{ starts with } \text{``0x''} \\
+    a, & \text{otherwise (e.g., TRON base58)}
+    \end{cases}
+\end{equation}
+
+\subsubsection{Dynamic Physics Layout Management}
+To prevent client-side animation freezes during high-frequency node additions, existing layouts are halted cleanly using \texttt{this.activeLayout.stop()} before computing incremental bounding-box adjustments. Investigators can dynamically toggle between:
+\begin{enumerate}
+    \item \emph{Directed Tree (Breadthfirst):} Strictly orders hops from incident root downward to trace peel chain cascades.
+    \item \emph{Force-Directed Cluster (CoSE):} Simulates spring forces to cluster tightly interacting smurfing rings.
+    \item \emph{Concentric Radial Layout:} Arranges nodes in equidistant orbital rings based on graph hop distance.
+\end{enumerate}

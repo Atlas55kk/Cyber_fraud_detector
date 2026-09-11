@@ -1,0 +1,117 @@
+\section*{Appendix}
+\addcontentsline{toc}{section}{Appendix}
+\label{sec:appendix}
+
+\subsection*{A. Streaming Wire Protocol JSON Schema Specifications}
+
+To ensure full interoperability across heterogeneous forensic microservices, our platform specifies strict JSON Schema definitions for all emitted streaming events.
+
+\subsubsection*{1. Node Discovery Event Schema}
+\begin{verbatim}
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "NodeDiscoveredEvent",
+  "type": "object",
+  "properties": {
+    "type": { "type": "string", "enum": ["node"] },
+    "data": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "pattern": "^(0x[a-f0-9]{40}|T[A-Za-z0-9]{33})$" },
+        "label": { "type": "string" },
+        "type": { "type": "string", "enum": ["eoa", "contract", "mixer", "bridge"] },
+        "risk_score": { "type": "number", "minimum": 0, "maximum": 100 },
+        "taint_ratio": { "type": "number", "minimum": 0, "maximum": 1 },
+        "is_root": { "type": "boolean" },
+        "tags": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["id", "risk_score", "taint_ratio", "is_root"]
+    }
+  },
+  "required": ["type", "data"]
+}
+\end{verbatim}
+
+\subsubsection*{2. Wire Discovery Event Schema}
+\begin{verbatim}
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "WireDiscoveredEvent",
+  "type": "object",
+  "properties": {
+    "type": { "type": "string", "enum": ["wire"] },
+    "data": {
+      "type": "object",
+      "properties": {
+        "source": { "type": "string" },
+        "target": { "type": "string" },
+        "amount": { "type": "number", "minimum": 0 },
+        "token_symbol": { "type": "string" },
+        "tx_hash": { "type": "string", "pattern": "^0x[a-f0-9]{64}$" },
+        "priority_score": { "type": "number", "minimum": 0, "maximum": 1 },
+        "timestamp": { "type": "integer" }
+      },
+      "required": ["source", "target", "amount", "token_symbol", "tx_hash"]
+    }
+  },
+  "required": ["type", "data"]
+}
+\end{verbatim}
+
+\subsection*{B. Supplementary Mathematical Proofs}
+
+\begin{lemma}[Uniqueness of Canonical Address Representation]
+Let $\mathcal{A}_{\text{raw}}$ be the set of arbitrary-case hexadecimal address strings. The normalization mapping:
+\begin{equation}
+    \eta(a) = \begin{cases}
+    \text{lower}(a), & \text{if } a \in \{0\text{x}\} \times \{0\text{--}9, a\text{--}f, A\text{--}F\}^{40} \\
+    a, & \text{otherwise}
+    \end{cases}
+\end{equation}
+is a surjective projection onto the canonical address space $\mathcal{A}^*$, establishing an equivalence relation:
+\begin{equation}
+    a_1 \sim a_2 \iff \eta(a_1) = \eta(a_2)
+\end{equation}
+which preserves hash-table key consistency $\mathcal{O}(1)$ across heterogeneous runtime environments.
+\end{lemma}
+
+\begin{proof}
+Hexadecimal equivalence is defined over value equality modulo $16$. The transformation $\text{lower}(c)$ maps uppercase glyphs $\{A\dots F\}$ onto $\{a\dots f\}$, which have identical numeric evaluation in base 16. Thus, for any two checksum variations $a_1$ and $a_2$ representing the same 160-bit integer, $\eta(a_1) = \eta(a_2)$. This ensures that dictionary lookups $H(\eta(a_1)) \equiv H(\eta(a_2))$, preventing duplicate node allocation and orphaned wires.
+\end{proof}
+
+\begin{lemma}[Non-Cyclic Traversal Invariance of Priority Queues]
+Let $\mathcal{G}$ contain a directed cycle $\mathcal{C} = (u_1 \to u_2 \to \dots \to u_k \to u_1)$. Under Algorithm~\ref{alg:priority_search}, the traversal engine cannot enter an infinite loop.
+\end{lemma}
+
+\begin{proof}
+Algorithm~\ref{alg:priority_search} maintains two invariant state sets: the visited node set $\mathcal{V}_{\text{visited}}$ and the admitted canvas edge set $\mathcal{E}_{\text{canvas}}$.
+Upon the first traversal of edge $(u_k, u_1)$, node $u_1$ is inspected. Since $u_1 \in \mathcal{V}_{\text{visited}}$ (having been visited at the start of the cycle), line 27 of Algorithm~\ref{alg:priority_search} evaluates to false. Outgoing edges from $u_1$ are not re-fetched or re-enqueued. Furthermore, wire $(u_k, u_1)$ is added to $\mathcal{E}_{\text{canvas}}$ on line 15; any redundant edge pop skips expansion via line 13. Hence, the cycle is traversed at most once, and the queue strictly drains, guaranteeing termination.
+\end{proof}
+
+\subsection*{C. Framework Hyperparameter Reference Table}
+
+Table~\ref{tab:hyperparameters} catalogs the complete hyperparameter configuration space utilized across empirical benchmarks and production deployments.
+
+\begin{table}[h]
+\centering
+\caption{Framework Hyperparameter Configuration Reference.}
+\label{tab:hyperparameters}
+\begin{tabular}{llcl}
+\toprule
+\textbf{Parameter} & \textbf{Symbol} & \textbf{Default Value} & \textbf{Functional Description} \\
+\midrule
+Volume Weight & $\omega_1$ & 0.45 & Weight of logarithmic transacted amount in edge priority. \\
+Taint Weight & $\omega_2$ & 0.25 & Weight of sender node scalar taint coefficient. \\
+Velocity Weight & $\omega_3$ & 0.15 & Weight of temporal velocity decay factor. \\
+Depth Weight & $\omega_4$ & 0.15 & Hop depth distance penalty weight. \\
+Pruning Threshold & $\theta$ & 0.15 & Minimum priority score required for edge expansion. \\
+Max Search Depth & $d_{\max}$ & 4 & Maximum graph hop distance from incident root. \\
+Peel Volume Ratio & $\Omega_{\text{peel}}$ & 4.0 & Minimum asymmetry ratio between forward and peel wire. \\
+Peel Dwell Limit & $\Delta T_{\text{peel\_max}}$ & $3,600\,\text{s}$ & Maximum dwell time between incoming and forward hop. \\
+Smurf Min Degree & $K_{\text{smurf\_fan}}$ & 5 & Minimum out-degree to trigger smurfing evaluation. \\
+Smurf Variance Bound & $\epsilon_{\text{variance}}$ & 0.35 & Maximum coefficient of variation across fan-out wires. \\
+Stream Buffer Size & $M_{\text{queue}}$ & 500 & Maximum item capacity of async streaming event queue. \\
+RPC Request Timeout & $T_{\text{rpc\_timeout}}$ & $2.0\,\text{s}$ & Network HTTP timeout before triggering benchmark fallback. \\
+\bottomrule
+\end{tabular}
+\end{table}

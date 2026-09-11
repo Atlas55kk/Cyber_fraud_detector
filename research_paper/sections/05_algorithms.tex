@@ -1,0 +1,160 @@
+\section{Algorithmic Framework and Complexity Analysis}
+\label{sec:algorithms}
+
+In this section, we present the formal algorithmic framework underpinning our real-time forensic engine. We specify the complete pseudo-code for the Priority Heuristic Traversal Engine, the Peel Chain Disambiguation Procedure, and the Multi-Pattern Topology Classifier. Furthermore, we establish the computational time and space complexity bounds of the framework.
+
+\subsection{The Priority Heuristic Traversal Algorithm}
+
+Algorithm~\ref{alg:priority_search} details the core Priority-First Search procedure. The algorithm explores the dynamic multigraph $\mathcal{G}$ starting from incident root $u_0$ up to maximum search depth $d_{\max}$ while actively pruning edges that fail the adaptive priority threshold $\theta$.
+
+\begin{algorithm}[H]
+\caption{Priority Heuristic Traversal Algorithm}
+\label{alg:priority_search}
+\begin{algorithmic}[1]
+\Require Incident root address $u_0$, initial stolen capital $W_0$, max depth $d_{\max}$, pruning threshold $\theta$, fetcher function $\text{FetchWires}(\cdot)$, hyperparameter weights $\mathbf{\omega} = (\omega_1, \omega_2, \omega_3, \omega_4)$.
+\Ensure Explored Whiteboard Graph $\mathcal{G}_{\text{canvas}} = (\mathcal{V}_{\text{canvas}}, \mathcal{E}_{\text{canvas}})$, Event Stream $\mathcal{Q}_{\text{stream}}$.
+\State $\mathcal{V}_{\text{canvas}} \gets \{u_0\}$; $\mathcal{E}_{\text{canvas}} \gets \emptyset$; $\mathcal{V}_{\text{visited}} \gets \emptyset$
+\State Initialize max-priority queue $\mathcal{P} \gets \text{PriorityQueue}()$
+\State $\tau(u_0) \gets 1.0$; $\text{Depth}(u_0) \gets 0$; $\text{Balance}(u_0) \gets W_0$
+\State $\mathcal{Q}_{\text{stream}}.\text{EmitNode}(u_0, \text{isRoot}=\mathbf{True}, \text{risk}=0)$
+\State $\mathcal{W}_{\text{init}} \gets \text{FetchWires}(u_0)$
+\ForAll{$e = (u_0, v) \in \mathcal{W}_{\text{init}}$}
+    \State $S(e) \gets \text{ComputePriorityScore}(e, W_0, \tau(u_0), 0, \mathbf{\omega})$
+    \If{$S(e) \ge \theta$}
+        \State $\mathcal{P}.\text{Push}(e, \text{priority}=S(e))$
+    \EndIf
+\EndFor
+
+\While{$\mathcal{P} \ne \emptyset$}
+    \State $(e = (u, v), \text{score}) \gets \mathcal{P}.\text{PopMax}()$
+    \If{$e \in \mathcal{E}_{\text{canvas}}$}
+        \State \textbf{continue}
+    \EndIf
+    \State $\mathcal{E}_{\text{canvas}} \gets \mathcal{E}_{\text{canvas}} \cup \{e\}$
+    \State $\mathcal{Q}_{\text{stream}}.\text{EmitWire}(e)$
+    
+    \If{$v \notin \mathcal{V}_{\text{canvas}}$}
+        \State $\text{Depth}(v) \gets \text{Depth}(u) + 1$
+        \State $\tau(v) \gets \text{UpdateTaint}(u, v, e)$ \Comment{via Equation~\ref{eq:taint_update}}
+        \State $\text{Risk}(v) \gets \text{EvaluateRisk}(v, \tau(v))$ \Comment{via Equation~\ref{eq:risk_score}}
+        \State $\mathcal{V}_{\text{canvas}} \gets \mathcal{V}_{\text{canvas}} \cup \{v\}$
+        \State $\mathcal{Q}_{\text{stream}}.\text{EmitNode}(v, \text{isRoot}=\mathbf{False}, \text{risk}=\text{Risk}(v))$
+    \EndIf
+
+    \If{$v \notin \mathcal{V}_{\text{visited}}$ \textbf{and} $\text{Depth}(v) < d_{\max}$}
+        \State $\mathcal{V}_{\text{visited}} \gets \mathcal{V}_{\text{visited}} \cup \{v\}$
+        \State \textbf{try:} $\mathcal{W}_{\text{out}} \gets \text{FetchWires}(v)$
+        \State \textbf{except} NetworkException: $\mathcal{W}_{\text{out}} \gets \emptyset$ \Comment{Fault-tolerant recovery}
+        \ForAll{$e_{\text{next}} = (v, z) \in \mathcal{W}_{\text{out}}$}
+            \If{$e_{\text{next}} \notin \mathcal{E}_{\text{canvas}}$}
+                \State $S(e_{\text{next}}) \gets \text{ComputePriorityScore}(e_{\text{next}}, W_0, \tau(v), \text{Depth}(v), \mathbf{\omega})$
+                \If{$S(e_{\text{next}}) \ge \theta$}
+                    \State $\mathcal{P}.\text{Push}(e_{\text{next}}, \text{priority}=S(e_{\text{next}}))$
+                \EndIf
+            \EndIf
+        \EndFor
+    \EndIf
+\EndWhile
+\State \Return $\mathcal{G}_{\text{canvas}} = (\mathcal{V}_{\text{canvas}}, \mathcal{E}_{\text{canvas}})$
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Peel Chain and Change Address Disambiguation Procedure}
+
+Algorithm~\ref{alg:peel_chain} formalizes the linear tracing procedure designed to follow the spine of a peel chain across consecutive hops while cataloging peeled offramp addresses.
+
+\begin{algorithm}[H]
+\caption{Peel Chain Disambiguation and Spine Extraction}
+\label{alg:peel_chain}
+\begin{algorithmic}[1]
+\Require Intermediate candidate node $u$, transaction list $\mathcal{E}^+(u)$, volume threshold ratio $\Omega_{\text{peel}} \ge 4.0$, max dwell time $\Delta T_{\text{peel\_max}}$.
+\Ensure Boolean $\text{IsPeel}$, Continuation Node $u_{\text{next}}$, Peeled Node $p$.
+\State $\text{IsPeel} \gets \mathbf{False}$; $u_{\text{next}} \gets \mathbf{null}$; $p \gets \mathbf{null}$
+\If{$|\mathcal{E}^+(u)| \ne 2$}
+    \State \Return $(\mathbf{False}, \mathbf{null}, \mathbf{null})$
+\EndIf
+\State Let $\mathcal{E}^+(u) = \{e_1 = (u, v_1), e_2 = (u, v_2)\}$
+\State Assume without loss of generality that $w(e_1) \ge w(e_2)$
+\If{$w(e_2) > 0$ \textbf{and} $\frac{w(e_1)}{w(e_2)} \ge \Omega_{\text{peel}}$}
+    \State $\Delta t_1 \gets t(e_1) - t_{\text{in}}(u)$
+    \State $\Delta t_2 \gets t(e_2) - t_{\text{in}}(u)$
+    \If{$\Delta t_1 \le \Delta T_{\text{peel\_max}}$ \textbf{and} $\Delta t_2 \le \Delta T_{\text{peel\_max}}$}
+        \State $\text{IsPeel} \gets \mathbf{True}$
+        \State $u_{\text{next}} \gets v_1$ \Comment{Spine continuation address}
+        \State $p \gets v_2$ \Comment{Peeled offramp destination}
+    \EndIf
+\EndIf
+\State \Return $(\text{IsPeel}, u_{\text{next}}, p)$
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Smurfing and Structuring Detection Algorithm}
+
+Algorithm~\ref{alg:smurfing_detect} identifies fan-out structuring gateways and downstream fan-in aggregation sinks by analyzing local degree distribution and outgoing amount variance.
+
+\begin{algorithm}[H]
+\caption{Smurfing / Structuring Detection Procedure}
+\label{alg:smurfing_detect}
+\begin{algorithmic}[1]
+\Require Active graph $\mathcal{G}_{\text{canvas}}$, minimum degree $K_{\text{smurf\_fan}} = 5$, variance tolerance $\epsilon_{\text{variance}} = 0.35$.
+\Ensure Set of flagged nodes $\mathcal{V}_{\text{smurf}}$.
+\State $\mathcal{V}_{\text{smurf}} \gets \emptyset$
+\ForAll{$u \in \mathcal{V}_{\text{canvas}}$}
+    \State $\mathcal{E}_{\text{out}} \gets \mathcal{E}^+(u)$
+    \If{$|\mathcal{E}_{\text{out}}| \ge K_{\text{smurf\_fan}}$}
+        \State $\mu_{\text{out}} \gets \frac{1}{|\mathcal{E}_{\text{out}}|} \sum_{e \in \mathcal{E}_{\text{out}}} w_e$
+        \State $\sigma_{\text{out}} \gets \sqrt{\frac{1}{|\mathcal{E}_{\text{out}}|} \sum_{e \in \mathcal{E}_{\text{out}}} (w_e - \mu_{\text{out}})^2}$
+        \State $\text{CV} \gets \frac{\sigma_{\text{out}}}{\mu_{\text{out}}}$
+        \If{$\text{CV} \le \epsilon_{\text{variance}}$}
+            \State $\text{Tag}(u) \gets \text{``Smurfing Fan-Out Gateway''}$
+            \State $\mathcal{V}_{\text{smurf}} \gets \mathcal{V}_{\text{smurf}} \cup \{u\}$
+        \EndIf
+    \EndIf
+\EndFor
+\State \Return $\mathcal{V}_{\text{smurf}}$
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Computational Complexity Analysis}
+
+We now analyze the theoretical asymptotic computational bounds of our algorithmic framework.
+
+\begin{theorem}[Worst-Case Time Complexity]
+\label{thm:time_complexity}
+Let $|\mathcal{V}|$ and $|\mathcal{E}|$ denote the number of explored vertices and admitted directed edges in the resulting whiteboard graph $\mathcal{G}_{\text{canvas}}$. The total time complexity of Algorithm~\ref{alg:priority_search} using a standard binary-heap priority queue is:
+\begin{equation}
+    \mathcal{O}(|\mathcal{V}| \log |\mathcal{V}| + |\mathcal{E}| \log |\mathcal{E}|)
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Algorithm~\ref{alg:priority_search} evaluates each admissible edge $e \in \mathcal{E}$ at most twice (once upon retrieval from $\text{FetchWires}$ and once upon extraction from priority queue $\mathcal{P}$).
+Inserting an edge into $\mathcal{P}$ requires $\mathcal{O}(\log |\mathcal{P}|)$ operations. Since $|\mathcal{P}| \le |\mathcal{E}|$, each push operation takes $\mathcal{O}(\log |\mathcal{E}|)$ time. The maximum number of push operations is bounded by $|\mathcal{E}|$.
+Each node is popped and expanded at most once due to the visited set $\mathcal{V}_{\text{visited}}$, requiring $\mathcal{O}(\log |\mathcal{P}|)$ per extraction.
+Updating taint coefficients (Equation~\ref{eq:taint_update}) and risk scores (Equation~\ref{eq:risk_score}) takes $\mathcal{O}(1)$ constant time per node.
+Therefore, the aggregate execution time across all vertices and edges is:
+\begin{equation}
+    T = \sum_{v \in \mathcal{V}} \mathcal{O}(1) + \sum_{e \in \mathcal{E}} \mathcal{O}(\log |\mathcal{E}|) = \mathcal{O}(|\mathcal{V}| + |\mathcal{E}| \log |\mathcal{E}|)
+\end{equation}
+Since $|\mathcal{E}| \le |\mathcal{V}|^2$, $\log |\mathcal{E}| \le 2 \log |\mathcal{V}|$, which simplifies the upper bound to $\mathcal{O}(|\mathcal{V}| \log |\mathcal{V}| + |\mathcal{E}| \log |\mathcal{E}|)$.
+If implemented using a Fibonacci Heap, the push operation reduces to $\mathcal{O}(1)$ amortized time, achieving optimal $\mathcal{O}(|\mathcal{E}| + |\mathcal{V}| \log |\mathcal{V}|)$.
+\end{proof}
+
+\begin{theorem}[Space Complexity]
+\label{thm:space_complexity}
+The peak memory space complexity of the framework is strictly linear in the size of the discovered subgraph:
+\begin{equation}
+    \mathcal{S} = \mathcal{O}(|\mathcal{V}| + |\mathcal{E}|)
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+The memory consumption is governed by:
+\begin{enumerate}
+    \item The priority queue $\mathcal{P}$, which stores at most $|\mathcal{E}|$ edge references: $\mathcal{O}(|\mathcal{E}|)$.
+    \item The visited node set $\mathcal{V}_{\text{visited}}$ and canvas node lookup table $\mathcal{V}_{\text{canvas}}$, each storing $|\mathcal{V}|$ address strings: $\mathcal{O}(|\mathcal{V}|)$.
+    \item The emitted edge set $\mathcal{E}_{\text{canvas}}$: $\mathcal{O}(|\mathcal{E}|)$.
+    \item The asynchronous event queue $\mathcal{Q}_{\text{stream}}$, which is bounded by a fixed buffer limit $M_{\text{queue}}$: $\mathcal{O}(M_{\text{queue}}) = \mathcal{O}(1)$.
+\end{enumerate}
+Summing these allocations yields total space $\mathcal{S} = \mathcal{O}(|\mathcal{V}| + |\mathcal{E}|)$, establishing that memory footprint scales linearly with the displayed forensic subgraph.
+\end{proof}

@@ -1,0 +1,127 @@
+\begin{thebibliography}{10}
+
+\bibitem{beres2021blockchain}
+Ferenc Beres, Istvan~A Seres, Andras~A Benczur, and Mate Quintyne-Collins.
+\newblock Blockchain is watching you: Profiling and deanonymizing ethereum
+  users.
+\newblock In {\em 2021 IEEE International Conference on Decentralized
+  Applications and Infrastructures (DAPPS)}, pages 69--78. IEEE, 2021.
+
+\bibitem{chainalysis2024crime}
+{Chainalysis Inc.}
+\newblock The 2024 crypto crime report.
+\newblock {\em Chainalysis Research Insights}, pages 1--140, 2024.
+
+\bibitem{chen2020traveling}
+Weili Chen, Zibin Zheng, Jiahua Cui, Edith Ngai, Peilin Zheng, and Yuren Zhou.
+\newblock Traveling the token world: A graph analysis of ethereum erc20 tokens.
+\newblock {\em ACM Transactions on the Web (TWEB)}, 14(2):1--37, 2020.
+
+\bibitem{elliptic2023typologies}
+{Elliptic Ltd.}
+\newblock Cross-chain crime: More than \$7 billion in illicit crypto funneled
+  through cross-chain bridges, dexs and coin swap services.
+\newblock {\em Elliptic Research Report}, pages 1--52, 2023.
+
+\bibitem{fatf2021virtual}
+{Financial Action Task Force (FATF)}.
+\newblock Updated guidance for a risk-based approach to virtual assets and
+  virtual asset service providers.
+\newblock {\em FATF Guidelines, Paris, France}, pages 1--110, 2021.
+
+\bibitem{frantz2021systematic}
+Christopher~K Frantz and Mariusz Nowostawski.
+\newblock A systematic review of blockchain anti-money laundering frameworks.
+\newblock In {\em Forensic Science International: Digital Investigation},
+  volume~38, page 301217. Elsevier, 2021.
+
+\bibitem{ghesmati2022deanonymizing}
+Saeed Ghesmati, Mohammad Faghihi, and Reihaneh Safavi-Naini.
+\newblock De-anonymizing ethereum mixing services: A case study on tornado
+  cash.
+\newblock In {\em 2022 IEEE European Symposium on Security and Privacy
+  Workshops (EuroS\&PW)}, pages 365--374. IEEE, 2022.
+
+\bibitem{kalodner2020blocksci}
+Harry Kalodner, Steven Goldfeder, Alishah Xiao, Matt Weinberg, and Arvind
+  Narayanan.
+\newblock Blocksci: Design and applications of a blockchain analysis platform.
+\newblock {\em ACM Transactions on Privacy and Security (TOPS)}, 23(4):1--36,
+  2020.
+
+\bibitem{meiklejohn2013fistful}
+Sarah Meiklejohn, Marjori Pomarole, Grant Jordan, Kirill Levchenko, Damon
+  McCoy, Geoffrey~M Voelker, and Stefan Savage.
+\newblock A fistful of bitcoins: characterizing payments among men with no
+  names.
+\newblock In {\em Proceedings of the 2013 conference on Internet measurement
+  conference}, pages 127--140, 2013.
+
+\bibitem{moser2014towards}
+Malte Moser, Rainer Bohme, and Dominic Breuker.
+\newblock Towards risk scoring of bitcoin transactions.
+\newblock In {\em Financial Cryptography and Data Security}, pages 16--32.
+  Springer, 2014.
+
+\bibitem{moser2018anonymous}
+Malte Moser, Kyle Soska, Ethan Heilman, Kevin Lee, Henry Heffelfinger, Kevin
+  Srivastava, Kyle Hogan, Jason Hennessey, Andrew Miller, Arvind Narayanan,
+  et~al.
+\newblock An empirical analysis of traceability in the monero blockchain.
+\newblock In {\em Proceedings of the Privacy Enhancing Technologies Symposium
+  (PETS)}, volume 2018, pages 143--163, 2018.
+
+\bibitem{nakamoto2008bitcoin}
+Satoshi Nakamoto.
+\newblock Bitcoin: A peer-to-peer electronic cash system.
+\newblock {\em Decentralized Business Review}, page 21260, 2008.
+
+\bibitem{pertsev2020tornado}
+Alexey Pertsev, Roman Semenov, and Roman Storm.
+\newblock Tornado cash privacy solution version 1.4.
+\newblock In {\em Whitepaper}, pages 1--12, 2020.
+
+\bibitem{ron2013quantitative}
+Dorit Ron and Adi Shamir.
+\newblock Quantitative analysis of the full bitcoin transaction graph.
+\newblock In {\em Financial Cryptography and Data Security}, pages 6--24.
+  Springer, 2013.
+
+\bibitem{sasson2014zerocash}
+Eli~Ben Sasson, Alessandro Chiesa, Christina Garman, Matthew Green, Ian Miers,
+  Eran Tromer, and Madars Virza.
+\newblock Zerocash: Decentralized anonymous payments from bitcoin.
+\newblock In {\em 2014 IEEE Symposium on Security and Privacy}, pages 459--474.
+  IEEE, 2014.
+
+\bibitem{spagnuolo2014bitiodine}
+Michele Spagnuolo, Federico Maggi, and Stefano Zanero.
+\newblock Bitiodine: Extracting intelligence from the bitcoin network.
+\newblock In {\em Financial Cryptography and Data Security}, pages 457--468.
+  Springer, 2014.
+
+\bibitem{victor2020address}
+Friedhelm Victor.
+\newblock Address clustering heuristics for ethereum.
+\newblock {\em Financial Cryptography and Data Security}, pages 617--633, 2020.
+
+\bibitem{wang2022characterizing}
+Qian Wang, Shengnan Qin, Ding Wang, and Weili Chen.
+\newblock Characterizing cross-chain bridging transactions on ethereum and
+  layer-2 networks.
+\newblock In {\em IEEE Transactions on Information Forensics and Security},
+  volume~18, pages 145--159. IEEE, 2022.
+
+\bibitem{wood2014ethereum}
+Gavin Wood.
+\newblock Ethereum: A secure decentralised generalised transaction ledger.
+\newblock {\em Ethereum Project Yellow Paper}, 151:1--32, 2014.
+
+\bibitem{wu2021tnet}
+Jiajing Wu, Jieli Liu, Weili Chen, Huawei Huang, Zibin Zheng, and Yan Zhang.
+\newblock T-net: A large-scale transaction network dataset for ethereum
+  forensic analysis.
+\newblock In {\em IEEE Transactions on Circuits and Systems II: Express
+  Briefs}, volume~68, pages 1660--1664. IEEE, 2021.
+
+\end{thebibliography}

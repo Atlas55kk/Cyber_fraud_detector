@@ -1,0 +1,88 @@
+\section{Background and Related Work}
+\label{sec:related_work}
+
+The forensic analysis of distributed ledgers spans over a decade of computational research, evolving alongside cryptographic innovations and shifts in blockchain accounting models. In this section, we provide a systematic overview of foundational graph-based tracking techniques, contrast the UTXO and account-based paradigms, review conventional taint propagation models, examine privacy-enhancing obfuscation protocols, and position our contributions relative to state-of-the-art commercial and academic forensic frameworks.
+
+\subsection{Foundations of Blockchain Graph Forensics}
+
+Early research into cryptocurrency tracking focused almost exclusively on the Bitcoin network~\cite{nakamoto2008bitcoin}. Because Bitcoin adheres to the Unspent Transaction Output (UTXO) accounting model, every transaction consumes one or more existing outputs and produces one or more new outputs. This property enabled researchers to reconstruct immutable transaction graphs where nodes represent transactions and directed edges represent consumed coins.
+
+In their seminal work, Meiklejohn et al.~\cite{meiklejohn2013fistful} demonstrated that pseudo-anonymity in Bitcoin could be systematically dismantled using heuristic clustering. They introduced two foundational clustering heuristics:
+\begin{itemize}
+    \item \emph{Heuristic 1 (Multi-Input Clustering):} If two or more addresses are spent as inputs in the same transaction, they are presumed to be controlled by the same economic entity:
+    \begin{equation}
+        \forall u, v \in \mathcal{I}(t) \implies \mathcal{C}(u) = \mathcal{C}(v)
+    \end{equation}
+    where $\mathcal{I}(t)$ represents the set of input addresses consumed in transaction $t$, and $\mathcal{C}(\cdot)$ denotes the identity cluster partition.
+    \item \emph{Heuristic 2 (Change Address Identification):} In a two-output transaction where one output is the merchant payment, the second output is frequently a newly generated internal change address belonging to the spender.
+\end{itemize}
+
+Ron and Shamir~\cite{ron2013quantitative} expanded this foundation by conducting a quantitative topological analysis of the complete Bitcoin transaction network. They observed that large-value transactions often moved through elongated linear subgraphs dubbed ``peel chains''---a technique where an entity transfers a small amount to an external destination while returning the substantial remaining balance to a fresh change address.
+
+To automate these heuristics, several analytical platforms were developed. Spagnuolo, Maggi, and Zanero introduced \emph{BitIodine}~\cite{spagnuolo2014bitiodine}, an automated framework for parsing the Bitcoin blockchain, clustering addresses, scraping Web metadata for address labeling, and tokenizing transaction flows. Kalodner et al.~\cite{kalodner2020blocksci} introduced \emph{BlockSci}, a high-performance in-memory analytical database optimized for UTXO blockchains capable of traversing billions of edges orders of magnitude faster than standard SQL-based engines. Further studies by M{\"o}ser et al.~\cite{moser2014towards} formulated transaction risk scoring models based on proximity to illicit entities (such as Silk Road).
+
+\subsection{Forensic Evolution in Account-Based Blockchains}
+
+The advent of Ethereum~\cite{wood2014ethereum} and successor smart contract blockchains (e.g., TRON, BNB Chain, Polygon, Arbitrum) altered the foundational mechanics of on-chain asset transfers. In the account-based model, there are no UTXOs. Instead, each address maintains a persistent state consisting of a cryptographic balance, an incremental nonce, storage state, and optional bytecode (distinguishing Externally Owned Accounts [EOAs] from Contract Accounts).
+
+Forensic graph analysis in account-based systems is intrinsically more challenging than in UTXO networks for several reasons~\cite{victor2020address, beres2021blockchain}:
+\begin{enumerate}
+    \item \textbf{Fungibility of Balances:} When an account receives funds from multiple disparate sources, the balances merge into a single scalar value. Unlike UTXOs, which preserve distinct cryptographic lineages, incoming value in an account is fungible, obscuring direct 1-to-1 provenance.
+    \item \textbf{Internal Transactions (Message Calls):} Smart contracts can trigger internal calls to other contracts or EOAs, spawning complex nested execution trees that are not recorded directly on the primary blockchain transaction ledger, but must be extracted from execution traces.
+    \item \textbf{Multi-Token Heterogeneity:} An account can concurrently hold native gas currency (e.g., ETH, TRX) alongside thousands of independent ERC-20, ERC-721, and TRC-20 token contracts~\cite{chen2020traveling, wu2021tnet}.
+\end{enumerate}
+
+Victor~\cite{victor2020address} explored address clustering heuristics tailored specifically to Ethereum. He established that multi-input heuristics from Bitcoin are entirely inapplicable to Ethereum because transactions have exactly one cryptographic sender ($tx.origin$ or $msg.sender$). Instead, clustering in Ethereum relies on deposit address reuse at centralized exchanges, proxy contract deployments, and token airdrop authorization trees. B{\'e}res et al.~\cite{beres2021blockchain} demonstrated that user behavior, transaction timings, and recurring gas price choices can deanonymize Ethereum accounts with high statistical confidence. Chen et al.~\cite{chen2020traveling} and Wu et al.~\cite{wu2021tnet} analyzed the topology of ERC-20 token networks, identifying significant structural differences between legitimate utility token graphs and scam/phishing networks.
+
+\subsection{Taint Analysis and Capital Tracking Models}
+
+A critical requirement in financial crime investigations is \emph{taint analysis}---measuring the proportion of funds within an address or transaction that originated from a known illicit incident~\cite{moser2014towards, frantz2021systematic}. In the forensic literature, three primary accounting models are utilized to track tainted capital:
+
+\begin{enumerate}
+    \item \textbf{FIFO (First-In, First-Out):} Assumes that the earliest incoming funds are the first to be disbursed. If an account with a prior balance of \$10 receives \$100 in stolen assets and subsequently spends \$50, the \$50 expenditure is treated as 100\% tainted after the initial \$10 is cleared.
+    \item \textbf{Poison / Taint Maximization:} Assumes that any incoming illicit transfer immediately contaminates 100\% of the destination account's balance. While simple, this approach causes rapid taint explosion, falsely categorizing legitimate secondary recipients as criminals.
+    \item \textbf{Haircut / Proportional Dilution:} Treats all funds in an account as an evenly distributed homogeneous mixture. If stolen funds constitute a fraction $\theta \in (0, 1]$ of an account's total liquidity, any subsequent outgoing transaction carries an identical taint fraction $\theta$.
+\end{enumerate}
+
+Our research adopts a generalized \emph{Proportional Conservation Model} augmented with dynamic volume thresholds and velocity decay parameters, preventing the exponential pollution seen in poison models while accurately capturing the split-fraction mechanics of peel chains and smurfing cascades.
+
+\subsection{Privacy-Enhancing Technologies and Evasion Strategies}
+
+As forensic tracking capabilities matured, illicit syndicates adopted privacy-enhancing technologies designed to sever transaction linkages entirely~\cite{sasson2014zerocash, pertsev2020tornado}.
+
+\subsubsection{Mixers and Zero-Knowledge Proofs}
+Centralized Bitcoin mixers (such as Bitcoin Fog or Helix) pooled user deposits and returned randomized outputs for a percentage fee. These were largely supplanted in the EVM ecosystem by non-custodial smart contract mixers, most notably \emph{Tornado Cash}~\cite{pertsev2020tornado}. Tornado Cash utilizes zk-SNARKs (specifically Groth16 over the BN254 elliptic curve) to enable users to deposit fixed denominations (0.1, 1, 10, 100 ETH) into an on-chain cryptographic accumulator (Merkle tree) and later withdraw to an entirely unlinked address using a zero-knowledge proof of membership without revealing the secret nullifier.
+
+Despite the mathematical privacy guarantees of zk-SNARKs, researchers have demonstrated that adversarial users often leak metadata through operational mistakes. Ghesmati et al.~\cite{ghesmati2022deanonymizing} and B{\'e}res et al.~\cite{beres2021blockchain} revealed that deposit-withdrawal pairs can be deanonymized by analyzing timing correlations, gas price parity, repeated round-number amounts, and subsequent address re-clustering.
+
+\subsubsection{Cross-Chain Bridges and Swappers}
+According to Elliptic's 2023 Cross-Chain Crime Report~\cite{elliptic2023typologies}, cyber syndicates increasingly abandon single-chain mixers in favor of cross-chain bridges and decentralized exchanges. By swapping stolen assets on Ethereum into stablecoins (e.g., USDT), locking them in cross-chain bridge smart contracts (such as Wormhole, Stargate, or Polygon PoS Bridge), and claiming minted synthetic tokens on alternative chains (e.g., Avalanche, Arbitrum, TRON), attackers exploit jurisdictional and technical silos between disparate blockchain indexers.
+
+\subsection{Comparison of Commercial vs. Academic Forensic Tools}
+
+Table~\ref{tab:forensic_comparison} summarizes the operational capabilities, architectural paradigms, and limitations of existing commercial and academic blockchain analytics platforms in comparison to our framework.
+
+\begin{table*}[t]
+\centering
+\caption{Systematic Comparison of Cryptocurrency Forensic and Graph Analytics Frameworks.}
+\label{tab:forensic_comparison}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcccccc}
+\toprule
+\textbf{Platform / Framework} & \textbf{Target Accounting} & \textbf{Heuristic Engine} & \textbf{Streaming Mode} & \textbf{Dust Resilience} & \textbf{Open Source} & \textbf{Execution Latency} \\
+\midrule
+\textbf{BitIodine}~\cite{spagnuolo2014bitiodine} & UTXO (Bitcoin) & Static Multi-Input & Batch Processing & Low & Yes & Minutes / Hours \\
+\textbf{BlockSci}~\cite{kalodner2020blocksci} & UTXO \& Multi & Script Heuristics & In-Memory Batch & Medium & Yes & Seconds / Minutes \\
+\textbf{Chainalysis Reactor}~\cite{chainalysis2024crime} & Multi-Chain & Proprietary ML & Request / Batch & High & No (Proprietary) & Variable (SaaS) \\
+\textbf{Elliptic Investigator}~\cite{elliptic2023typologies} & Multi-Chain & Proprietary Heuristics & Request / Batch & High & No (Proprietary) & Variable (SaaS) \\
+\textbf{T-Net Analytics}~\cite{wu2021tnet} & EVM (Ethereum) & Motif Detection & Batch Offline & Low & No & Hours \\
+\midrule
+\textbf{Our Framework} & \textbf{Account (EVM / TRON)} & \textbf{Priority Heuristic BFS} & \textbf{Live SSE Streaming} & \textbf{High (Adaptive)} & \textbf{Yes (100\% Open)} & \textbf{Sub-Second (<250ms)} \\
+\bottomrule
+\end{tabular}%
+}
+\end{table*}
+
+As evidenced in Table~\ref{tab:forensic_comparison}, commercial industry standards (such as Chainalysis and Elliptic) offer robust multi-chain ingestion but operate as closed-source, high-cost SaaS platforms with opaque, non-reproducible scoring heuristics. Conversely, existing open-source academic tools are either constrained to outdated UTXO paradigms or operate as batch-oriented, offline data mining pipelines incapable of progressive live-streamed graph discovery during active cyber incidents.
+
+Our work bridges this gap by introducing an open-source, mathematically verified, low-latency streaming framework specifically engineered for account-based networks with automated heuristic laundering detection.

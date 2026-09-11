@@ -1,0 +1,41 @@
+\section{Security Limitations, Evasion Vectors, and Defensive Countermeasures}
+\label{sec:limitations}
+
+While the priority-driven heuristic framework provides robust detection against standard money laundering typologies, sophisticated cyber syndicates continuously evolve their operational security to evade deterministic graph heuristics. In this section, we analyze prominent adversarial evasion vectors, delineate the technical boundaries of on-chain graph forensics, and propose defensive countermeasures.
+
+\subsection{Adversarial Evasion Techniques}
+
+\subsubsection{Cryptographic Zero-Knowledge Severance}
+When illicit actors route assets through zero-knowledge privacy protocols (such as Tornado Cash or Railgun) and adhere strictly to operational security best practices (e.g., withdrawing random fractional amounts after extended multi-month delays, utilizing disparate gas payer relays, and generating distinct withdrawal addresses for each tranche), the mathematical cryptographic link between deposit and withdrawal is permanently severed on-chain~\cite{pertsev2020tornado, ghesmati2022deanonymizing}. 
+
+In such scenarios, purely graph-theoretic algorithms cannot reconstruct the exit edge deterministically. Our framework addresses this reality by treating the mixer contract as an immutable \emph{Sovereign Privacy Boundary}: the deposit node is permanently branded with maximum risk ($\text{Risk} = 100$), preserving the upstream evidence chain and providing forensic dossiers suitable for subpoenaing centralized offramps.
+
+\subsubsection{Conversion to Ring-Signature Privacy Blockchains}
+A common laundering route involves bridging assets from public ledgers (Ethereum, TRON) into privacy-centric Layer-1 blockchains, most notably Monero (XMR)~\cite{moser2018anonymous}. Monero employs:
+\begin{itemize}
+    \item \textbf{RingCT (Ring Confidential Transactions):} Hiding transacted amounts using Pedersen commitments.
+    \item \textbf{Stealth Addresses:} Generating one-time destination public keys for every transaction, preventing address clustering.
+    \item \textbf{Ring Signatures:} Merging the real input with decoy inputs to conceal sender identity within an ambiguity set.
+\end{itemize}
+Once funds transition into Monero via non-KYC instant swap exchanges (e.g., FixedFloat, ChangeNOW), graph-based tracking terminates at the exchange deposit address. Investigators must pivot from pure on-chain graph analysis to off-chain legal process and exchange log requests.
+
+\subsubsection{Automated Decentralized Exchange (DEX) Pool Churning}
+Adversaries frequently route stolen ERC-20 tokens through high-liquidity Automated Market Maker (AMM) pools (such as Uniswap V3 or Curve Finance), converting single assets into diverse liquidity provider (LP) positions, synthetic tokens, or wrapped collateral. Because AMM pools mingle liquidity from thousands of independent liquidity providers, the exiting swap output represents newly minted or pooled tokens rather than a direct transfer from the adversary's counterparty. While our priority search tracks the input swap, full taint tracing across multi-hop routing requires parsing internal EVM execution logs (\texttt{LOG3} and \texttt{LOG4} contract events).
+
+\subsection{System Constraints and Operational Bottlenecks}
+
+\subsubsection{Public Blockchain RPC Rate Limiting}
+A primary operational challenge in public forensic tracing is RPC rate limiting (HTTP status 429). Public nodes (e.g., standard Cloudflare or Etherscan community endpoints) enforce strict request quotas (e.g., 5 calls per second). During deep priority searches where a high-degree node possesses dozens of candidate branches, unmanaged concurrent requests trigger immediate throttling.
+
+\textbf{Defensive Countermeasure:} Our system implements an adaptive request scheduler equipped with:
+\begin{enumerate}
+    \item \emph{Exponential Jitter Backoff:}
+    \begin{equation}
+        T_{\text{wait}} = \min\left(T_{\max}, \; T_{\text{base}} \cdot 2^{\text{attempt}} + \text{Uniform}(0, \delta) \right)
+    \end{equation}
+    \item \emph{Multi-Gateway Redundancy:} Automatic seamless failover across secondary block explorers (e.g., Etherscan V2 $\to$ Blockscout $\to$ local archive nodes).
+    \item \emph{In-Memory Ingestion Caching:} Dynamic LRU caching of contract metadata and token decimals to prevent redundant RPC calls.
+\end{enumerate}
+
+\subsubsection{Address Checksum and Format Inconsistencies}
+As discovered during our empirical investigation of the WazirX hack, mixed-case hexadecimal address strings (EIP-55 checksums) routinely induce dictionary key misses and graph edge drops across multi-language microservices. Our framework enforces universal address canonicalization at every entry boundary, eliminating runtime lookup crashes.

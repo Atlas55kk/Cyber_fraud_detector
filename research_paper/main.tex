@@ -1,0 +1,90 @@
+\documentclass[11pt,a4paper]{article}
+
+% --- Essential Packages ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=1.0in]{geometry}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{cite}
+\usepackage[expansion=false]{microtype}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{tabularx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{setspace}
+
+% --- Hyperlink Settings ---
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!70!black,
+    citecolor=red!70!black,
+    urlcolor=blue!60!black
+}
+
+% --- Mathematical Theorem Environments ---
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{definition}{Definition}
+\newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}
+
+% --- Header and Footer Styling ---
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\small Real-Time Blockchain Forensic Exploration Engine}
+\lhead{\small Research Monograph}
+\rfoot{\thepage}
+
+% --- Title and Metadata ---
+\title{\Large \textbf{Real-Time Forensic Graph Analytics and Progressive Streaming Architecture for Anti-Money Laundering Detection in Account-Based Blockchains}}
+
+\author{
+    \textbf{Cyber Fraud Forensics \& Security Intelligence Group} \\
+    \texttt{Atlas55kk / Cyber Fraud Detection Research Initiative} \\
+    Department of Computer Science and Distributed Ledger Technologies
+}
+
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+The unprecedented growth of decentralized finance (DeFi), smart contract execution environments, and synthetic asset bridges has catalyzed sophisticated cyber heists, resulting in tens of billions of dollars in illicit transactions annually. Tracing stolen capital across account-based blockchains (such as Ethereum and TRON) presents formidable computational challenges: combinatorial state-space explosion, adversarial dusting noise, rapid peel chains, zero-knowledge privacy mixers, and cross-chain bridge hops. In this paper, we present an end-to-end, mathematically formalized, real-time forensic graph exploration platform engineered specifically for account-based networks. We formalize dynamic multi-token multigraphs, derive dynamic taint conservation and temporal velocity decay laws, and prove that our adaptive Priority Heuristic Search algorithm bounds traversal complexity to polynomial time while preserving 100\% of primary laundering conduits. Furthermore, we develop deterministic heuristic algorithms for automated attribution of asymmetric peel chains, smurfing structuring gateways, and mixer accumulators. To eliminate event loop starvation during live investigations, we design a decoupled multi-threaded backend streaming progressive graph states via Server-Sent Events (SSE) to an interactive Cytoscape whiteboard equipped with out-of-order dynamic edge buffering. We validate our framework across synthetic benchmarks and the July 2024 WazirX \$230 million exploit, demonstrating sub-second discovery latency, a 96.8\% dust rejection rate, and an optimal detection F1-score of 0.985 at 60 FPS visual rendering stability.
+\end{abstract}
+
+\textbf{Keywords:} Blockchain Forensics, Anti-Money Laundering (AML), Graph Algorithms, Taint Analysis, Peel Chains, Server-Sent Events (SSE), Cytoscape.js, Smart Contract Security, WazirX Exploit.
+
+\newpage
+\tableofcontents
+\newpage
+
+% --- Modular Section Inputs ---
+\input{sections/01_introduction.tex}
+\input{sections/02_related_work.tex}
+\input{sections/03_mathematical_modeling.tex}
+\input{sections/04_pattern_detection.tex}
+\input{sections/05_algorithms.tex}
+\input{sections/06_system_architecture.tex}
+\input{sections/07_case_studies.tex}
+\input{sections/08_limitations.tex}
+\input{sections/09_conclusion.tex}
+
+% --- References ---
+\bibliographystyle{plain}
+\bibliography{references}
+
+\newpage
+\input{sections/10_appendix.tex}
+
+\end{document}
