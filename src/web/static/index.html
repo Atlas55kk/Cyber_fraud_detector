@@ -11,10 +11,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     
     <!-- Modular Enterprise Stylesheets -->
-    <link rel="stylesheet" href="/static/css/variables.css?v=8">
-    <link rel="stylesheet" href="/static/css/layout.css?v=8">
-    <link rel="stylesheet" href="/static/css/components.css?v=8">
-    <link rel="stylesheet" href="/static/css/graph.css?v=8">
+    <link rel="stylesheet" href="/static/css/variables.css?v=10">
+    <link rel="stylesheet" href="/static/css/layout.css?v=10">
+    <link rel="stylesheet" href="/static/css/components.css?v=10">
+    <link rel="stylesheet" href="/static/css/graph.css?v=10">
 
     <!-- Cytoscape Graph Engine -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"></script>
@@ -106,11 +106,6 @@
     <main id="main-viewport">
         <!-- Whiteboard Canvas Hero -->
         <div id="cy-container">
-            <!-- Top Execution Progress Bar -->
-            <div class="execution-progress-track">
-                <div id="execution-progress-bar" class="execution-progress-bar"></div>
-            </div>
-
             <div id="cy"></div>
 
             <!-- Floating Top-Left Telemetry Chip -->
@@ -138,6 +133,27 @@
                 <div class="chip-stat">
                     <span class="chip-lbl">Actionable:</span>
                     <span class="chip-val text-amber" id="hud-sinks">0</span>
+                </div>
+            </div>
+
+            <!-- Floating Working Status & Stepped Activity Widget (Directly under Forensic Benchmark) -->
+            <div class="execution-widget" id="execution-widget">
+                <div class="execution-widget-header" onclick="window.app.toggleExecutionCard()">
+                    <div style="display:flex; align-items:center; gap:7px; min-width:0; flex:1;">
+                        <button class="btn-widget-toggle" id="btn-widget-toggle" title="Expand Stepped Execution Logs">&gt;</button>
+                        <span class="widget-status-text" id="widget-status-text">Engine Ready</span>
+                    </div>
+                    <span class="widget-percent" id="widget-percent" style="display:none;">0%</span>
+                </div>
+                <!-- Scoped Loading % Bar on this small box only -->
+                <div class="widget-progress-track">
+                    <div class="widget-progress-bar" id="widget-progress-bar"></div>
+                </div>
+                <!-- Dropdown stepped activity logs -->
+                <div class="widget-dropdown" id="widget-dropdown">
+                    <div class="widget-log-list" id="widget-log-list">
+                        <div class="widget-log-item">● System initialized. Ready to execute multi-hop trace.</div>
+                    </div>
                 </div>
             </div>
 
@@ -320,12 +336,9 @@
 
     <!-- 4. Bottom Status & Telemetry Bar (28px) -->
     <footer class="status-bar" onclick="window.app.toggleTerminal()">
-        <div style="display:flex; align-items:center;">
-            <button class="btn-terminal-toggle" id="btn-toggle-terminal" onclick="event.stopPropagation(); window.app.toggleTerminal()" title="Toggle Live Execution Logs">&gt;</button>
-            <div id="status-bar-text">● Ready | 0 wallets tracked | MHA / I4C Forensic Engine</div>
-        </div>
+        <div id="status-bar-text">● Ready | 0 wallets tracked | MHA / I4C Forensic Engine</div>
         <div style="display:flex; align-items:center; gap:6px;">
-            <span>Live Activity</span>
+            <span>Terminal Logs</span>
             <span id="terminal-chevron">▲</span>
         </div>
     </footer>
@@ -388,9 +401,9 @@
     </div>
 
     <!-- Modular Script Ingestion -->
-    <script src="/static/js/graph_controller.js?v=8"></script>
-    <script src="/static/js/cff_manager.js?v=8"></script>
-    <script src="/static/js/notice_manager.js?v=8"></script>
-    <script src="/static/js/app.js?v=8"></script>
+    <script src="/static/js/graph_controller.js?v=10"></script>
+    <script src="/static/js/cff_manager.js?v=10"></script>
+    <script src="/static/js/notice_manager.js?v=10"></script>
+    <script src="/static/js/app.js?v=10"></script>
 </body>
 </html>

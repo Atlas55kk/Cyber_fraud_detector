@@ -158,6 +158,60 @@ class ForensicApp {
         }
     }
 
+    toggleExecutionCard() {
+        const dropdown = document.getElementById('widget-dropdown');
+        const btn = document.getElementById('btn-widget-toggle');
+        if (dropdown) {
+            dropdown.classList.toggle('expanded');
+            const isExp = dropdown.classList.contains('expanded');
+            if (btn) btn.classList.toggle('expanded', isExp);
+        }
+    }
+
+    setExecutionStatus(statusText, percent = 0, isComplete = false, milestoneItem = null) {
+        const statusEl = document.getElementById('widget-status-text');
+        const percentEl = document.getElementById('widget-percent');
+        const barEl = document.getElementById('widget-progress-bar');
+        const logList = document.getElementById('widget-log-list');
+
+        if (statusEl && statusText) {
+            statusEl.innerText = statusText;
+        }
+
+        if (percentEl) {
+            if (percent > 0 && !isComplete) {
+                percentEl.style.display = 'inline';
+                percentEl.innerText = `${percent}%`;
+            } else if (isComplete) {
+                percentEl.style.display = 'inline';
+                percentEl.innerText = '100%';
+                setTimeout(() => {
+                    if (percentEl) percentEl.style.display = 'none';
+                }, 2000);
+            } else {
+                percentEl.style.display = 'none';
+            }
+        }
+
+        if (barEl) {
+            barEl.style.width = `${percent}%`;
+            if (isComplete) {
+                setTimeout(() => {
+                    if (barEl) barEl.style.width = '0%';
+                }, 1500);
+            }
+        }
+
+        if (milestoneItem && logList) {
+            const item = document.createElement('div');
+            item.className = `widget-log-item ${isComplete ? 'success' : 'active'}`;
+            item.innerText = milestoneItem;
+            logList.appendChild(item);
+            const dropdown = document.getElementById('widget-dropdown');
+            if (dropdown) dropdown.scrollTop = dropdown.scrollHeight;
+        }
+    }
+
     // Modal Dialogs
     openIntakeModal() {
         const m = document.getElementById('intake-modal');
@@ -279,6 +333,7 @@ class ForensicApp {
             this.updateActionableList(data.actionable_cex);
 
             this.graphController.render(data.elements);
+            this.setExecutionStatus('Offline Case Mounted', 100, true, `✓ Verified .cff container loaded with ${data.stats.total_accounts_tracked} accounts.`);
             window.logSuccess("Graph whiteboard reconstructed offline from .cff container.");
         };
     }
@@ -327,16 +382,19 @@ class ForensicApp {
 
         const traceBtn = document.getElementById('btn-trace');
         const traceText = document.getElementById('btn-trace-text');
-        const progBar = document.getElementById('execution-progress-bar');
 
         if (traceBtn) traceBtn.disabled = true;
         if (traceText) traceText.innerHTML = '<span class="btn-spinner"></span> Tracing...';
-        if (progBar) progBar.style.width = '35%';
 
+        // Reset step logs for new trace
+        const logList = document.getElementById('widget-log-list');
+        if (logList) logList.innerHTML = '';
+
+        this.setExecutionStatus('Validating node...', 25, false, `● Connecting to RPC node & validating ${wallet.substring(0, 10)}...`);
         window.logInfo(`[STEP 1/4] Connecting to network nodes & validating ${wallet.substring(0, 14)}...`);
 
         try {
-            if (progBar) progBar.style.width = '65%';
+            this.setExecutionStatus(`Traversing hops on ${chain.toUpperCase()}...`, 55, false, `● Traversing multi-hop transactions on ${chain.toUpperCase()}...`);
             window.logInfo(`[STEP 2/4] Traversing multi-hop transactions on ${chain.toUpperCase()}...`);
 
             const resp = await fetch('/api/trace', {
@@ -356,7 +414,7 @@ class ForensicApp {
                 })
             });
 
-            if (progBar) progBar.style.width = '85%';
+            this.setExecutionStatus('Analyzing off-ramps...', 80, false, `● Parsing transaction graph & identifying exchange off-ramps...`);
             window.logInfo(`[STEP 3/4] Parsing transaction graph & identifying exchange off-ramps...`);
 
             const data = await resp.json();
@@ -364,7 +422,7 @@ class ForensicApp {
                 alert("Trace Failed: " + (data.detail || "Unknown error"));
                 if (traceBtn) traceBtn.disabled = false;
                 if (traceText) traceText.innerText = 'Trace';
-                if (progBar) progBar.style.width = '0%';
+                this.setExecutionStatus('Trace Failed', 0, false, `✕ Error: ${data.detail || 'Unknown error'}`);
                 return;
             }
 
@@ -386,14 +444,11 @@ class ForensicApp {
             window.logSuccess(`[STEP 4/4] Graph rendered: ${data.stats.total_accounts_tracked} wallets, ${data.stats.total_transactions_tracked} wires.`);
             this.graphController.render(data.elements);
 
-            if (progBar) {
-                progBar.style.width = '100%';
-                setTimeout(() => { progBar.style.width = '0%'; }, 400);
-            }
+            this.setExecutionStatus('Engine Ready (Active Graph)', 100, true, `✓ Rendered: ${data.stats.total_accounts_tracked} wallets, ${data.stats.total_transactions_tracked} wires.`);
 
         } catch (err) {
             window.logAlert(`Trace Error: ${err.message}`);
-            if (progBar) progBar.style.width = '0%';
+            this.setExecutionStatus('Trace Error', 0, false, `✕ Error: ${err.message}`);
         } finally {
             if (traceBtn) traceBtn.disabled = false;
             if (traceText) traceText.innerText = 'Trace';
