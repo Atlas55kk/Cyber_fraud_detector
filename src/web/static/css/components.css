@@ -452,6 +452,17 @@ select option:hover, select option:focus, select option:checked,
     flex-shrink: 0;
 }
 
+.widget-spinner {
+    width: 11px;
+    height: 11px;
+    border: 2px solid rgba(56, 189, 248, 0.2);
+    border-top-color: var(--accent-cyan);
+    border-radius: 50%;
+    animation: spin 0.65s linear infinite;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
 .widget-progress-track {
     height: 2px;
     width: 100%;
