@@ -1,45 +1,107 @@
 /* ==============================================================================
-   VARIABLES.CSS - Tier-1 Enterprise Forensic Design Tokens & Surface System
+   VARIABLES.CSS - 5-Color Harmonic Architecture (Tints, Shades & Tones)
+   ==============================================================================
+   Color 1: Obsidian Slate (Neutral Structure, Canvas, Surfaces, Typography)
+   Color 2: Command Blue (Primary Interactivity, Brand, Active States)
+   Color 3: Tactical Amber (Mule Intermediaries, Cautions, Sandbox Mode)
+   Color 4: Enforcement Crimson (Crime Root, Threat Nodes, Stop Action)
+   Color 5: Sovereign Emerald (CEX Off-Ramps, Asset Recovery, Verified Seal)
    ============================================================================== */
 
 :root {
-    /* Base Surface Architecture */
-    --bg-base: #080c14;            /* Canvas Obsidian */
-    --bg-surface: #0f172a;         /* Header & Base Panels */
-    --bg-elevated: #1e293b;        /* Elevated Cards */
-    --bg-card: #141e33;            /* Inner Cards & Controls */
-    --bg-card-hover: #1c2a47;      /* Hover State */
-    --bg-glass: rgba(15, 23, 42, 0.82); /* Glassmorphic Overlays */
-    --bg-glass-card: rgba(20, 30, 51, 0.75);
+    /* --------------------------------------------------------------------------
+       1. COLOR 1: OBSIDIAN SLATE (Neutral Foundation)
+       -------------------------------------------------------------------------- */
+    /* Shades (Dark background depths) */
+    --slate-950: #070a12;          /* Deepest canvas backdrop */
+    --slate-900: #0c1220;          /* Main workspace header & panels */
+    --slate-850: #121a2d;          /* Card & container surfaces */
+    --slate-800: #19233a;          /* Elevated surfaces & subtle dividing lines */
+    --slate-750: #212e4b;          /* Hover states on interactive cards */
 
-    /* Borders & Hairlines */
-    --border-subtle: #1e293b;
-    --border-medium: #334155;
-    --border-accent: #38bdf8;
-    
-    /* Text Hierarchy */
-    --text-primary: #f8fafc;
-    --text-secondary: #94a3b8;
-    --text-muted: #64748b;
-    --text-dim: #475569;
+    /* Tones (Desaturated grey-mixed borders & subtle iconography) */
+    --slate-650: #2e3c59;          /* Default component borders */
+    --slate-600: #3b4d70;          /* Medium borders & control frames */
+    --slate-500: #55698f;          /* Subtle active frames & muted icons */
+    --slate-400: #7b8ea8;          /* Muted metadata & placeholder text */
 
-    /* Cognitive Forensic Semantic Roles */
-    --accent-crime: #f43f5e;        /* Rose: Crime Root Ingress */
-    --accent-mule: #f59e0b;         /* Amber: Mule Laundering Transit */
-    --accent-cex: #10b981;          /* Emerald: Actionable CEX Sink */
-    --accent-mixer: #a855f7;        /* Purple: Privacy Mixer / Obfuscation */
-    --accent-bridge: #38bdf8;       /* Sky: Cross-Chain Protocol */
+    /* Tints (White-mixed high-contrast typography) */
+    --slate-300: #9cb0ce;          /* Secondary descriptive labels */
+    --slate-200: #c5d3ea;          /* Body copy */
+    --slate-100: #edf3fc;          /* Crisp high-contrast headings & primary values */
 
-    /* Enterprise Brand Accents */
-    --primary-blue: #2563eb;
-    --primary-blue-hover: #1d4ed8;
-    --accent-cyan: #0ea5e9;
+    /* --------------------------------------------------------------------------
+       2. COLOR 2: COMMAND BLUE (Primary Action & Telemetry)
+       -------------------------------------------------------------------------- */
+    --blue-shade-deep: #0f1c3f;    /* Deep tinted wash */
+    --blue-shade: #1d4ed8;         /* Button active / pressed */
+    --blue-base: #2563eb;          /* Primary interactive base */
+    --blue-tone: #3b82f6;          /* Muted telemetry indicator */
+    --blue-tint: #60a5fa;          /* Interactive focus & glowing borders */
+    --blue-tint-soft: rgba(37, 99, 235, 0.15); /* Badge wash */
+
+    /* --------------------------------------------------------------------------
+       3. COLOR 3: TACTICAL AMBER (Mule Intermediaries & Cautions)
+       -------------------------------------------------------------------------- */
+    --amber-shade-deep: #451a03;   /* Background badge wash */
+    --amber-shade: #78350f;        /* Deep border tone */
+    --amber-base: #d97706;         /* Tactical amber base */
+    --amber-tone: #f59e0b;         /* Mule node border & warning badge */
+    --amber-tint: #fbbf24;         /* High-visibility label text */
+    --amber-tint-soft: rgba(217, 119, 6, 0.15);
+
+    /* --------------------------------------------------------------------------
+       4. COLOR 4: ENFORCEMENT CRIMSON (Crime Root & Stop Action)
+       -------------------------------------------------------------------------- */
+    --crimson-shade-deep: #450a0a; /* Crime root node background wash */
+    --crimson-shade: #991b1b;      /* Stop button & critical hover */
+    --crimson-base: #dc2626;       /* Base crimson */
+    --crimson-tone: #ef4444;       /* Primary crime node border */
+    --crimson-tint: #fca5a5;       /* Alert text & stop button text */
+    --crimson-tint-soft: rgba(220, 38, 38, 0.16);
+
+    /* --------------------------------------------------------------------------
+       5. COLOR 5: SOVEREIGN EMERALD (CEX Off-Ramp & Recovery)
+       -------------------------------------------------------------------------- */
+    --emerald-shade-deep: #022c22; /* Verified container wash */
+    --emerald-shade: #064e3b;      /* CEX card header & deep tone */
+    --emerald-base: #059669;       /* Base emerald */
+    --emerald-tone: #10b981;       /* CEX node border & recovered funds */
+    --emerald-tint: #6ee7b7;       /* Highlight values */
+    --emerald-tint-soft: rgba(5, 150, 105, 0.15);
+
+    /* --------------------------------------------------------------------------
+       Semantic System Tokens (Harmonized from the 5 Core Colors)
+       -------------------------------------------------------------------------- */
+    --bg-base: var(--slate-950);
+    --bg-surface: var(--slate-900);
+    --bg-elevated: var(--slate-850);
+    --bg-card: var(--slate-850);
+    --bg-card-hover: var(--slate-750);
+    --bg-glass: rgba(12, 18, 32, 0.92);
+    --bg-glass-card: rgba(18, 26, 45, 0.88);
+
+    --border-subtle: var(--slate-800);
+    --border-medium: var(--slate-650);
+    --border-accent: var(--blue-tint);
+
+    --text-primary: var(--slate-100);
+    --text-secondary: var(--slate-300);
+    --text-muted: var(--slate-400);
+    --text-dim: var(--slate-500);
+
+    --accent-crime: var(--crimson-tone);
+    --accent-mule: var(--amber-tone);
+    --accent-cex: var(--emerald-tone);
+    --accent-cyan: var(--blue-tint);
+
+    --primary-blue: var(--blue-base);
+    --primary-blue-hover: var(--blue-shade);
 
     /* Elevation Shadows */
-    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
-    --shadow-md: 0 4px 12px -2px rgba(0, 0, 0, 0.5);
-    --shadow-lg: 0 12px 28px -4px rgba(0, 0, 0, 0.65);
-    --shadow-subtle: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.45);
+    --shadow-md: 0 4px 14px -2px rgba(0, 0, 0, 0.55);
+    --shadow-lg: 0 12px 32px -4px rgba(0, 0, 0, 0.75);
 
     /* Radii */
     --radius-xs: 4px;
@@ -53,6 +115,6 @@
     --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 
     /* Transitions */
-    --transition-fast: 0.12s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-normal: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-fast: 0.14s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-normal: 0.24s cubic-bezier(0.4, 0, 0.2, 1);
 }
