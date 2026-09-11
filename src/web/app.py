@@ -84,13 +84,19 @@ class NoticeRequest(BaseModel):
 @app.get("/", response_class=HTMLResponse)
 async def serve_dashboard():
     """
-    Serves the primary interactive forensic whiteboard dashboard.
+    Serves the primary interactive forensic whiteboard dashboard with anti-caching headers.
     """
     html_path = os.path.join(os.path.dirname(__file__), "static", "index.html")
     if os.path.exists(html_path):
         with open(html_path, "r", encoding="utf-8") as f:
-            return f.read()
-    return "<h1>Forensic Dashboard Not Found. Please build static/index.html</h1>"
+            content = f.read()
+        response = HTMLResponse(content=content)
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+        return response
+    return HTMLResponse(content="<h1>Forensic Dashboard Not Found. Please build static/index.html</h1>", status_code=404)
+
 
 
 @app.get("/api/health")
