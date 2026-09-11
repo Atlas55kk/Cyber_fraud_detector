@@ -21,13 +21,27 @@
 }
 
 .btn-primary {
-    background: #16a34a;
+    background: var(--blue-base);
+    border-color: var(--blue-tone);
     color: #ffffff;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 .btn-primary:hover {
-    background: #15803d;
-    box-shadow: var(--shadow-sm);
+    background: var(--blue-shade);
+    border-color: var(--blue-tint);
+    box-shadow: 0 0 10px rgba(37, 99, 235, 0.35);
+}
+
+.btn-stop {
+    background: var(--crimson-shade);
+    border-color: var(--crimson-tone);
+    color: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+.btn-stop:hover {
+    background: var(--crimson-base);
+    border-color: var(--crimson-tint);
+    box-shadow: 0 0 10px rgba(220, 38, 38, 0.4);
 }
 
 .btn-blue {
@@ -327,15 +341,15 @@ select, .hub-select {
 }
 
 select option, .hub-select option {
-    background-color: #0f172a !important;
-    color: #f8fafc !important;
+    background-color: var(--slate-900) !important;
+    color: var(--slate-100) !important;
     padding: 8px 12px;
 }
 
 select option:hover, select option:focus, select option:checked,
 .hub-select option:hover, .hub-select option:focus, .hub-select option:checked {
-    background-color: #1e293b !important;
-    color: #38bdf8 !important;
+    background-color: var(--slate-800) !important;
+    color: var(--blue-tint) !important;
 }
 
 /* Edge Inspector Pull-Tab (When Drawer Collapsed) */

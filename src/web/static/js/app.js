@@ -85,6 +85,8 @@ class ForensicApp {
         this.noticeManager = new StatutoryNoticeManager();
         this.lastTraceData = null;
         this.isTerminalExpanded = false;
+        this.isTracing = false;
+        this.activeAbortController = null;
     }
 
     init() {
@@ -98,14 +100,18 @@ class ForensicApp {
         
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('simulate_running') === '1') {
+            this.isTracing = true;
+            this.updateTraceButtonState(true);
             this.setExecutionStatus('Traversing hops on EVM...', 55, false, '● Traversing multi-hop transactions on EVM...');
-            const traceBtn = document.getElementById('btn-trace');
-            if (traceBtn) traceBtn.disabled = true;
             return;
         }
 
-        // Auto-run initial case
-        this.triggerTrace();
+        if (urlParams.get('auto_trace') === '1') {
+            this.triggerTrace();
+            return;
+        }
+
+        this.setExecutionStatus('Engine Ready — Select Case & Click Trace', 0, false, '● System initialized. Ready to execute multi-hop trace.');
     }
 
     setupTabNavigation() {
@@ -375,11 +381,56 @@ class ForensicApp {
         document.getElementById('chain-select').value = c.chain;
         if (c.inr) document.getElementById('inr-input').value = c.inr;
 
-        window.logInfo(`Loaded scenario: ${caseKey.toUpperCase()}`);
-        this.triggerTrace();
+        window.logInfo(`Loaded preset parameters: ${caseKey.toUpperCase()}`);
+        this.setExecutionStatus('Preset Loaded — Click Trace to Begin', 0, false, `● Scenario [${caseKey.toUpperCase()}] loaded. Configure parameters or click Trace.`);
+    }
+
+    handleTraceToggle() {
+        if (this.isTracing) {
+            this.stopTrace();
+        } else {
+            this.triggerTrace();
+        }
+    }
+
+    stopTrace() {
+        if (!this.isTracing) return;
+        if (this.activeAbortController) {
+            this.activeAbortController.abort();
+            this.activeAbortController = null;
+        }
+        this.isTracing = false;
+        this.updateTraceButtonState(false);
+        this.setExecutionStatus('Trace Stopped by Operator', 0, false, '✕ Multi-hop trace halted by operator.');
+        window.logAlert('[STOPPED] Trace process halted by operator.');
+    }
+
+    updateTraceButtonState(isRunning) {
+        const btn = document.getElementById('btn-trace');
+        const icon = document.getElementById('btn-trace-icon');
+        const text = document.getElementById('btn-trace-text');
+        if (!btn) return;
+
+        if (isRunning) {
+            btn.className = 'btn btn-stop btn-sm';
+            btn.title = 'Halt active blockchain trace';
+            if (icon) {
+                icon.innerHTML = '<rect x="6" y="6" width="12" height="12" rx="1.5" fill="currentColor"></rect>';
+            }
+            if (text) text.innerText = 'Stop';
+        } else {
+            btn.className = 'btn btn-primary btn-sm';
+            btn.title = 'Execute Multi-Hop Priority Trace';
+            if (icon) {
+                icon.innerHTML = '<circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>';
+            }
+            if (text) text.innerText = 'Trace';
+        }
     }
 
     async triggerTrace() {
+        if (this.isTracing) return;
+
         const wallet = document.getElementById('wallet-input').value.trim();
         const chain = document.getElementById('chain-select').value;
         const amount = 50000.0;
@@ -398,8 +449,9 @@ class ForensicApp {
             return;
         }
 
-        const traceBtn = document.getElementById('btn-trace');
-        if (traceBtn) traceBtn.disabled = true;
+        this.isTracing = true;
+        this.activeAbortController = new AbortController();
+        this.updateTraceButtonState(true);
 
         // Reset step logs for new trace
         const logList = document.getElementById('widget-log-list');
@@ -414,6 +466,7 @@ class ForensicApp {
 
             const resp = await fetch('/api/trace', {
                 method: 'POST',
+                signal: this.activeAbortController.signal,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     wallet_address: wallet,
@@ -435,7 +488,6 @@ class ForensicApp {
             const data = await resp.json();
             if (!data.success) {
                 alert("Trace Failed: " + (data.detail || "Unknown error"));
-                if (traceBtn) traceBtn.disabled = false;
                 this.setExecutionStatus('Trace Failed', 0, false, `✕ Error: ${data.detail || 'Unknown error'}`);
                 return;
             }
@@ -461,10 +513,15 @@ class ForensicApp {
             this.setExecutionStatus('Engine Ready (Active Graph)', 100, true, `✓ Rendered: ${data.stats.total_accounts_tracked} wallets, ${data.stats.total_transactions_tracked} wires.`);
 
         } catch (err) {
+            if (err.name === 'AbortError') {
+                return;
+            }
             window.logAlert(`Trace Error: ${err.message}`);
             this.setExecutionStatus('Trace Error', 0, false, `✕ Error: ${err.message}`);
         } finally {
-            if (traceBtn) traceBtn.disabled = false;
+            this.isTracing = false;
+            this.activeAbortController = null;
+            this.updateTraceButtonState(false);
         }
     }
 

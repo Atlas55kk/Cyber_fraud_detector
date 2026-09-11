@@ -11,10 +11,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     
     <!-- Modular Enterprise Stylesheets -->
-    <link rel="stylesheet" href="/static/css/variables.css?v=11">
-    <link rel="stylesheet" href="/static/css/layout.css?v=11">
-    <link rel="stylesheet" href="/static/css/components.css?v=11">
-    <link rel="stylesheet" href="/static/css/graph.css?v=11">
+    <link rel="stylesheet" href="/static/css/variables.css?v=12">
+    <link rel="stylesheet" href="/static/css/layout.css?v=12">
+    <link rel="stylesheet" href="/static/css/components.css?v=12">
+    <link rel="stylesheet" href="/static/css/graph.css?v=12">
 
     <!-- Cytoscape Graph Engine -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"></script>
@@ -52,8 +52,8 @@
                 <option value="evm" selected>EVM</option>
                 <option value="tron">TRON</option>
             </select>
-            <button id="btn-trace" class="btn btn-primary btn-sm" onclick="window.app.triggerTrace()" title="Execute Multi-Hop Priority Trace">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <button id="btn-trace" class="btn btn-primary btn-sm" onclick="window.app.handleTraceToggle()" title="Execute Multi-Hop Priority Trace">
+                <svg id="btn-trace-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="11" cy="11" r="8"></circle>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
@@ -404,9 +404,9 @@
     </div>
 
     <!-- Modular Script Ingestion -->
-    <script src="/static/js/graph_controller.js?v=11"></script>
-    <script src="/static/js/cff_manager.js?v=11"></script>
-    <script src="/static/js/notice_manager.js?v=11"></script>
-    <script src="/static/js/app.js?v=11"></script>
+    <script src="/static/js/graph_controller.js?v=12"></script>
+    <script src="/static/js/cff_manager.js?v=12"></script>
+    <script src="/static/js/notice_manager.js?v=12"></script>
+    <script src="/static/js/app.js?v=12"></script>
 </body>
 </html>
