@@ -75,8 +75,9 @@ body {
     border: 1px solid var(--border-medium);
     border-radius: var(--radius-md);
     padding: 2px 6px;
-    max-width: 680px;
+    max-width: 560px;
     flex: 1;
+    min-width: 260px;
     transition: border-color var(--transition-fast);
 }
 
@@ -399,6 +400,27 @@ body {
     user-select: none;
 }
 .status-bar:hover { background: var(--bg-elevated); color: var(--text-secondary); }
+
+.btn-terminal-toggle {
+    background: var(--bg-card);
+    border: 1px solid var(--border-medium);
+    color: var(--accent-cyan);
+    padding: 1px 7px;
+    border-radius: var(--radius-xs);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-right: 8px;
+    display: inline-flex;
+    align-items: center;
+    transition: var(--transition-fast);
+}
+.btn-terminal-toggle:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--accent-cyan);
+    color: #ffffff;
+}
 
 #log-drawer {
     height: 0px;
