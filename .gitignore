@@ -48,3 +48,7 @@ Desktop.ini
 
 # Blockchain Cache
 data/cache/
+
+# Local UI/UX Learning & Study Notes (Strictly private, do not push)
+ui_ux_study_guide/
+
