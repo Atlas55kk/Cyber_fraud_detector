@@ -10,6 +10,7 @@ import time
 import math
 import re
 import asyncio
+import threading
 import json
 from typing import Dict, Any, List, Optional
 from fastapi import FastAPI, HTTPException, Request, Response
@@ -118,7 +119,7 @@ async def execute_trace(req: TraceRequest):
     Executes real-time priority graph traversal and returns Cytoscape elements and metrics.
     Supports both live on-chain mainnet traversal and deterministic offline forensic benchmarks.
     """
-    clean_addr = req.wallet_address.strip()
+    clean_addr = WhiteboardCanvas.normalize_address(req.wallet_address)
     if not clean_addr:
         raise HTTPException(status_code=400, detail="Wallet address cannot be empty.")
 
@@ -223,7 +224,11 @@ async def execute_trace(req: TraceRequest):
             fetcher = lambda a: tron_mock_db.get(a if a.startswith("T") else a.lower(), [])
             logs.append("Ingested TRON (TRC-20 USDT) multi-mule transit benchmark.")
         else:
-            mock_evm = MockFraudScenarioGenerator.generate_problem_statement_case()
+            mock_evm = MockFraudScenarioGenerator.generate_problem_statement_case(
+                root_address=clean_addr,
+                stolen_amount=req.stolen_amount,
+                token_symbol=req.token_symbol
+            )
             fetcher = lambda a: mock_evm.get(a.lower(), [])
             logs.append("Ingested EVM multi-hop structuring & peel-chain benchmark.")
 
@@ -315,7 +320,7 @@ async def stream_trace(req: TraceRequest, request: Request):
     Progressive real-time streaming endpoint for hop-by-hop graph discovery.
     Emits Server-Sent Events (SSE) as blockchain blocks, nodes, and transaction wires are found.
     """
-    clean_addr = req.wallet_address.strip()
+    clean_addr = WhiteboardCanvas.normalize_address(req.wallet_address)
     if not clean_addr:
         raise HTTPException(status_code=400, detail="Wallet address cannot be empty.")
 
@@ -326,192 +331,222 @@ async def stream_trace(req: TraceRequest, request: Request):
         raise HTTPException(status_code=400, detail="Stolen amount must be a positive finite numeric value.")
 
     async def event_generator():
-        canvas = WhiteboardCanvas(canvas_id=f"Case_{clean_addr[:8]}")
-        taint_engine = TaintEngine(model=TaintModel.HAIRCUT, min_taint_threshold=0.01)
-        search_cfg = SearchConfig(max_hops=4, max_nodes_budget=35, min_taint_ratio=0.01)
-        search_engine = PrioritySearchEngine(canvas, taint_engine, entity_resolver, config=search_cfg)
+        try:
+            canvas = WhiteboardCanvas(canvas_id=f"Case_{clean_addr[:8]}")
+            taint_engine = TaintEngine(model=TaintModel.HAIRCUT, min_taint_threshold=0.01)
+            search_cfg = SearchConfig(max_hops=4, max_nodes_budget=35, min_taint_ratio=0.01)
+            search_engine = PrioritySearchEngine(canvas, taint_engine, entity_resolver, config=search_cfg)
 
-        inc_time = req.incident_timestamp or (int(time.time()) - 3600)
-        canvas.set_incident_root(clean_addr, req.stolen_amount, inc_time)
+            inc_time = req.incident_timestamp or (int(time.time()) - 3600)
+            canvas.set_incident_root(clean_addr, req.stolen_amount, inc_time)
 
-        is_tron = req.chain.lower() == "tron" or clean_addr.startswith("T")
-        chain_name = "TRON" if is_tron else "EVM"
+            is_tron = req.chain.lower() == "tron" or clean_addr.startswith("T")
+            chain_name = "TRON" if is_tron else "EVM"
 
-        # Initial progress
-        yield f"event: progress\ndata: {json.dumps({'percent': 15, 'message': 'Connecting to RPC node & validating target...'})}\n\n"
+            # Initial progress
+            yield f"event: progress\ndata: {json.dumps({'percent': 15, 'message': 'Connecting to RPC node & validating target...'})}\n\n"
 
-        # Emit Root Node
-        root_node = canvas.nodes[clean_addr]
-        yield f"event: node\ndata: {json.dumps(canvas.node_to_cytoscape(root_node))}\n\n"
+            # Emit Root Node
+            root_node = canvas.nodes.get(clean_addr) or canvas.nodes.get(canvas.incident_root_address)
+            if root_node:
+                yield f"event: node\ndata: {json.dumps(canvas.node_to_cytoscape(root_node))}\n\n"
 
-        # Correlate Victim Entry if provided
-        if req.victim_address and req.victim_address.strip():
-            clean_victim = WhiteboardCanvas.normalize_address(req.victim_address)
-            vic_node = canvas.get_or_create_node(clean_victim, role=NodeRole.VICTIM)
-            vic_wire = canvas.add_wire(
-                tx_hash=f"0xtx_ingress_{int(time.time())}",
-                from_address=clean_victim,
-                to_address=clean_addr,
-                value=req.stolen_amount,
-                token_symbol=req.token_symbol,
-                timestamp=inc_time
+            # Correlate Victim Entry if provided
+            if req.victim_address and req.victim_address.strip():
+                clean_victim = WhiteboardCanvas.normalize_address(req.victim_address)
+                vic_node = canvas.get_or_create_node(clean_victim, role=NodeRole.VICTIM)
+                vic_wire = canvas.add_wire(
+                    tx_hash=f"0xtx_ingress_{int(time.time())}",
+                    from_address=clean_victim,
+                    to_address=clean_addr,
+                    value=req.stolen_amount,
+                    token_symbol=req.token_symbol,
+                    timestamp=inc_time
+                )
+                yield f"event: node\ndata: {json.dumps(canvas.node_to_cytoscape(vic_node))}\n\n"
+                yield f"event: wire\ndata: {json.dumps(canvas.wire_to_cytoscape(vic_wire))}\n\n"
+
+            # Determine if live or benchmark
+            is_real_candidate = False
+            if is_tron and len(clean_addr) == 34 and clean_addr.startswith("T"):
+                is_real_candidate = True
+            elif (not is_tron) and len(clean_addr) == 42 and clean_addr.lower().startswith("0x"):
+                is_real_candidate = True
+
+            should_try_live = (req.mode.lower() == "live") or (
+                req.mode.lower() == "auto" and is_real_candidate and not clean_addr.lower().startswith("0xscam")
             )
-            yield f"event: node\ndata: {json.dumps(canvas.node_to_cytoscape(vic_node))}\n\n"
-            yield f"event: wire\ndata: {json.dumps(canvas.wire_to_cytoscape(vic_wire))}\n\n"
 
-        # Determine if live or benchmark
-        is_real_candidate = False
-        if is_tron and len(clean_addr) == 34 and clean_addr.startswith("T"):
-            is_real_candidate = True
-        elif (not is_tron) and len(clean_addr) == 42 and clean_addr.lower().startswith("0x"):
-            is_real_candidate = True
+            is_live_traced = False
+            source_label = "Forensic Benchmark"
 
-        should_try_live = (req.mode.lower() == "live") or (
-            req.mode.lower() == "auto" and is_real_candidate and not clean_addr.lower().startswith("0xscam")
-        )
-
-        is_live_traced = False
-        source_label = "Forensic Benchmark"
-
-        if should_try_live:
-            live_fetcher = tron_fetcher if is_tron else etherscan_fetcher
-            explorer_name = "Tronscan Mainnet" if is_tron else "Blockscout / EVM Explorer"
-            yield f"event: progress\ndata: {json.dumps({'percent': 25, 'message': f'Querying live {explorer_name} RPC nodes...'})}\n\n"
-            try:
-                raw_wires = live_fetcher.fetch_outgoing_transactions(clean_addr)
-                if raw_wires:
-                    is_live_traced = True
-                    source_label = f"Live Mainnet ({explorer_name})"
-                    fetcher = lambda a: live_fetcher.fetch_outgoing_transactions(a)
-                else:
+            if should_try_live:
+                live_fetcher = tron_fetcher if is_tron else etherscan_fetcher
+                explorer_name = "Tronscan Mainnet" if is_tron else "Blockscout / EVM Explorer"
+                yield f"event: progress\ndata: {json.dumps({'percent': 25, 'message': f'Querying live {explorer_name} RPC nodes...'})}\n\n"
+                try:
+                    raw_wires = live_fetcher.fetch_outgoing_transactions(clean_addr)
+                    if raw_wires:
+                        is_live_traced = True
+                        source_label = f"Live Mainnet ({explorer_name})"
+                        fetcher = lambda a: live_fetcher.fetch_outgoing_transactions(a)
+                    else:
+                        fetcher = None
+                except Exception:
                     fetcher = None
-            except Exception:
+            else:
                 fetcher = None
-        else:
-            fetcher = None
 
-        if not is_live_traced:
-            if is_tron:
-                binance_tron = "TPY9W8PnmgCJnUqUrYJ7p4G93F6r8eH1e6"
-                coindcx_tron = "TYDzsYUEpvnYmQk4zGP9sWWcTEd2MiAtW6"
-                mule1 = "TMuleTransit_Beta_481029"
-                mule2 = "TMuleTransit_Gamma_771928"
-                tron_mock_db = {
-                    clean_addr: [
-                        ForensicWire("0xtx_trc_1", clean_addr, mule1, req.stolen_amount * 0.6, token_symbol="USDT", token_type=TokenType.TRC20, gas_fee=13.5, timestamp=int(time.time()) - 3000),
-                        ForensicWire("0xtx_trc_2", clean_addr, mule2, req.stolen_amount * 0.4, token_symbol="USDT", token_type=TokenType.TRC20, gas_fee=13.5, timestamp=int(time.time()) - 2800),
-                    ],
-                    mule1: [
-                        ForensicWire("0xtx_trc_3", mule1, binance_tron, req.stolen_amount * 0.6, token_symbol="USDT", token_type=TokenType.TRC20, gas_fee=13.5, timestamp=int(time.time()) - 1500)
-                    ],
-                    mule2: [
-                        ForensicWire("0xtx_trc_4", mule2, coindcx_tron, req.stolen_amount * 0.4, token_symbol="USDT", token_type=TokenType.TRC20, gas_fee=13.5, timestamp=int(time.time()) - 1200)
+            if not is_live_traced:
+                if is_tron:
+                    binance_tron = "TPY9W8PnmgCJnUqUrYJ7p4G93F6r8eH1e6"
+                    coindcx_tron = "TYDzsYUEpvnYmQk4zGP9sWWcTEd2MiAtW6"
+                    mule1 = "TMuleTransit_Beta_481029"
+                    mule2 = "TMuleTransit_Gamma_771928"
+                    tron_mock_db = {
+                        clean_addr: [
+                            ForensicWire("0xtx_trc_1", clean_addr, mule1, req.stolen_amount * 0.6, token_symbol=req.token_symbol or "USDT", token_type=TokenType.TRC20, gas_fee=13.5, timestamp=int(time.time()) - 3000),
+                            ForensicWire("0xtx_trc_2", clean_addr, mule2, req.stolen_amount * 0.4, token_symbol=req.token_symbol or "USDT", token_type=TokenType.TRC20, gas_fee=13.5, timestamp=int(time.time()) - 2800),
+                        ],
+                        mule1: [
+                            ForensicWire("0xtx_trc_3", mule1, binance_tron, req.stolen_amount * 0.6, token_symbol=req.token_symbol or "USDT", token_type=TokenType.TRC20, gas_fee=13.5, timestamp=int(time.time()) - 1500)
+                        ],
+                        mule2: [
+                            ForensicWire("0xtx_trc_4", mule2, coindcx_tron, req.stolen_amount * 0.4, token_symbol=req.token_symbol or "USDT", token_type=TokenType.TRC20, gas_fee=13.5, timestamp=int(time.time()) - 1200)
+                        ]
+                    }
+                    fetcher = lambda a: tron_mock_db.get(a if a.startswith("T") else a.lower(), [])
+                else:
+                    mock_evm = MockFraudScenarioGenerator.generate_problem_statement_case(
+                        root_address=clean_addr,
+                        stolen_amount=req.stolen_amount,
+                        token_symbol=req.token_symbol
+                    )
+                    fetcher = lambda a: mock_evm.get(a.lower(), [])
+
+            # Threaded progressive discovery: never blocks the main asyncio loop
+            queue: asyncio.Queue = asyncio.Queue()
+            loop = asyncio.get_running_loop()
+
+            def step_collector(event_type: str, item: Any):
+                loop.call_soon_threadsafe(queue.put_nowait, (event_type, item))
+
+            def run_search():
+                try:
+                    res = search_engine.run_trace(fetcher, on_step=step_collector)
+                    loop.call_soon_threadsafe(queue.put_nowait, ("__COMPLETE__", res))
+                except Exception as ex:
+                    loop.call_soon_threadsafe(queue.put_nowait, ("__ERROR__", ex))
+
+            t = threading.Thread(target=run_search, daemon=True)
+            t.start()
+
+            seen_nodes = {clean_addr}
+            seen_wires = set()
+            actionable_cex_nodes = []
+
+            while True:
+                if await request.is_disconnected():
+                    break
+
+                etype, item = await queue.get()
+                if etype == "__COMPLETE__":
+                    actionable_cex_nodes = item
+                    break
+                elif etype == "__ERROR__":
+                    raise item
+                elif etype == "node":
+                    addr = item["data"]["id"]
+                    if addr not in seen_nodes:
+                        seen_nodes.add(addr)
+                        yield f"event: node\ndata: {json.dumps(item)}\n\n"
+                        if not is_live_traced:
+                            await asyncio.sleep(0.12)
+                elif etype == "wire":
+                    wid = item["data"]["id"]
+                    if wid not in seen_wires:
+                        seen_wires.add(wid)
+                        yield f"event: wire\ndata: {json.dumps(item)}\n\n"
+                        if not is_live_traced:
+                            await asyncio.sleep(0.08)
+                elif etype == "hop":
+                    hop_num = item["hop"]
+                    pct = min(88, 30 + hop_num * 15)
+                    msg = f"Traversing Hop {hop_num} on {chain_name} ({item['nodes_count']} accounts, {item['wires_count']} wires)..."
+                    yield f"event: progress\ndata: {json.dumps({'percent': pct, 'message': msg})}\n\n"
+                    if not is_live_traced:
+                        await asyncio.sleep(0.18)
+
+            # Finalize and emit complete payload
+            if not await request.is_disconnected():
+                yield f"event: progress\ndata: {json.dumps({'percent': 94, 'message': 'Evaluating ML Risk & Sealing Evidence...'})}\n\n"
+
+                stats = canvas.summary_stats()
+                elements = canvas.to_cytoscape_elements()
+                actionable_data = [
+                    {
+                        "address": n.address,
+                        "entity_tag": n.entity_tag,
+                        "stolen_held": n.stolen_amount_held,
+                        "taint_pct": round(n.stolen_taint_ratio * 100, 1),
+                        "paths": canvas.trace_paths_to_address(n.address)
+                    }
+                    for n in actionable_cex_nodes
+                ]
+
+                macro_eval = macro_classifier.evaluate_canvas(canvas)
+                ml_intel = {
+                    "campaign_name": macro_eval.campaign_name,
+                    "overall_risk_score": macro_eval.overall_risk_score,
+                    "investigation_priority": macro_eval.investigation_priority,
+                    "topological_fingerprint": macro_eval.topological_fingerprint,
+                    "cex_offramps_detected": macro_eval.cex_offramps_detected,
+                    "summary": macro_eval.summary
+                }
+
+                case_meta = CaseDetails(
+                    ack_number=req.ack_number or "NCRP/2026/910283",
+                    fir_number=req.fir_number or "FIR No. 42/2026",
+                    police_station="Cyber Crime Police Station, Central District",
+                    investigating_officer="Inspector R. K. Sharma",
+                    victim_name=req.complainant_name or "Confidential Complainant",
+                    loss_inr=req.loss_inr or (req.stolen_amount * 85.0),
+                    loss_crypto_str=f"{req.stolen_amount:,.2f} {req.token_symbol}"
+                )
+                cff_container = CryptoForensicFileEngine.export_cff(
+                    canvas=canvas,
+                    case=case_meta,
+                    ml_intelligence=ml_intel,
+                    chain=chain_name,
+                    victim_address=req.victim_address
+                )
+
+                complete_payload = {
+                    "success": True,
+                    "chain": chain_name,
+                    "is_live": is_live_traced,
+                    "data_source": source_label,
+                    "stats": stats,
+                    "elements": elements,
+                    "actionable_cex": actionable_data,
+                    "ml_intelligence": ml_intel,
+                    "cff_container": cff_container,
+                    "logs": [
+                        f"Progressive stream dispatched {len(canvas.nodes)} accounts across {len(canvas.wires)} wires.",
+                        f"Identified {len(actionable_data)} actionable exchange cash-out targets.",
+                        f"[AI/ML] Macro Profile: {macro_eval.campaign_name} ({macro_eval.overall_risk_score}/100)",
+                        "Evidence sealed under Section 63 BNSS."
                     ]
                 }
-                fetcher = lambda a: tron_mock_db.get(a if a.startswith("T") else a.lower(), [])
-            else:
-                mock_evm = MockFraudScenarioGenerator.generate_problem_statement_case()
-                fetcher = lambda a: mock_evm.get(a.lower(), [])
 
-        # Collect and stream items hop-by-hop
-        queue = []
-        def step_collector(event_type: str, item: Any):
-            queue.append((event_type, item))
-
-        actionable_cex_nodes = search_engine.run_trace(fetcher, on_step=step_collector)
-
-        seen_nodes = {clean_addr}
-        seen_wires = set()
-
-        for etype, item in queue:
-            if await request.is_disconnected():
-                break
-
-            if etype == "node":
-                addr = item["data"]["id"]
-                if addr not in seen_nodes:
-                    seen_nodes.add(addr)
-                    yield f"event: node\ndata: {json.dumps(item)}\n\n"
-                    if not is_live_traced:
-                        await asyncio.sleep(0.12)
-            elif etype == "wire":
-                wid = item["data"]["id"]
-                if wid not in seen_wires:
-                    seen_wires.add(wid)
-                    yield f"event: wire\ndata: {json.dumps(item)}\n\n"
-                    if not is_live_traced:
-                        await asyncio.sleep(0.08)
-            elif etype == "hop":
-                hop_num = item["hop"]
-                pct = min(88, 30 + hop_num * 15)
-                msg = f"Traversing Hop {hop_num} on {chain_name} ({item['nodes_count']} accounts, {item['wires_count']} wires)..."
-                yield f"event: progress\ndata: {json.dumps({'percent': pct, 'message': msg})}\n\n"
-                if not is_live_traced:
-                    await asyncio.sleep(0.18)
-
-        # Finalize and emit complete payload
-        if not await request.is_disconnected():
-            yield f"event: progress\ndata: {json.dumps({'percent': 94, 'message': 'Evaluating ML Risk & Sealing Evidence...'})}\n\n"
-
-            stats = canvas.summary_stats()
-            elements = canvas.to_cytoscape_elements()
-            actionable_data = [
-                {
-                    "address": n.address,
-                    "entity_tag": n.entity_tag,
-                    "stolen_held": n.stolen_amount_held,
-                    "taint_pct": round(n.stolen_taint_ratio * 100, 1),
-                    "paths": canvas.trace_paths_to_address(n.address)
-                }
-                for n in actionable_cex_nodes
-            ]
-
-            macro_eval = macro_classifier.evaluate_canvas(canvas)
-            ml_intel = {
-                "campaign_name": macro_eval.campaign_name,
-                "overall_risk_score": macro_eval.overall_risk_score,
-                "investigation_priority": macro_eval.investigation_priority,
-                "topological_fingerprint": macro_eval.topological_fingerprint,
-                "cex_offramps_detected": macro_eval.cex_offramps_detected,
-                "summary": macro_eval.summary
-            }
-
-            case_meta = CaseDetails(
-                ack_number=req.ack_number or "NCRP/2026/910283",
-                fir_number=req.fir_number or "FIR No. 42/2026",
-                police_station="Cyber Crime Police Station, Central District",
-                investigating_officer="Inspector R. K. Sharma",
-                victim_name=req.complainant_name or "Confidential Complainant",
-                loss_inr=req.loss_inr or (req.stolen_amount * 85.0),
-                loss_crypto_str=f"{req.stolen_amount:,.2f} {req.token_symbol}"
-            )
-            cff_container = CryptoForensicFileEngine.export_cff(
-                canvas=canvas,
-                case=case_meta,
-                ml_intelligence=ml_intel,
-                chain=chain_name,
-                victim_address=req.victim_address
-            )
-
-            complete_payload = {
-                "success": True,
-                "chain": chain_name,
-                "is_live": is_live_traced,
-                "data_source": source_label,
-                "stats": stats,
-                "elements": elements,
-                "actionable_cex": actionable_data,
-                "ml_intelligence": ml_intel,
-                "cff_container": cff_container,
-                "logs": [
-                    f"Progressive stream dispatched {len(canvas.nodes)} accounts across {len(canvas.wires)} wires.",
-                    f"Identified {len(actionable_data)} actionable exchange cash-out targets.",
-                    f"[AI/ML] Macro Profile: {macro_eval.campaign_name} ({macro_eval.overall_risk_score}/100)",
-                    "Evidence sealed under Section 63 BNSS."
-                ]
-            }
-
-            yield f"event: complete\ndata: {json.dumps(complete_payload)}\n\n"
+                yield f"event: complete\ndata: {json.dumps(complete_payload)}\n\n"
+        except asyncio.CancelledError:
+            return
+        except Exception as ex:
+            import traceback
+            err_msg = f"{type(ex).__name__}: {str(ex)}"
+            print(f"[STREAM ERROR] {err_msg}\n{traceback.format_exc()}")
+            yield f"event: error\ndata: {json.dumps({'detail': err_msg})}\n\n"
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
 

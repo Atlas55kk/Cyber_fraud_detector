@@ -133,7 +133,9 @@ class PrioritySearchEngine:
         if not root_addr:
             raise ValueError("Canvas incident root must be set prior to running trace.")
 
-        root_node = self.canvas.nodes[root_addr]
+        root_node = self.canvas.nodes.get(root_addr)
+        if not root_node:
+            raise ValueError(f"Canvas incident root node '{root_addr}' must be initialized prior to running trace.")
         incident_time = self.canvas.incident_timestamp or 0
         initial_stolen = self.canvas.initial_stolen_amount
 
@@ -148,8 +150,11 @@ class PrioritySearchEngine:
         visited_wires: Set[str] = set()
         actionable_cex_found: List[ForensicNodeBox] = []
 
-        # Bootstrap: Fetch initial wires from root
-        initial_wires = fetch_outgoing_wires_func(root_addr)
+        # Bootstrap: Fetch initial wires from root safely
+        try:
+            initial_wires = fetch_outgoing_wires_func(root_addr) or []
+        except Exception:
+            initial_wires = []
         for w in initial_wires:
             self.canvas.add_wire(
                 tx_hash=w.tx_hash,
@@ -204,8 +209,11 @@ class PrioritySearchEngine:
             visited_nodes.add(current_addr)
             expanded_node_count += 1
 
-            # Fetch outgoing wires for current node
-            outgoing_wires = fetch_outgoing_wires_func(current_addr)
+            # Fetch outgoing wires for current node safely
+            try:
+                outgoing_wires = fetch_outgoing_wires_func(current_addr) or []
+            except Exception:
+                outgoing_wires = []
             
             # Check for Exchange Deposit Sweeping Heuristic (Victor 2020)
             sweep_result = self.deposit_sweeper.evaluate_node_for_sweep(curr_node, outgoing_wires)

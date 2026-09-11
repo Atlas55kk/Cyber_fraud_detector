@@ -147,11 +147,12 @@ class EtherscanFetcher:
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         }
 
+        timeout = 2.0 if not self.api_key else 4.0
         for base in endpoints:
             url = f"{base}?{urllib.parse.urlencode(params)}"
             try:
                 req = urllib.request.Request(url, headers=headers)
-                with urllib.request.urlopen(req, timeout=8) as resp:
+                with urllib.request.urlopen(req, timeout=timeout) as resp:
                     data = json.loads(resp.read().decode("utf-8"))
                     result = data.get("result", [])
                     if isinstance(result, list) and len(result) > 0:

@@ -134,6 +134,13 @@ class ForensicApp {
             return;
         }
 
+        if (urlParams.get('case')) {
+            const cKey = urlParams.get('case');
+            const sel = document.getElementById('case-select');
+            if (sel) sel.value = cKey;
+            this.onCaseSelect(cKey);
+        }
+
         if (urlParams.get('auto_trace') === '1') {
             this.triggerTrace();
             return;
@@ -278,27 +285,35 @@ class ForensicApp {
     setupCallbacks() {
         // Node Selection Callback
         window.onNodeSelected = (nodeData) => {
+            if (!nodeData) return;
             this.openInspector();
             this.activateTab('tab-node');
 
-            document.getElementById('no-select-hint').style.display = 'none';
-            document.getElementById('node-details').style.display = 'flex';
+            const hint = document.getElementById('no-select-hint');
+            if (hint) hint.style.display = 'none';
+            const details = document.getElementById('node-details');
+            if (details) details.style.display = 'flex';
 
-            document.getElementById('side-addr').innerText = nodeData.address || nodeData.id;
+            const addrEl = document.getElementById('side-addr');
+            if (addrEl) addrEl.innerText = nodeData.address || nodeData.id || '';
             
             // Role Badge styling
             const roleEl = document.getElementById('side-role');
-            roleEl.innerText = nodeData.role || 'UNKNOWN';
-            roleEl.className = 'badge';
-            if (nodeData.role === 'SCAMMER') roleEl.classList.add('badge-crime');
-            else if (nodeData.role === 'CEX_DEPOSIT') roleEl.classList.add('badge-cex');
-            else if (nodeData.role === 'MULE_TRANSIT') roleEl.classList.add('badge-mule');
-            else roleEl.classList.add('badge-subtle');
+            if (roleEl) {
+                roleEl.innerText = nodeData.role || 'UNKNOWN';
+                roleEl.className = 'badge';
+                if (nodeData.role === 'SCAMMER') roleEl.classList.add('badge-crime');
+                else if (nodeData.role === 'CEX_DEPOSIT') roleEl.classList.add('badge-cex');
+                else if (nodeData.role === 'MULE_TRANSIT') roleEl.classList.add('badge-mule');
+                else roleEl.classList.add('badge-subtle');
+            }
 
-            document.getElementById('side-entity').innerText = nodeData.label || 'Unlabeled Account';
+            const entityEl = document.getElementById('side-entity');
+            if (entityEl) entityEl.innerText = nodeData.label || 'Unlabeled Account';
             
             const taintPct = nodeData.taint_pct !== undefined ? nodeData.taint_pct : 0;
-            document.getElementById('side-taint').innerText = `${taintPct}%`;
+            const taintEl = document.getElementById('side-taint');
+            if (taintEl) taintEl.innerText = `${taintPct}%`;
             
             const taintFill = document.getElementById('side-taint-bar');
             if (taintFill) {
@@ -306,37 +321,55 @@ class ForensicApp {
                 taintFill.style.background = taintPct > 50 ? 'var(--accent-crime)' : (taintPct > 20 ? 'var(--accent-mule)' : 'var(--accent-cex)');
             }
 
-            document.getElementById('side-held').innerText = '$' + Number(nodeData.held_amount || 0).toLocaleString();
-            document.getElementById('side-gas').innerText = (nodeData.gas_burned || 0) + ' Gas';
+            const heldEl = document.getElementById('side-held');
+            if (heldEl) heldEl.innerText = '$' + Number(nodeData.held_amount || 0).toLocaleString();
+            const gasEl = document.getElementById('side-gas');
+            if (gasEl) gasEl.innerText = (nodeData.gas_burned || 0) + ' Gas';
 
             // If CEX deposit, enable direct notice drafting
             const actionBox = document.getElementById('node-cex-action');
-            if (nodeData.role === 'CEX_DEPOSIT') {
-                actionBox.style.display = 'block';
-                document.getElementById('btn-freeze-single').onclick = () => {
-                    this.noticeManager.openModal(this.lastTraceData, nodeData.address);
-                };
-            } else {
-                actionBox.style.display = 'none';
+            if (actionBox) {
+                if (nodeData.role === 'CEX_DEPOSIT') {
+                    actionBox.style.display = 'block';
+                    const freezeBtn = document.getElementById('btn-freeze-single');
+                    if (freezeBtn) {
+                        freezeBtn.onclick = () => {
+                            this.noticeManager.openModal(this.lastTraceData, nodeData.address);
+                        };
+                    }
+                } else {
+                    actionBox.style.display = 'none';
+                }
             }
         };
 
         // Edge Selection Callback
         window.onEdgeSelected = (edgeData) => {
+            if (!edgeData) return;
             this.openInspector();
             this.activateTab('tab-node');
 
-            document.getElementById('no-select-hint').style.display = 'none';
-            document.getElementById('node-details').style.display = 'flex';
+            const hint = document.getElementById('no-select-hint');
+            if (hint) hint.style.display = 'none';
+            const details = document.getElementById('node-details');
+            if (details) details.style.display = 'flex';
 
-            document.getElementById('side-addr').innerText = edgeData.tx_hash || 'TX_HASH';
+            const addrEl = document.getElementById('side-addr');
+            if (addrEl) addrEl.innerText = edgeData.tx_hash || 'TX_HASH';
             
             const roleEl = document.getElementById('side-role');
-            roleEl.innerText = 'TRANSACTION WIRE';
-            roleEl.className = 'badge badge-subtle';
+            if (roleEl) {
+                roleEl.innerText = 'TRANSACTION WIRE';
+                roleEl.className = 'badge badge-subtle';
+            }
 
-            document.getElementById('side-entity').innerText = `${edgeData.source.substring(0, 8)}... → ${edgeData.target.substring(0, 8)}...`;
-            document.getElementById('side-taint').innerText = '100% Flow';
+            const entityEl = document.getElementById('side-entity');
+            const s = edgeData.source ? edgeData.source.substring(0, 8) : 'unknown';
+            const t = edgeData.target ? edgeData.target.substring(0, 8) : 'unknown';
+            if (entityEl) entityEl.innerText = `${s}... → ${t}...`;
+            
+            const taintEl = document.getElementById('side-taint');
+            if (taintEl) taintEl.innerText = '100% Flow';
             
             const taintFill = document.getElementById('side-taint-bar');
             if (taintFill) {
@@ -344,32 +377,41 @@ class ForensicApp {
                 taintFill.style.background = 'var(--accent-cyan)';
             }
 
-            document.getElementById('side-held').innerText = edgeData.label || '';
-            document.getElementById('side-gas').innerText = (edgeData.gas_fee || 0) + ' Gas Fee';
-            document.getElementById('node-cex-action').style.display = 'none';
+            const heldEl = document.getElementById('side-held');
+            if (heldEl) heldEl.innerText = edgeData.label || '';
+            const gasEl = document.getElementById('side-gas');
+            if (gasEl) gasEl.innerText = (edgeData.gas_fee || 0) + ' Gas Fee';
+            const actionBox = document.getElementById('node-cex-action');
+            if (actionBox) actionBox.style.display = 'none';
         };
 
         // Deselection Callback
         window.onCanvasDeselected = () => {
-            document.getElementById('no-select-hint').style.display = 'block';
-            document.getElementById('node-details').style.display = 'none';
-            document.getElementById('node-cex-action').style.display = 'none';
+            const hint = document.getElementById('no-select-hint');
+            if (hint) hint.style.display = 'block';
+            const details = document.getElementById('node-details');
+            if (details) details.style.display = 'none';
+            const actionBox = document.getElementById('node-cex-action');
+            if (actionBox) actionBox.style.display = 'none';
         };
 
         // Case Loaded Callback (from .cff container)
         window.onCaseLoaded = (data) => {
+            if (!data) return;
             this.lastTraceData = data;
-            data.logs.forEach(l => window.logInfo(l));
+            if (data.logs) data.logs.forEach(l => window.logInfo(l));
 
             // Update Seal Badge
             const sealBadge = document.getElementById('cff-seal-badge');
-            sealBadge.style.display = 'inline-flex';
-            if (data.is_tamper_free) {
-                sealBadge.className = 'badge badge-seal';
-                sealBadge.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> SEC 63 BNSS: VERIFIED';
-            } else {
-                sealBadge.className = 'badge badge-crime';
-                sealBadge.innerHTML = 'TAMPER DETECTED: INVALID SEAL';
+            if (sealBadge) {
+                sealBadge.style.display = 'inline-flex';
+                if (data.is_tamper_free) {
+                    sealBadge.className = 'badge badge-seal';
+                    sealBadge.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> SEC 63 BNSS: VERIFIED';
+                } else {
+                    sealBadge.className = 'badge badge-crime';
+                    sealBadge.innerHTML = 'TAMPER DETECTED: INVALID SEAL';
+                }
             }
 
             // Populate Form fields from metadata
@@ -461,15 +503,26 @@ class ForensicApp {
 
         const wallet = document.getElementById('wallet-input').value.trim();
         const chain = document.getElementById('chain-select').value;
-        const amount = 50000.0;
-        const mode = "auto";
-        const tokenSymbol = (chain === 'evm' && (wallet.startsWith('0x04b2') || wallet.startsWith('0xd8da'))) ? 'ETH' : 'USDT';
+        const selectedCaseKey = document.getElementById('case-select') ? document.getElementById('case-select').value : null;
+        const preset = selectedCaseKey ? PRESET_CASES[selectedCaseKey] : null;
 
-        const victim = document.getElementById('victim-input').value.trim();
-        const fir = document.getElementById('fir-input').value.trim();
-        const ack = document.getElementById('ack-input').value.trim();
-        const inr = parseFloat(document.getElementById('inr-input').value) || (amount * 85.0);
-        const dtVal = document.getElementById('datetime-input').value;
+        let amount = 50000.0;
+        let mode = "auto";
+        let tokenSymbol = (chain === 'evm' && (wallet.toLowerCase().startsWith('0x04b2') || wallet.toLowerCase().startsWith('0xd8da'))) ? 'ETH' : 'USDT';
+
+        if (preset && preset.wallet && preset.wallet.toLowerCase() === wallet.toLowerCase()) {
+            if (preset.amount) amount = preset.amount;
+            if (preset.mode) mode = preset.mode;
+            if (preset.token) tokenSymbol = preset.token;
+        }
+
+        const victim = document.getElementById('victim-input') ? document.getElementById('victim-input').value.trim() : '';
+        const fir = document.getElementById('fir-input') ? document.getElementById('fir-input').value.trim() : '';
+        const ack = document.getElementById('ack-input') ? document.getElementById('ack-input').value.trim() : '';
+        const inrInput = document.getElementById('inr-input');
+        const inr = (inrInput && parseFloat(inrInput.value)) ? parseFloat(inrInput.value) : (amount * 85.0);
+        const dtInput = document.getElementById('datetime-input');
+        const dtVal = dtInput ? dtInput.value : '';
         const incTimestamp = dtVal ? Math.floor(new Date(dtVal).getTime() / 1000) : null;
 
         if (!wallet) {
@@ -611,16 +664,33 @@ class ForensicApp {
         }
     }
 
-    applyLayoutMode(layoutName) {
-        ['dagre', 'tree', 'cluster'].forEach(k => {
-            const el = document.getElementById(`btn-layout-${k}`);
+    applyLayoutMode(mode) {
+        const layoutMapping = {
+            'flow': 'dagre',
+            'dagre': 'dagre',
+            'tree': 'breadthfirst',
+            'breadthfirst': 'breadthfirst',
+            'cluster': 'cose',
+            'cose': 'cose'
+        };
+        const idMapping = {
+            'dagre': 'btn-layout-dagre',
+            'breadthfirst': 'btn-layout-tree',
+            'cose': 'btn-layout-cluster'
+        };
+        const engineLayout = layoutMapping[mode] || 'dagre';
+        ['btn-layout-dagre', 'btn-layout-tree', 'btn-layout-cluster'].forEach(id => {
+            const el = document.getElementById(id);
             if (el) el.classList.remove('active');
         });
-        const activeBtn = document.getElementById(`btn-layout-${layoutName}`);
-        if (activeBtn) activeBtn.classList.add('active');
+        const activeId = idMapping[engineLayout];
+        if (activeId) {
+            const el = document.getElementById(activeId);
+            if (el) el.classList.add('active');
+        }
 
         if (this.graphController) {
-            this.graphController.applyLayout(layoutName);
+            this.graphController.applyLayout(engineLayout);
         }
     }
 

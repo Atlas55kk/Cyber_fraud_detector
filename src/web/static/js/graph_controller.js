@@ -194,12 +194,30 @@ class ForensicGraphController {
     }
 
     clearCanvas() {
+        this.pendingWires = [];
+        if (this.layoutTimer) {
+            clearTimeout(this.layoutTimer);
+            this.layoutTimer = null;
+        }
+        if (this.activeLayout && typeof this.activeLayout.stop === 'function') {
+            this.activeLayout.stop();
+            this.activeLayout = null;
+        }
         if (this.cy) {
             this.cy.elements().remove();
         }
     }
 
     formatNodeData(d) {
+        if (!d) return {};
+        // Normalize EVM address id to lowercase to prevent Cytoscape lookup misses
+        if (d.id && typeof d.id === 'string' && d.id.startsWith('0x')) {
+            d.id = d.id.toLowerCase();
+        }
+        if (d.address && typeof d.address === 'string' && d.address.startsWith('0x')) {
+            d.address = d.address.toLowerCase();
+        }
+
         const addr = d.address || d.id || '';
         const shortAddr = addr.length > 14 
             ? `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}` 
@@ -218,22 +236,49 @@ class ForensicGraphController {
         if (!this.cy) this.init();
         const data = this.formatNodeData(nodeElement.data);
         const existing = this.cy.getElementById(data.id);
+        let node;
         if (existing.length > 0) {
             existing.data(data);
-            return existing;
+            node = existing;
+        } else {
+            node = this.cy.add({
+                group: 'nodes',
+                data: data
+            });
         }
 
-        const added = this.cy.add({
-            group: 'nodes',
-            data: data
-        });
+        // Connect any pending wires that were waiting for this node!
+        if (this.pendingWires && this.pendingWires.length > 0) {
+            const remaining = [];
+            for (const wireEl of this.pendingWires) {
+                const wd = wireEl.data;
+                const s = this.cy.getElementById(wd.source);
+                const t = this.cy.getElementById(wd.target);
+                if (s.length > 0 && t.length > 0) {
+                    const wid = wd.id || wd.tx_hash;
+                    if (this.cy.getElementById(wid).length === 0) {
+                        this.cy.add({ group: 'edges', data: wd });
+                    }
+                } else {
+                    remaining.push(wireEl);
+                }
+            }
+            this.pendingWires = remaining;
+        }
+
         this.throttleLayout();
-        return added;
+        return node;
     }
 
     addWireProgressive(wireElement) {
         if (!this.cy) this.init();
         const d = wireElement.data;
+        if (d.source && typeof d.source === 'string' && d.source.startsWith('0x')) {
+            d.source = d.source.toLowerCase();
+        }
+        if (d.target && typeof d.target === 'string' && d.target.startsWith('0x')) {
+            d.target = d.target.toLowerCase();
+        }
         const wid = d.id || d.tx_hash;
         const existing = this.cy.getElementById(wid);
         if (existing.length > 0) {
@@ -244,6 +289,8 @@ class ForensicGraphController {
         const src = this.cy.getElementById(d.source);
         const tgt = this.cy.getElementById(d.target);
         if (src.length === 0 || tgt.length === 0) {
+            if (!this.pendingWires) this.pendingWires = [];
+            this.pendingWires.push(wireElement);
             return null;
         }
 
@@ -258,18 +305,18 @@ class ForensicGraphController {
     throttleLayout() {
         if (this.layoutTimer) clearTimeout(this.layoutTimer);
         this.layoutTimer = setTimeout(() => {
-            this.runIncrementalLayout();
+            this.runIncrementalLayout(false);
         }, 120);
     }
 
-    runIncrementalLayout() {
+    runIncrementalLayout(fitOnComplete = false) {
         if (!this.cy || this.cy.elements().length === 0) return;
         this.cy.resize();
         let layoutOptions = {
             name: this.currentLayout || 'dagre',
             animate: true,
             animationDuration: 280,
-            fit: true,
+            fit: fitOnComplete,
             padding: 60
         };
 
@@ -282,8 +329,11 @@ class ForensicGraphController {
             layoutOptions.spacingFactor = 1.75;
         }
 
-        const l = this.cy.layout(layoutOptions);
-        l.run();
+        if (this.activeLayout && typeof this.activeLayout.stop === 'function') {
+            this.activeLayout.stop();
+        }
+        this.activeLayout = this.cy.layout(layoutOptions);
+        this.activeLayout.run();
     }
 
     render(elements) {
