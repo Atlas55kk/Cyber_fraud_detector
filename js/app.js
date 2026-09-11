@@ -139,14 +139,11 @@ class ForensicApp {
             const sel = document.getElementById('case-select');
             if (sel) sel.value = cKey;
             this.onCaseSelect(cKey);
-        }
-
-        if (urlParams.get('auto_trace') === '1') {
-            this.triggerTrace();
             return;
         }
 
-        this.setExecutionStatus('Engine Ready — Select Case & Click Trace', 0, false, '● System initialized. Ready to execute multi-hop trace.');
+        // Automatically trigger trace on default preloaded scenario on start
+        this.onCaseSelect('evm_ps_bench');
     }
 
     setupTabNavigation() {
@@ -230,11 +227,13 @@ class ForensicApp {
 
         // Rotating circle indicator placed right near the % age number
         if (spinnerEl) {
-            if (percent > 0 && !isComplete) {
-                spinnerEl.style.display = 'inline-block';
-            } else {
-                spinnerEl.style.display = 'none';
-            }
+            const isWorking = !isComplete && (percent > 0 || (statusText && (
+                statusText.toLowerCase().includes('connecting') ||
+                statusText.toLowerCase().includes('traversing') ||
+                statusText.toLowerCase().includes('mapping') ||
+                statusText.toLowerCase().includes('loading')
+            )));
+            spinnerEl.style.display = isWorking ? 'inline-block' : 'none';
         }
 
         if (percentEl) {
@@ -443,16 +442,61 @@ class ForensicApp {
         });
     }
 
+    showCanvasPreloader(caption = 'TRAVERSING ON-CHAIN GRAPH...', subtext = 'Executing Priority Best-First Search') {
+        const preloader = document.getElementById('canvas-preloader');
+        const capEl = document.getElementById('preloader-caption');
+        const subEl = document.getElementById('preloader-subtext');
+        if (capEl) capEl.innerText = caption;
+        if (subEl) subEl.innerText = subtext;
+        if (preloader) {
+            preloader.style.display = 'flex';
+            preloader.style.opacity = '1';
+        }
+    }
+
+    hideCanvasPreloader() {
+        const preloader = document.getElementById('canvas-preloader');
+        if (preloader) {
+            preloader.style.opacity = '0';
+            setTimeout(() => {
+                if (preloader) preloader.style.display = 'none';
+            }, 250);
+        }
+    }
+
     onCaseSelect(caseKey) {
+        if (this.isTracing) {
+            this.stopTrace();
+        }
+
+        if (caseKey === 'custom') {
+            document.getElementById('wallet-input').value = '';
+            document.getElementById('wallet-input').placeholder = 'Enter target 0x... or T... address';
+            document.getElementById('wallet-input').focus();
+            this.graphController.clearCanvas();
+            this.hideCanvasPreloader();
+            window.logInfo("Custom target mode selected. Enter wallet address and click Trace.");
+            this.setExecutionStatus('Ready for Custom Wallet', 0, false, '● Enter target address and click Trace.');
+            return;
+        }
+
         const c = PRESET_CASES[caseKey];
         if (!c) return;
 
         document.getElementById('wallet-input').value = c.wallet;
         document.getElementById('chain-select').value = c.chain;
-        if (c.inr) document.getElementById('inr-input').value = c.inr;
+        if (c.inr) {
+            const inrEl = document.getElementById('inr-input');
+            if (inrEl) inrEl.value = c.inr;
+        }
 
-        window.logInfo(`Loaded preset parameters: ${caseKey.toUpperCase()}`);
-        this.setExecutionStatus('Preset Loaded — Click Trace to Begin', 0, false, `● Scenario [${caseKey.toUpperCase()}] loaded. Configure parameters or click Trace.`);
+        window.logInfo(`[PRELOADER] Loading scenario: ${caseKey.toUpperCase()}...`);
+        this.showCanvasPreloader(`LOADING ${caseKey.replace(/_/g, ' ').toUpperCase()}...`, 'Traversing multi-hop transaction graph');
+        
+        // Immediately run and render the selected preloaded scenario!
+        setTimeout(() => {
+            this.triggerTrace();
+        }, 50);
     }
 
     handleTraceToggle() {
@@ -470,6 +514,7 @@ class ForensicApp {
             this.activeAbortController = null;
         }
         this.isTracing = false;
+        this.hideCanvasPreloader();
         this.updateTraceButtonState(false);
         this.setExecutionStatus('Trace Stopped by Operator', 0, false, '✕ Multi-hop trace halted by operator.');
         window.logAlert('[STOPPED] Trace process halted by operator.');
@@ -485,7 +530,7 @@ class ForensicApp {
             btn.className = 'btn btn-stop btn-sm';
             btn.title = 'Halt active blockchain trace';
             if (icon) {
-                icon.innerHTML = '<rect x="6" y="6" width="12" height="12" rx="1.5" fill="currentColor"></rect>';
+                icon.innerHTML = '<span class="btn-spinner" style="margin-right:2px;"></span>';
             }
             if (text) text.innerText = 'Stop';
         } else {
@@ -666,21 +711,33 @@ class ForensicApp {
         } finally {
             this.isTracing = false;
             this.activeAbortController = null;
+            this.hideCanvasPreloader();
             this.updateTraceButtonState(false);
         }
     }
 
     async runStandaloneSimulation(wallet, chain, amount, tokenSymbol, mode) {
-        let presetKey = 'evm_ps_bench';
-        const cleanWallet = (wallet || '').toLowerCase();
-        if (cleanWallet.includes('0x04b21735')) presetKey = 'wazirx_live';
-        else if (cleanWallet.includes('0xd8da6bf2')) presetKey = 'vitalik_live';
-        else if (cleanWallet.startsWith('t') || chain === 'tron') {
-            presetKey = cleanWallet.includes('scam') ? 'tron_1930_bench' : 'tron_active_live';
+        const caseSelectEl = document.getElementById('case-select');
+        const selectedCase = caseSelectEl ? caseSelectEl.value : null;
+
+        let presetKey = (selectedCase && window.STANDALONE_PRESETS && window.STANDALONE_PRESETS[selectedCase])
+            ? selectedCase
+            : 'evm_ps_bench';
+
+        if (selectedCase === 'custom' || !window.STANDALONE_PRESETS[presetKey]) {
+            const cleanWallet = (wallet || '').toLowerCase();
+            if (cleanWallet.includes('0x04b21735')) presetKey = 'wazirx_live';
+            else if (cleanWallet.includes('0xd8da6bf2')) presetKey = 'vitalik_live';
+            else if (cleanWallet.startsWith('t') || chain === 'tron') {
+                presetKey = cleanWallet.includes('scam') ? 'tron_1930_bench' : 'tron_active_live';
+            } else {
+                presetKey = 'evm_ps_bench';
+            }
         }
 
-        const data = (window.STANDALONE_PRESETS && window.STANDALONE_PRESETS[presetKey]) || null;
+        const data = (window.STANDALONE_PRESETS && window.STANDALONE_PRESETS[presetKey]) || window.STANDALONE_PRESETS['evm_ps_bench'];
         if (!data) {
+            this.hideCanvasPreloader();
             window.logAlert("Preset dataset not found.");
             this.setExecutionStatus('Trace Error', 0, false, '✕ Preset dataset missing');
             return;
@@ -698,6 +755,10 @@ class ForensicApp {
 
         this.setExecutionStatus('Connecting to RPC node...', 15, false, `● Connecting to RPC node & validating ${wallet.substring(0, 10)}...`);
         window.logInfo(`[STANDALONE] Tracing on-chain graph for ${wallet.substring(0, 14)}...`);
+
+        setTimeout(() => {
+            this.hideCanvasPreloader();
+        }, 150);
 
         if (nodes.length > 0) {
             this.graphController.addNodeProgressive(nodes[0]);
