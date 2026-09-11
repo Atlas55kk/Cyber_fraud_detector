@@ -24,7 +24,7 @@ class EtherscanFetcher:
     def __init__(
         self,
         api_key: Optional[str] = None,
-        base_url: str = "https://eth.blockscout.com/api",
+        base_url: str = "https://api.etherscan.io/api",
         cache_dir: Optional[str] = None
     ):
         self.api_key = api_key or os.getenv("ETHERSCAN_API_KEY", "")
@@ -116,12 +116,20 @@ class EtherscanFetcher:
         if os.path.exists(cache_file):
             try:
                 with open(cache_file, "r", encoding="utf-8") as f:
-                    return json.load(f)
+                    cached_data = json.load(f)
+                    if isinstance(cached_data, list) and len(cached_data) > 0:
+                        return cached_data
             except Exception:
                 pass
 
         # Throttle live network request
         self._rate_limit_throttle()
+
+        endpoints = [
+            self.base_url,
+            "https://api.etherscan.io/api",
+            "https://eth.blockscout.com/api"
+        ]
 
         params = {
             "module": "account",
@@ -132,21 +140,25 @@ class EtherscanFetcher:
             "page": 1,
             "offset": 50, # Get top 50 recent transactions
             "sort": "desc",
-            "apikey": self.api_key
+            "apikey": self.api_key or "FREE_EXPLORER_KEY"
         }
-        url = f"{self.base_url}?{urllib.parse.urlencode(params)}"
-        
-        try:
-            req = urllib.request.Request(url, headers={"User-Agent": "CryptoFraudForensics/1.0"})
-            with urllib.request.urlopen(req, timeout=10) as resp:
-                data = json.loads(resp.read().decode("utf-8"))
-                result = data.get("result", [])
-                if isinstance(result, list):
-                    with open(cache_file, "w", encoding="utf-8") as f:
-                        json.dump(result, f, indent=2)
-                    return result
-        except Exception as e:
-            # Fallback on empty if network fails or rate limited
-            pass
+
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        }
+
+        for base in endpoints:
+            url = f"{base}?{urllib.parse.urlencode(params)}"
+            try:
+                req = urllib.request.Request(url, headers=headers)
+                with urllib.request.urlopen(req, timeout=8) as resp:
+                    data = json.loads(resp.read().decode("utf-8"))
+                    result = data.get("result", [])
+                    if isinstance(result, list) and len(result) > 0:
+                        with open(cache_file, "w", encoding="utf-8") as f:
+                            json.dump(result, f, indent=2)
+                        return result
+            except Exception:
+                continue
 
         return []

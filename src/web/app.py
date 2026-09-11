@@ -39,12 +39,18 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# Mount static asset directory for modular CSS and JS
+static_dir = os.path.join(os.path.dirname(__file__), "static")
+if os.path.exists(static_dir):
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
+
 # Shared In-Memory Entities and Live Blockchain Fetchers
 entity_resolver = EntityResolver()
 etherscan_fetcher = EtherscanFetcher()
 tron_fetcher = TronFetcher()
 micro_classifier = TransactionMicroClassifier()
 macro_classifier = CampaignMacroClassifier()
+
 
 # Request Models
 class TraceRequest(BaseModel):

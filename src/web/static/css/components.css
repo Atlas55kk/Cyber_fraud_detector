@@ -1,0 +1,271 @@
+/* ==============================================================================
+   COMPONENTS.CSS - Reusable Tactical UI Controls, Badges, Cards, and Modals
+   ============================================================================== */
+
+/* Input Controls */
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.input-lbl {
+    font-size: 10px;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.input-box {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-primary);
+    padding: 7px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    outline: none;
+    transition: var(--transition-fast);
+}
+
+.input-box:focus {
+    border-color: var(--cyan-tactical);
+    box-shadow: 0 0 0 1px var(--cyan-tactical);
+}
+
+.input-box-mono {
+    font-family: var(--font-mono);
+}
+
+/* Action Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    height: 33px;
+    white-space: nowrap;
+}
+
+.btn-primary {
+    background: #15803d;
+    color: #ffffff;
+}
+.btn-primary:hover {
+    background: #16a34a;
+    box-shadow: var(--shadow-glow-emerald);
+}
+
+.btn-action {
+    background: var(--blue-tactical);
+    color: #ffffff;
+}
+.btn-action:hover {
+    background: #3b82f6;
+}
+
+.btn-purple {
+    background: #7c3aed;
+    color: #ffffff;
+}
+.btn-purple:hover {
+    background: #8b5cf6;
+}
+
+.btn-subtle {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+}
+.btn-subtle:hover {
+    color: var(--text-primary);
+    border-color: var(--border-medium);
+}
+
+.btn-copy {
+    background: #1e293b;
+    border: 1px solid var(--border-subtle);
+    color: var(--text-primary);
+    padding: 6px 12px;
+    font-size: 11px;
+}
+.btn-copy:hover {
+    background: #334155;
+}
+
+/* Status Badges */
+.badge {
+    padding: 3px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.badge-gov {
+    background: rgba(37, 99, 235, 0.18);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.badge-sih {
+    background: rgba(22, 163, 74, 0.18);
+    color: #4ade80;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.badge-seal {
+    background: rgba(16, 185, 129, 0.18);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    font-family: var(--font-mono);
+}
+
+.badge-alert {
+    background: rgba(239, 68, 68, 0.18);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+/* Toggle Switch */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 32px;
+    height: 18px;
+}
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #334155;
+    transition: 0.25s;
+    border-radius: 18px;
+}
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 12px;
+    width: 12px;
+    left: 3px;
+    bottom: 3px;
+    background-color: #ffffff;
+    transition: 0.25s;
+    border-radius: 50%;
+}
+input:checked + .slider { background-color: var(--blue-tactical); }
+input:checked + .slider:before { transform: translateX(14px); }
+
+/* Forensic Information Cards */
+.card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    box-shadow: var(--shadow-sm);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.field-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.field-row:last-child {
+    border-bottom: none;
+}
+
+.field-lbl {
+    color: var(--text-muted);
+    font-size: 11px;
+}
+
+.field-val {
+    font-family: var(--font-mono);
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+/* Modal Dialog */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(2, 6, 12, 0.85);
+    backdrop-filter: blur(8px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+.modal-dialog {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-medium);
+    border-radius: var(--radius-lg);
+    width: 800px;
+    max-width: 92vw;
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+}
+
+.modal-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border-subtle);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-elevated);
+}
+
+.modal-body {
+    padding: 20px;
+    overflow-y: auto;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    background: #06090e;
+    color: #e2e8f0;
+    flex: 1;
+}
+
+.modal-footer {
+    padding: 12px 20px;
+    border-top: 1px solid var(--border-subtle);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    background: var(--bg-elevated);
+}

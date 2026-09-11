@@ -126,6 +126,23 @@ class TestWebAPI(unittest.TestCase):
         self.assertTrue(response.content.startswith(b"%PDF-"))
         self.assertGreater(len(response.content), 1000)
 
+    def test_static_assets_serving(self):
+        assets = [
+            "/static/css/variables.css",
+            "/static/css/layout.css",
+            "/static/css/components.css",
+            "/static/css/graph.css",
+            "/static/js/graph_controller.js",
+            "/static/js/cff_manager.js",
+            "/static/js/notice_manager.js",
+            "/static/js/app.js"
+        ]
+        for asset in assets:
+            res = self.client.get(asset)
+            self.assertEqual(res.status_code, 200, f"Failed to serve static asset: {asset}")
+            self.assertGreater(len(res.content), 50, f"Static asset is empty or too short: {asset}")
+
 
 if __name__ == "__main__":
     unittest.main()
+
