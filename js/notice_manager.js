@@ -26,7 +26,7 @@ class StatutoryNoticeManager {
         const desc = document.getElementById('notice-card-desc');
 
         if (isOfficial) {
-            badge.innerHTML = '<span style="color:#38bdf8;">● OFFICIAL DISPATCH</span>';
+            badge.innerHTML = '<span style="color:#38bdf8; font-weight:600;">● Official</span>';
             title.innerText = 'Statutory Notice Dispatch';
             title.style.color = '#38bdf8';
             desc.innerText = 'Official mode active. Generates Section 94 BNSS requisition for formal submission to exchange nodal officers.';
@@ -34,7 +34,7 @@ class StatutoryNoticeManager {
             btn.className = 'btn btn-blue';
             window.logAlert('Official Dispatch Mode active. Notice prepared for formal service.');
         } else {
-            badge.innerHTML = '<span style="color:#f59e0b;">● PRACTICE MODE (Sandbox)</span>';
+            badge.innerHTML = '<span style="color:#f59e0b; font-weight:600;">● Sandbox</span>';
             title.innerText = 'Practice Sandbox: Legal Rationale';
             title.style.color = '#f59e0b';
             desc.innerText = 'Practice sandbox active. Generates mathematical chain-of-custody rationale and simulated drafts without formal dispatch.';

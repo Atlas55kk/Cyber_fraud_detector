@@ -70,14 +70,15 @@ body {
 .command-hub {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
     background: var(--bg-base);
     border: 1px solid var(--border-medium);
     border-radius: var(--radius-md);
-    padding: 2px 6px;
-    max-width: 590px;
-    flex: 1;
-    min-width: 260px;
+    padding: 2px 5px;
+    max-width: 530px;
+    flex: 1 1 auto;
+    min-width: 220px;
+    overflow: hidden;
     transition: border-color var(--transition-fast);
 }
 
@@ -92,10 +93,14 @@ body {
     color: var(--text-secondary);
     font-size: 11px;
     font-weight: 600;
-    padding: 4px 6px;
+    padding: 4px 5px;
     outline: none;
     cursor: pointer;
-    max-width: 175px;
+    max-width: 155px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    flex-shrink: 1;
 }
 .hub-select:focus { color: var(--text-primary); }
 
@@ -103,6 +108,7 @@ body {
     width: 1px;
     height: 16px;
     background: var(--border-subtle);
+    flex-shrink: 0;
 }
 
 .hub-input {
@@ -113,15 +119,15 @@ body {
     font-size: 12px;
     padding: 4px 6px;
     outline: none;
-    flex: 1;
-    min-width: 90px;
+    flex: 1 1 70px;
+    min-width: 60px;
 }
 
 .hub-chain-btn {
     background: var(--bg-card);
     border: 1px solid var(--border-subtle);
     color: var(--text-secondary);
-    padding: 3px 7px;
+    padding: 3px 6px;
     border-radius: var(--radius-xs);
     font-size: 11px;
     font-weight: 600;
@@ -132,6 +138,9 @@ body {
 #btn-trace {
     flex-shrink: 0;
     white-space: nowrap;
+    min-width: 58px;
+    padding: 3px 9px;
+    justify-content: center;
 }
 
 /* Right Navigation & Mode Toggle */
@@ -443,6 +452,16 @@ body {
 #log-drawer.expanded {
     height: 130px;
     padding: 8px 16px;
+}
+
+/* Responsive Header Rule */
+@media (max-width: 1300px) {
+    .badge-gov {
+        display: none !important;
+    }
+    .command-hub {
+        max-width: 480px;
+    }
 }
 
 .log-entry {

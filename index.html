@@ -11,10 +11,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     
     <!-- Modular Enterprise Stylesheets -->
-    <link rel="stylesheet" href="/static/css/variables.css?v=10">
-    <link rel="stylesheet" href="/static/css/layout.css?v=10">
-    <link rel="stylesheet" href="/static/css/components.css?v=10">
-    <link rel="stylesheet" href="/static/css/graph.css?v=10">
+    <link rel="stylesheet" href="/static/css/variables.css?v=11">
+    <link rel="stylesheet" href="/static/css/layout.css?v=11">
+    <link rel="stylesheet" href="/static/css/components.css?v=11">
+    <link rel="stylesheet" href="/static/css/graph.css?v=11">
 
     <!-- Cytoscape Graph Engine -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"></script>
@@ -143,7 +143,10 @@
                         <button class="btn-widget-toggle" id="btn-widget-toggle" title="Expand Stepped Execution Logs">&gt;</button>
                         <span class="widget-status-text" id="widget-status-text">Engine Ready</span>
                     </div>
-                    <span class="widget-percent" id="widget-percent" style="display:none;">0%</span>
+                    <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
+                        <span class="widget-spinner" id="widget-spinner" style="display:none;" title="Working"></span>
+                        <span class="widget-percent" id="widget-percent" style="display:none;">0%</span>
+                    </div>
                 </div>
                 <!-- Scoped Loading % Bar on this small box only -->
                 <div class="widget-progress-track">
@@ -401,9 +404,9 @@
     </div>
 
     <!-- Modular Script Ingestion -->
-    <script src="/static/js/graph_controller.js?v=10"></script>
-    <script src="/static/js/cff_manager.js?v=10"></script>
-    <script src="/static/js/notice_manager.js?v=10"></script>
-    <script src="/static/js/app.js?v=10"></script>
+    <script src="/static/js/graph_controller.js?v=11"></script>
+    <script src="/static/js/cff_manager.js?v=11"></script>
+    <script src="/static/js/notice_manager.js?v=11"></script>
+    <script src="/static/js/app.js?v=11"></script>
 </body>
 </html>

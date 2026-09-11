@@ -96,6 +96,14 @@ class ForensicApp {
 
         window.logInfo("Forensic Engine ready. Select a case preset or enter an incident wallet.");
         
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('simulate_running') === '1') {
+            this.setExecutionStatus('Traversing hops on EVM...', 55, false, '● Traversing multi-hop transactions on EVM...');
+            const traceBtn = document.getElementById('btn-trace');
+            if (traceBtn) traceBtn.disabled = true;
+            return;
+        }
+
         // Auto-run initial case
         this.triggerTrace();
     }
@@ -171,11 +179,21 @@ class ForensicApp {
     setExecutionStatus(statusText, percent = 0, isComplete = false, milestoneItem = null) {
         const statusEl = document.getElementById('widget-status-text');
         const percentEl = document.getElementById('widget-percent');
+        const spinnerEl = document.getElementById('widget-spinner');
         const barEl = document.getElementById('widget-progress-bar');
         const logList = document.getElementById('widget-log-list');
 
         if (statusEl && statusText) {
             statusEl.innerText = statusText;
+        }
+
+        // Rotating circle indicator placed right near the % age number
+        if (spinnerEl) {
+            if (percent > 0 && !isComplete) {
+                spinnerEl.style.display = 'inline-block';
+            } else {
+                spinnerEl.style.display = 'none';
+            }
         }
 
         if (percentEl) {
@@ -381,10 +399,7 @@ class ForensicApp {
         }
 
         const traceBtn = document.getElementById('btn-trace');
-        const traceText = document.getElementById('btn-trace-text');
-
         if (traceBtn) traceBtn.disabled = true;
-        if (traceText) traceText.innerHTML = '<span class="btn-spinner"></span> Tracing...';
 
         // Reset step logs for new trace
         const logList = document.getElementById('widget-log-list');
@@ -421,7 +436,6 @@ class ForensicApp {
             if (!data.success) {
                 alert("Trace Failed: " + (data.detail || "Unknown error"));
                 if (traceBtn) traceBtn.disabled = false;
-                if (traceText) traceText.innerText = 'Trace';
                 this.setExecutionStatus('Trace Failed', 0, false, `✕ Error: ${data.detail || 'Unknown error'}`);
                 return;
             }
@@ -451,7 +465,6 @@ class ForensicApp {
             this.setExecutionStatus('Trace Error', 0, false, `✕ Error: ${err.message}`);
         } finally {
             if (traceBtn) traceBtn.disabled = false;
-            if (traceText) traceText.innerText = 'Trace';
         }
     }
 
