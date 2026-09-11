@@ -255,10 +255,10 @@ class ForensicApp {
             sealBadge.style.display = 'inline-flex';
             if (data.is_tamper_free) {
                 sealBadge.className = 'badge badge-seal';
-                sealBadge.innerHTML = '🛡️ SEC 63 BNSS SEAL: VERIFIED';
+                sealBadge.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> SEC 63 BNSS: VERIFIED';
             } else {
                 sealBadge.className = 'badge badge-crime';
-                sealBadge.innerHTML = '⚠️ TAMPER DETECTED: INVALID SEAL';
+                sealBadge.innerHTML = 'TAMPER DETECTED: INVALID SEAL';
             }
 
             // Populate Form fields from metadata
@@ -354,7 +354,7 @@ class ForensicApp {
             if (data.cff_container && data.cff_container.cryptographic_seal) {
                 sealBadge.style.display = 'inline-flex';
                 sealBadge.className = 'badge badge-seal';
-                sealBadge.innerHTML = `🛡️ SEC 63 BNSS: ${data.cff_container.cryptographic_seal.integrity_hash.substring(0, 8)}...`;
+                sealBadge.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> SEC 63 BNSS: ${data.cff_container.cryptographic_seal.integrity_hash.substring(0, 8)}...`;
             }
 
             this.updateHUD(data);
@@ -372,12 +372,13 @@ class ForensicApp {
         // Feed Source
         const srcEl = document.getElementById('hud-source');
         if (data.is_cff_import) {
-            srcEl.innerHTML = `<span style="color:var(--accent-cex);">📁 Offline .CFF</span>`;
+            srcEl.innerHTML = `<span style="color:var(--accent-cex); display:inline-flex; align-items:center; gap:5px;"><span style="width:6px; height:6px; border-radius:50%; background:var(--accent-cex); display:inline-block;"></span> Offline .CFF</span>`;
         } else if (data.is_live) {
-            srcEl.innerHTML = `<span style="color:var(--accent-cex);">🟢 ${data.data_source}</span>`;
+            srcEl.innerHTML = `<span style="color:var(--accent-cex); display:inline-flex; align-items:center; gap:5px;"><span style="width:6px; height:6px; border-radius:50%; background:var(--accent-cex); display:inline-block;"></span> ${data.data_source}</span>`;
         } else {
-            srcEl.innerHTML = `<span style="color:var(--accent-mixer);">🟣 ${data.data_source}</span>`;
+            srcEl.innerHTML = `<span style="color:var(--accent-mixer); display:inline-flex; align-items:center; gap:5px;"><span style="width:6px; height:6px; border-radius:50%; background:var(--accent-mixer); display:inline-block;"></span> ${data.data_source}</span>`;
         }
+
 
         document.getElementById('hud-accounts').innerText = data.stats.total_accounts_tracked;
         document.getElementById('hud-wires').innerText = data.stats.total_transactions_tracked;
