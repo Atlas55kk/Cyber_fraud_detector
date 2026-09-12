@@ -134,6 +134,19 @@ class ForensicApp {
             return;
         }
 
+        if (urlParams.get('wallet')) {
+            const w = urlParams.get('wallet');
+            const wInput = document.getElementById('wallet-input');
+            const caseSel = document.getElementById('case-select');
+            if (caseSel) caseSel.value = 'custom';
+            if (wInput) wInput.value = w;
+            const chainVal = urlParams.get('chain') || (w.startsWith('T') ? 'tron' : 'evm');
+            const chainSel = document.getElementById('chain-select');
+            if (chainSel) chainSel.value = chainVal;
+            setTimeout(() => this.triggerTrace(), 150);
+            return;
+        }
+
         if (urlParams.get('case')) {
             const cKey = urlParams.get('case');
             const sel = document.getElementById('case-select');
