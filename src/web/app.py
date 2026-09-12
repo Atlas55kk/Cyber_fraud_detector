@@ -346,7 +346,12 @@ async def stream_trace(req: TraceRequest, request: Request):
             inc_time = req.incident_timestamp or (int(time.time()) - 3600)
             canvas.set_incident_root(clean_addr, req.stolen_amount, inc_time)
 
-            is_tron = req.chain.lower() == "tron" or clean_addr.startswith("T")
+            if clean_addr.lower().startswith("0x"):
+                is_tron = False
+            elif clean_addr.startswith("T"):
+                is_tron = True
+            else:
+                is_tron = (req.chain.lower() == "tron")
             chain_name = "TRON" if is_tron else "EVM"
 
             # Initial progress
@@ -372,6 +377,10 @@ async def stream_trace(req: TraceRequest, request: Request):
                 yield f"event: node\ndata: {json.dumps(canvas.node_to_cytoscape(vic_node))}\n\n"
                 yield f"event: wire\ndata: {json.dumps(canvas.wire_to_cytoscape(vic_wire))}\n\n"
 
+            # Check for known benchmark cases first
+            is_wazirx = ("0x04b21735" in clean_addr.lower())
+            is_vitalik = ("0xd8da6bf2" in clean_addr.lower())
+
             # Determine if live or benchmark
             is_real_candidate = False
             if is_tron and len(clean_addr) == 34 and clean_addr.startswith("T"):
@@ -391,7 +400,10 @@ async def stream_trace(req: TraceRequest, request: Request):
                 explorer_name = "Tronscan Mainnet" if is_tron else "Blockscout / EVM Explorer"
                 yield f"event: progress\ndata: {json.dumps({'percent': 25, 'message': f'Querying live {explorer_name} RPC nodes...'})}\n\n"
                 try:
-                    raw_wires = live_fetcher.fetch_outgoing_transactions(clean_addr)
+                    raw_wires = await asyncio.wait_for(
+                        asyncio.to_thread(live_fetcher.fetch_outgoing_transactions, clean_addr),
+                        timeout=3.5
+                    )
                     if raw_wires:
                         is_live_traced = True
                         source_label = f"Live Mainnet ({explorer_name})"
@@ -404,7 +416,15 @@ async def stream_trace(req: TraceRequest, request: Request):
                 fetcher = None
 
             if not is_live_traced:
-                if is_tron:
+                if is_wazirx:
+                    source_label = "Forensic Benchmark (WazirX Exploiter)"
+                    mock_wazirx = MockFraudScenarioGenerator.generate_wazirx_case(
+                        root_address=clean_addr,
+                        stolen_amount=req.stolen_amount,
+                        token_symbol=req.token_symbol or "ETH"
+                    )
+                    fetcher = lambda a: mock_wazirx.get(a.lower(), [])
+                elif is_tron:
                     binance_tron = "TPY9W8PnmgCJnUqUrYJ7p4G93F6r8eH1e6"
                     coindcx_tron = "TYDzsYUEpvnYmQk4zGP9sWWcTEd2MiAtW6"
                     mule1 = "TMuleTransit_Beta_481029"
@@ -554,7 +574,12 @@ async def stream_trace(req: TraceRequest, request: Request):
             print(f"[STREAM ERROR] {err_msg}\n{traceback.format_exc()}")
             yield f"event: error\ndata: {json.dumps({'detail': err_msg})}\n\n"
 
-    return StreamingResponse(event_generator(), media_type="text/event-stream")
+    sse_headers = {
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive",
+        "X-Accel-Buffering": "no"
+    }
+    return StreamingResponse(event_generator(), media_type="text/event-stream", headers=sse_headers)
 
 
 @app.post("/api/generate_notice")

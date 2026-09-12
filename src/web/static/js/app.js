@@ -429,6 +429,19 @@ class ForensicApp {
             this.setExecutionStatus('Offline Case Mounted', 100, true, `✓ Verified .cff container loaded with ${data.stats.total_accounts_tracked} accounts.`);
             window.logSuccess("Graph whiteboard reconstructed offline from .cff container.");
         };
+
+        const walletInput = document.getElementById('wallet-input');
+        if (walletInput) {
+            walletInput.addEventListener('input', (e) => {
+                const val = (e.target.value || '').trim();
+                const chainEl = document.getElementById('chain-select');
+                if (val.toLowerCase().startsWith('0x') && chainEl) {
+                    chainEl.value = 'evm';
+                } else if (val.startsWith('T') && val.length > 5 && chainEl) {
+                    chainEl.value = 'tron';
+                }
+            });
+        }
     }
 
     activateTab(tabId) {
@@ -545,7 +558,18 @@ class ForensicApp {
         if (this.isTracing) return;
 
         const wallet = document.getElementById('wallet-input').value.trim();
-        const chain = document.getElementById('chain-select').value;
+        let chain = document.getElementById('chain-select').value;
+        const chainEl = document.getElementById('chain-select');
+
+        // Automatically match chain to address format
+        if (wallet.toLowerCase().startsWith('0x')) {
+            chain = 'evm';
+            if (chainEl && chainEl.value !== 'evm') chainEl.value = 'evm';
+        } else if (wallet.startsWith('T') && wallet.length > 20) {
+            chain = 'tron';
+            if (chainEl && chainEl.value !== 'tron') chainEl.value = 'tron';
+        }
+
         const selectedCaseKey = document.getElementById('case-select') ? document.getElementById('case-select').value : null;
         const preset = selectedCaseKey ? PRESET_CASES[selectedCaseKey] : null;
 

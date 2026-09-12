@@ -57,6 +57,45 @@ class MockFraudScenarioGenerator:
         return graph
 
     @staticmethod
+    def generate_wazirx_case(
+        root_address: str = "0x04b21735e10034a7810793ab97cb56041692ae2a",
+        stolen_amount: float = 5000.0,
+        token_symbol: str = "ETH"
+    ) -> Dict[str, List[ForensicWire]]:
+        """
+        Reproduces the July 2024 WazirX hack multi-hop fund displacement and peel-chain pattern.
+        """
+        t0 = int(time.time()) - 3600
+        binance_hot = "0x28c6c06298d514db089934071355e5743bf21d60"
+        coindcx_hot = "0x4a4754593444053896fa231b1e93c1ef7e068777"
+        clean_root = root_address.lower().strip()
+        factor = (stolen_amount / 5000.0) if stolen_amount > 0 else 1.0
+
+        graph: Dict[str, List[ForensicWire]] = {
+            clean_root: [
+                ForensicWire("0xtx_s_b", clean_root, "0xwallet_b", 2000.0 * factor, token_symbol=token_symbol, gas_fee=0.002, timestamp=t0 + 60),
+                ForensicWire("0xtx_s_c", clean_root, "0xwallet_c", 3000.0 * factor, token_symbol=token_symbol, gas_fee=0.002, timestamp=t0 + 120),
+            ],
+            "0xwallet_b": [
+                ForensicWire("0xtx_b_d", "0xwallet_b", "0xwallet_d", 2000.0 * factor, token_symbol=token_symbol, gas_fee=0.002, timestamp=t0 + 300),
+            ],
+            "0xwallet_c": [
+                ForensicWire("0xtx_c_e", "0xwallet_c", "0xwallet_e", 1500.0 * factor, token_symbol=token_symbol, gas_fee=0.002, timestamp=t0 + 400),
+                ForensicWire("0xtx_c_f", "0xwallet_c", "0xwallet_f", 1500.0 * factor, token_symbol=token_symbol, gas_fee=0.002, timestamp=t0 + 450),
+            ],
+            "0xwallet_d": [
+                ForensicWire("0xtx_d_binance", "0xwallet_d", binance_hot, 2000.0 * factor, token_symbol=token_symbol, gas_fee=0.002, timestamp=t0 + 600),
+            ],
+            "0xwallet_e": [
+                ForensicWire("0xtx_e_h", "0xwallet_e", "0xwallet_h", 1500.0 * factor, token_symbol=token_symbol, gas_fee=0.002, timestamp=t0 + 700),
+            ],
+            "0xwallet_f": [
+                ForensicWire("0xtx_f_coindcx", "0xwallet_f", coindcx_hot, 1500.0 * factor, token_symbol=token_symbol, gas_fee=0.002, timestamp=t0 + 800),
+            ]
+        }
+        return graph
+
+    @staticmethod
     def generate_large_peel_chain(hops: int = 5) -> Dict[str, List[ForensicWire]]:
         """
         Generates a 5-hop peel chain stripping 2,000 USDT at each step to an exchange
