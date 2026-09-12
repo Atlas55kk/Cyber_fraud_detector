@@ -402,12 +402,24 @@ async def stream_trace(req: TraceRequest, request: Request):
                 try:
                     raw_wires = await asyncio.wait_for(
                         asyncio.to_thread(live_fetcher.fetch_outgoing_transactions, clean_addr),
-                        timeout=3.5
+                        timeout=5.0
                     )
                     if raw_wires:
                         is_live_traced = True
                         source_label = f"Live Mainnet ({explorer_name})"
-                        fetcher = lambda a: live_fetcher.fetch_outgoing_transactions(a)
+                        queried_count = 0
+                        def live_trace_fetcher(a):
+                            nonlocal queried_count
+                            if a.lower() == clean_addr:
+                                return raw_wires
+                            if queried_count < 2:
+                                queried_count += 1
+                                try:
+                                    return live_fetcher.fetch_outgoing_transactions(a)
+                                except Exception:
+                                    return []
+                            return []
+                        fetcher = live_trace_fetcher
                     else:
                         fetcher = None
                 except Exception:
@@ -424,6 +436,10 @@ async def stream_trace(req: TraceRequest, request: Request):
                         token_symbol=req.token_symbol or "ETH"
                     )
                     fetcher = lambda a: mock_wazirx.get(a.lower(), [])
+                elif is_real_candidate and not clean_addr.startswith("0xwallet"):
+                    # For custom real addresses with 0 outgoing transactions, be honest: do not fake data!
+                    source_label = "Live Mainnet (Zero Outgoing Transactions)"
+                    fetcher = lambda a: []
                 elif is_tron:
                     binance_tron = "TPY9W8PnmgCJnUqUrYJ7p4G93F6r8eH1e6"
                     coindcx_tron = "TYDzsYUEpvnYmQk4zGP9sWWcTEd2MiAtW6"
