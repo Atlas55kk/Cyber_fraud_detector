@@ -458,9 +458,7 @@ class ForensicApp {
         const preloader = document.getElementById('canvas-preloader');
         if (preloader) {
             preloader.style.opacity = '0';
-            setTimeout(() => {
-                if (preloader) preloader.style.display = 'none';
-            }, 250);
+            preloader.style.display = 'none';
         }
     }
 
@@ -661,6 +659,7 @@ class ForensicApp {
                             this.setExecutionStatus(parsed.message, parsed.percent || 0, false, '● ' + parsed.message);
                             if (parsed.message) window.logInfo(parsed.message);
                         } else if (eventType === 'node') {
+                            this.hideCanvasPreloader();
                             this.graphController.addNodeProgressive(parsed);
                             accountsCount++;
                             if (accEl) accEl.innerText = accountsCount;
@@ -669,6 +668,7 @@ class ForensicApp {
                             wiresCount++;
                             if (wiresEl) wiresEl.innerText = wiresCount;
                         } else if (eventType === 'complete') {
+                            this.hideCanvasPreloader();
                             const data = parsed;
                             this.lastTraceData = data;
                             if (data.logs) {
